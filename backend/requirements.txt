@@ -1,5 +1,8 @@
 Django>=4.2,<5.0
-gunicorn
-psycopg2-binary
-django-environ
 djangorestframework
+djangorestframework-simplejwt
+psycopg2-binary
+numpy
+django-environ
+drf-spectacular
+gunicorn
