@@ -1,6 +1,7 @@
 from django.db import models
 from .base import TimeStampedModel
 
+
 class Shelter(TimeStampedModel):
     name = models.CharField(max_length=255)
     address = models.TextField()

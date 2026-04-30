@@ -6,7 +6,7 @@ from .shelter import Shelter
 
 class Pet(SoftDeleteModel, TimeStampedModel):
     name = models.CharField(max_length=100)
-    shelter = models.ForeignKey(Shelter, on_delete=models.CASCADE, related_name='pets')
+    shelter = models.ForeignKey(Shelter, on_delete=models.CASCADE, related_name="pets")
     is_available = models.BooleanField(default=True)
 
     # Шкали 1-5 для алгоритму AHP
