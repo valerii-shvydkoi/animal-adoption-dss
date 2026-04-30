@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Dict, Any
 from core.models import Pet
 
+
 class BaseConstraint(ABC):
     # Абстрактний клас для всіх жорстких обмежень
     @abstractmethod

@@ -21,8 +21,4 @@ class AHPService:
         ci = (lambda_max - n) / (n - 1) if n > 1 else 0
         cr = ci / AHPService.RI.get(n, 1.0) if n > 2 else 0
 
-        return {
-            'weights': weights.tolist(),
-            'cr': cr,
-            'is_consistent': cr < 0.1
-        }
+        return {"weights": weights.tolist(), "cr": cr, "is_consistent": cr < 0.1}
