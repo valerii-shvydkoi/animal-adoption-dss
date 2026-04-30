@@ -1,0 +1,52 @@
+[
+  {
+    "model": "core.user", "pk": 1,
+    "fields": {
+      "email": "admin@adoptify.com",
+      "password": "pbkdf2_sha256$600000$salt$mockhash",
+      "role": "ADMIN", "is_superuser": true, "is_staff": true, "is_active": true,
+      "created_at": "2023-10-01T10:00:00Z", "updated_at": "2023-10-01T10:00:00Z"
+    }
+  },
+  {
+    "model": "core.user", "pk": 2,
+    "fields": {
+      "email": "volunteer@shelter.com",
+      "password": "pbkdf2_sha256$600000$salt$mockhash",
+      "role": "VOLUNTEER", "is_superuser": false, "is_staff": false, "is_active": true,
+      "created_at": "2023-10-01T10:00:00Z", "updated_at": "2023-10-01T10:00:00Z"
+    }
+  },
+  {
+    "model": "core.shelter", "pk": 1,
+    "fields": { "name": "Щаслива лапа", "address": "вул. Сонячна, 10", "phone": "0441112233", "created_at": "2023-10-01T10:00:00Z", "updated_at": "2023-10-01T10:00:00Z" }
+  },
+  {
+    "model": "core.shelter", "pk": 2,
+    "fields": { "name": "Добре серце", "address": "вул. Миру, 42", "phone": "0449998877", "created_at": "2023-10-01T10:00:00Z", "updated_at": "2023-10-01T10:00:00Z" }
+  },
+  {
+    "model": "core.shelter", "pk": 3,
+    "fields": { "name": "Надія", "address": "просп. Перемоги, 1", "phone": "0445554433", "created_at": "2023-10-01T10:00:00Z", "updated_at": "2023-10-01T10:00:00Z" }
+  },
+  {
+    "model": "core.volunteer", "pk": 1,
+    "fields": { "user": 2, "shelter": 1, "created_at": "2023-10-01T10:00:00Z", "updated_at": "2023-10-01T10:00:00Z" }
+  },
+
+  { "model": "core.pet", "pk": 1, "fields": { "name": "Рекс", "shelter": 1, "is_available": true, "activity_level": 5, "sociability": 4, "stress_resistance": 3, "weight": "25.00", "created_at": "2023-10-01T10:00:00Z", "updated_at": "2023-10-01T10:00:00Z" } },
+  { "model": "core.pet", "pk": 2, "fields": { "name": "Барсік", "shelter": 1, "is_available": true, "activity_level": 2, "sociability": 3, "stress_resistance": 5, "weight": "5.00", "created_at": "2023-10-01T10:00:00Z", "updated_at": "2023-10-01T10:00:00Z" } },
+  { "model": "core.pet", "pk": 3, "fields": { "name": "Мухтар", "shelter": 2, "is_available": true, "activity_level": 4, "sociability": 2, "stress_resistance": 4, "weight": "30.00", "created_at": "2023-10-01T10:00:00Z", "updated_at": "2023-10-01T10:00:00Z" } },
+  { "model": "core.pet", "pk": 4, "fields": { "name": "Сніжок", "shelter": 3, "is_available": true, "activity_level": 1, "sociability": 1, "stress_resistance": 2, "weight": "4.50", "created_at": "2023-10-01T10:00:00Z", "updated_at": "2023-10-01T10:00:00Z" } },
+  { "model": "core.pet", "pk": 5, "fields": { "name": "Луна", "shelter": 1, "is_available": true, "activity_level": 3, "sociability": 5, "stress_resistance": 3, "weight": "12.00", "created_at": "2023-10-01T10:00:00Z", "updated_at": "2023-10-01T10:00:00Z" } },
+  { "model": "core.pet", "pk": 6, "fields": { "name": "Боня", "shelter": 2, "is_available": true, "activity_level": 4, "sociability": 4, "stress_resistance": 4, "weight": "8.00", "created_at": "2023-10-01T10:00:00Z", "updated_at": "2023-10-01T10:00:00Z" } },
+  { "model": "core.pet", "pk": 7, "fields": { "name": "Джек", "shelter": 3, "is_available": true, "activity_level": 5, "sociability": 3, "stress_resistance": 2, "weight": "18.00", "created_at": "2023-10-01T10:00:00Z", "updated_at": "2023-10-01T10:00:00Z" } },
+  { "model": "core.pet", "pk": 8, "fields": { "name": "Мурка", "shelter": 1, "is_available": true, "activity_level": 2, "sociability": 2, "stress_resistance": 4, "weight": "3.50", "created_at": "2023-10-01T10:00:00Z", "updated_at": "2023-10-01T10:00:00Z" } },
+  { "model": "core.pet", "pk": 9, "fields": { "name": "Граф", "shelter": 2, "is_available": true, "activity_level": 3, "sociability": 4, "stress_resistance": 5, "weight": "45.00", "created_at": "2023-10-01T10:00:00Z", "updated_at": "2023-10-01T10:00:00Z" } },
+  { "model": "core.pet", "pk": 10, "fields": { "name": "Чапа", "shelter": 3, "is_available": true, "activity_level": 5, "sociability": 5, "stress_resistance": 3, "weight": "6.00", "created_at": "2023-10-01T10:00:00Z", "updated_at": "2023-10-01T10:00:00Z" } },
+  { "model": "core.pet", "pk": 11, "fields": { "name": "Лорд", "shelter": 1, "is_available": true, "activity_level": 4, "sociability": 3, "stress_resistance": 4, "weight": "22.00", "created_at": "2023-10-01T10:00:00Z", "updated_at": "2023-10-01T10:00:00Z" } },
+  { "model": "core.pet", "pk": 12, "fields": { "name": "Рижик", "shelter": 2, "is_available": true, "activity_level": 3, "sociability": 5, "stress_resistance": 1, "weight": "5.50", "created_at": "2023-10-01T10:00:00Z", "updated_at": "2023-10-01T10:00:00Z" } },
+  { "model": "core.pet", "pk": 13, "fields": { "name": "Альма", "shelter": 3, "is_available": true, "activity_level": 4, "sociability": 4, "stress_resistance": 3, "weight": "15.00", "created_at": "2023-10-01T10:00:00Z", "updated_at": "2023-10-01T10:00:00Z" } },
+  { "model": "core.pet", "pk": 14, "fields": { "name": "Барон", "shelter": 1, "is_available": true, "activity_level": 2, "sociability": 3, "stress_resistance": 5, "weight": "35.00", "created_at": "2023-10-01T10:00:00Z", "updated_at": "2023-10-01T10:00:00Z" } },
+  { "model": "core.pet", "pk": 15, "fields": { "name": "Сімба", "shelter": 2, "is_available": true, "activity_level": 5, "sociability": 4, "stress_resistance": 2, "weight": "4.00", "created_at": "2023-10-01T10:00:00Z", "updated_at": "2023-10-01T10:00:00Z" } }
+]
