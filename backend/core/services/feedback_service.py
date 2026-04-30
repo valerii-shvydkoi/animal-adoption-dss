@@ -6,7 +6,7 @@ class FeedbackService:
         # Аналізує причини відмови та дає поради
         advice = set()
         for reason in blocked_reasons:
-            if 'автомобіль' in reason:
+            if 'авто' in reason:
                 advice.add('Розгляньте можливість оренди авто або виберіть меншу тварину.')
             if 'укриття' in reason:
                 advice.add('Шукайте тварин з вищою стресостійкістю.')
