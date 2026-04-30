@@ -1,6 +1,7 @@
 from typing import List
 from core.models import Pet
 
+
 class PetRepository:
     @staticmethod
     def get_available() -> List[Pet]:
