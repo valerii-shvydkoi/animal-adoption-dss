@@ -8,6 +8,7 @@ from drf_spectacular.utils import extend_schema
 @extend_schema(
     summary="Перевірка стану API",
     description="Повертає статус підключення до бази даних та версію системи.",
+    auth=[]
 )
 @api_view(["GET"])
 @permission_classes([AllowAny])

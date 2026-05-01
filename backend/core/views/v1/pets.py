@@ -8,8 +8,12 @@ from core.serializers.pet_serializers import PetSerializer
     list=extend_schema(
         summary="Отримати список тварин",
         description="Повертає список доступних тварин з пагінацією.",
+        auth=[],
     ),
-    retrieve=extend_schema(summary="Отримати деталі тварини"),
+    retrieve=extend_schema(
+        summary="Отримати деталі тварини",
+        auth=[],
+    ),
     create=extend_schema(summary="Додати нову тварину"),
     update=extend_schema(summary="Повністю оновити дані тварини"),
     partial_update=extend_schema(summary="Частково оновити дані тварини"),
