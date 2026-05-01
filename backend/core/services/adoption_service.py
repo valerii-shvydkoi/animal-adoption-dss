@@ -14,15 +14,10 @@ class AdoptionService:
                 raise PetNotAvailableError()
 
             request = AdoptionRequest.objects.create(
-                user=user,
-                pet=pet,
-                questionnaire_result_id=result_id,
-                status=RequestStatus.PENDING
+                user=user, pet=pet, questionnaire_result_id=result_id, status=RequestStatus.PENDING
             )
             return request
 
     @staticmethod
     def cancel_all_for_pet(pet: Pet) -> None:
-        AdoptionRequest.objects.filter(
-            pet=pet, status=RequestStatus.PENDING
-        ).update(status=RequestStatus.REJECTED)
+        AdoptionRequest.objects.filter(pet=pet, status=RequestStatus.PENDING).update(status=RequestStatus.REJECTED)

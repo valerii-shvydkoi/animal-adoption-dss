@@ -4,9 +4,11 @@ from django.db import transaction
 from core.models import Pet, VolunteerRequest, RequestStatus, Volunteer, UserRole
 from core.services.adoption_service import AdoptionService
 
+
 @receiver(post_delete, sender=Pet)
 def cancel_adoption_requests_on_pet_delete(sender, instance, **kwargs):
     AdoptionService.cancel_all_for_pet(instance)
+
 
 @receiver(post_save, sender=VolunteerRequest)
 def create_volunteer_profile_on_approval(sender, instance, created, **kwargs):
@@ -18,6 +20,5 @@ def create_volunteer_profile_on_approval(sender, instance, created, **kwargs):
                 user.save()
                 Volunteer.objects.get_or_create(
                     user=user,
-                    shelter=instance.shelter,
-                    defaults={'phone': 'Вкажіть телефон'}
+                    shelter=instance.shelter
                 )

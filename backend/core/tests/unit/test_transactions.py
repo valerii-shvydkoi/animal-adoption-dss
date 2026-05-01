@@ -7,7 +7,15 @@ from core.exceptions import PetNotAvailableError
 class TransactionTest(TestCase):
     def setUp(self):
         self.shelter = Shelter.objects.create(name="Притулок", address="Адреса", phone="123")
-        self.pet = Pet.objects.create(name="Пес", shelter=self.shelter, is_available=False, activity_level=1, sociability=1, stress_resistance=1, weight=10.0)
+        self.pet = Pet.objects.create(
+            name="Пес",
+            shelter=self.shelter,
+            is_available=False,
+            activity_level=1,
+            sociability=1,
+            stress_resistance=1,
+            weight=10.0,
+        )
         self.user = User.objects.create(email="user@test.com")
 
     def test_atomic_rollback_on_error(self):

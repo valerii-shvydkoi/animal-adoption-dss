@@ -11,7 +11,7 @@ class NotificationService:
         send_mail(
             subject,
             message,
-            settings.DEFAULT_FROM_EMAIL or 'noreply@shelter.local',
+            settings.DEFAULT_FROM_EMAIL or "noreply@shelter.local",
             [email],
             fail_silently=True,
         )

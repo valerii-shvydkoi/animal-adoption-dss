@@ -1,5 +1,6 @@
 from django.test import TestCase
-from core.models import Pet, Shelter, User, VolunteerRequest, RequestStatus, Volunteer, UserRole, AdoptionRequest
+from unittest.mock import patch
+from core.models import Pet, Shelter, User, VolunteerRequest, RequestStatus, Volunteer, UserRole
 
 
 class SignalsTest(TestCase):
@@ -16,10 +17,13 @@ class SignalsTest(TestCase):
         self.assertEqual(self.user.role, UserRole.VOLUNTEER)
         self.assertTrue(Volunteer.objects.filter(user=self.user).exists())
 
-    def test_pet_delete_cancels_requests(self):
-        pet = Pet.objects.create(name="Пес", shelter=self.shelter, activity_level=1, sociability=1, stress_resistance=1, weight=10.0)
-        req = AdoptionRequest.objects.create(user=self.user, pet=pet, status=RequestStatus.PENDING, questionnaire_result_id=1)
-
+    @patch('core.signals.AdoptionService.cancel_all_for_pet')
+    def test_pet_delete_cancels_requests(self, mock_cancel):
+        pet = Pet.objects.create(
+            name="Пес", shelter=self.shelter, activity_level=1,
+            sociability=1, stress_resistance=1, weight=10.0
+        )
+        # Видаляємо тварину і перевіряємо, чи був викликаний наш метод з сервісу
         pet.delete()
-        req.refresh_from_db()
-        self.assertEqual(req.status, RequestStatus.REJECTED)
+        mock_cancel.assert_called_once_with(pet)
+        

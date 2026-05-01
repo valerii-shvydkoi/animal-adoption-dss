@@ -1,5 +1,5 @@
 from django.test import TestCase
-from core.models import User, Shelter, VolunteerRequest
+from core.models import User, Shelter
 from core.services.volunteer_request_service import VolunteerRequestService
 from core.exceptions import RequestAlreadyExistsError
 

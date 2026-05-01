@@ -2,6 +2,7 @@ from django.db import transaction
 from core.models import VolunteerRequest, RequestStatus, User
 from core.exceptions import RequestAlreadyExistsError
 
+
 class VolunteerRequestService:
     @staticmethod
     def create(user: User, shelter_id: int) -> VolunteerRequest:
