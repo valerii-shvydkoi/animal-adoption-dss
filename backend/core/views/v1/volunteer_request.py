@@ -3,6 +3,7 @@ from core.models import VolunteerRequest
 from core.serializers.volunteer_request_serializers import VolunteerRequestSerializer
 from core.services.volunteer_request_service import VolunteerRequestService
 
+
 class VolunteerRequestViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = VolunteerRequestSerializer
@@ -12,6 +13,5 @@ class VolunteerRequestViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         VolunteerRequestService.create(
-            user=self.request.user,
-            shelter_id=self.request.data.get('shelter')
+            user=self.request.user, shelter_id=self.request.data.get("shelter")
         )
