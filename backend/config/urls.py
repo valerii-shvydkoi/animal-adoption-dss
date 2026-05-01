@@ -18,11 +18,19 @@ Including another URLconf
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from core.views.v1.pets import PetViewSet
+from core.views.v1.questionnaire import QuestionnaireViewSet
+from core.views.v1.results import ResultsViewSet
+from core.views.v1.adoption import AdoptionRequestViewSet
+from core.views.v1.volunteer_request import VolunteerRequestViewSet
 from core.views.v1.volunteer_cabinet import VolunteerCabinetViewSet
 from core.views.v1.health import health_check
 
 router = DefaultRouter()
 router.register(r'pets', PetViewSet, basename='pet')
+router.register(r'questionnaire', QuestionnaireViewSet, basename='questionnaire')
+router.register(r'results', ResultsViewSet, basename='result')
+router.register(r'adoptions', AdoptionRequestViewSet, basename='adoption')
+router.register(r'volunteer/requests', VolunteerRequestViewSet, basename='volunteer-request')
 router.register(r'volunteer/cabinet', VolunteerCabinetViewSet, basename='volunteer-cabinet')
 
 urlpatterns = [
