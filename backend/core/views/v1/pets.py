@@ -2,6 +2,7 @@ from rest_framework import viewsets, permissions
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from core.models import Pet
 from core.serializers.pet_serializers import PetSerializer
+from core.permissions import IsVolunteer
 
 
 @extend_schema_view(
@@ -26,4 +27,4 @@ class PetViewSet(viewsets.ModelViewSet):
     def get_permissions(self):
         if self.action in ["list", "retrieve"]:
             return [permissions.AllowAny()]
-        return [permissions.IsAuthenticated()]
+        return [IsVolunteer()]
