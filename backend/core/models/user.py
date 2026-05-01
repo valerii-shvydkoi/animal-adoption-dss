@@ -1,4 +1,8 @@
-from django.contrib.auth.models import AbstractBaseUser, PermissionsMixin, BaseUserManager
+from django.contrib.auth.models import (
+    AbstractBaseUser,
+    PermissionsMixin,
+    BaseUserManager,
+)
 from django.db import models
 from .base import TimeStampedModel
 from .enums import UserRole
@@ -24,7 +28,9 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     email = models.EmailField(unique=True)
-    role = models.CharField(max_length=20, choices=UserRole.choices, default=UserRole.USER)
+    role = models.CharField(
+        max_length=20, choices=UserRole.choices, default=UserRole.USER
+    )
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
 

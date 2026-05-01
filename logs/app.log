@@ -48,3 +48,25 @@ WARNING 2026-05-01 18:39:29,047 log Unauthorized: /api/v1/auth/token/
 WARNING 2026-05-01 18:39:29,405 log Unauthorized: /api/v1/auth/token/
 WARNING 2026-05-01 18:39:29,759 log Unauthorized: /api/v1/auth/token/
 WARNING 2026-05-01 18:39:29,760 log Too Many Requests: /api/v1/auth/token/
+WARNING 2026-05-01 20:07:49,096 log Unauthorized: /api/v1/auth/token/
+WARNING 2026-05-01 20:07:49,452 log Unauthorized: /api/v1/auth/token/
+WARNING 2026-05-01 20:07:49,813 log Unauthorized: /api/v1/auth/token/
+WARNING 2026-05-01 20:07:50,183 log Unauthorized: /api/v1/auth/token/
+WARNING 2026-05-01 20:07:50,546 log Unauthorized: /api/v1/auth/token/
+WARNING 2026-05-01 20:07:50,898 log Unauthorized: /api/v1/auth/token/
+WARNING 2026-05-01 20:07:51,262 log Unauthorized: /api/v1/auth/token/
+WARNING 2026-05-01 20:07:51,620 log Unauthorized: /api/v1/auth/token/
+WARNING 2026-05-01 20:07:51,983 log Unauthorized: /api/v1/auth/token/
+WARNING 2026-05-01 20:07:52,346 log Unauthorized: /api/v1/auth/token/
+WARNING 2026-05-01 20:07:52,348 log Too Many Requests: /api/v1/auth/token/
+WARNING 2026-05-01 20:42:08,945 log Unauthorized: /api/v1/auth/token/
+WARNING 2026-05-01 20:42:09,298 log Unauthorized: /api/v1/auth/token/
+WARNING 2026-05-01 20:42:09,658 log Unauthorized: /api/v1/auth/token/
+WARNING 2026-05-01 20:42:10,032 log Unauthorized: /api/v1/auth/token/
+WARNING 2026-05-01 20:42:10,386 log Unauthorized: /api/v1/auth/token/
+WARNING 2026-05-01 20:42:10,750 log Unauthorized: /api/v1/auth/token/
+WARNING 2026-05-01 20:42:11,114 log Unauthorized: /api/v1/auth/token/
+WARNING 2026-05-01 20:42:11,477 log Unauthorized: /api/v1/auth/token/
+WARNING 2026-05-01 20:42:11,837 log Unauthorized: /api/v1/auth/token/
+WARNING 2026-05-01 20:42:12,193 log Unauthorized: /api/v1/auth/token/
+WARNING 2026-05-01 20:42:12,194 log Too Many Requests: /api/v1/auth/token/

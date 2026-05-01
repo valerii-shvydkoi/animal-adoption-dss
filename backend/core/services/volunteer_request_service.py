@@ -6,9 +6,13 @@ from core.exceptions import RequestAlreadyExistsError
 class VolunteerRequestService:
     @staticmethod
     def create(user: User, shelter_id: int) -> VolunteerRequest:
-        if VolunteerRequest.objects.filter(user=user, status=RequestStatus.PENDING).exists():
+        if VolunteerRequest.objects.filter(
+            user=user, status=RequestStatus.PENDING
+        ).exists():
             raise RequestAlreadyExistsError()
-        return VolunteerRequest.objects.create(user=user, shelter_id=shelter_id, status=RequestStatus.PENDING)
+        return VolunteerRequest.objects.create(
+            user=user, shelter_id=shelter_id, status=RequestStatus.PENDING
+        )
 
     @staticmethod
     def approve(request_id: int) -> VolunteerRequest:

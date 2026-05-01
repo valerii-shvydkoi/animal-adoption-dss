@@ -18,7 +18,4 @@ def create_volunteer_profile_on_approval(sender, instance, created, **kwargs):
             if user.role != UserRole.VOLUNTEER:
                 user.role = UserRole.VOLUNTEER
                 user.save()
-                Volunteer.objects.get_or_create(
-                    user=user,
-                    shelter=instance.shelter
-                )
+                Volunteer.objects.get_or_create(user=user, shelter=instance.shelter)

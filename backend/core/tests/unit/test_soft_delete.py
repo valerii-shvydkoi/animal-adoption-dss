@@ -4,9 +4,16 @@ from core.models import Pet, Shelter
 
 class SoftDeleteTest(TestCase):
     def setUp(self):
-        self.shelter = Shelter.objects.create(name="Притулок", address="Адреса", phone="123")
+        self.shelter = Shelter.objects.create(
+            name="Притулок", address="Адреса", phone="123"
+        )
         self.pet = Pet.objects.create(
-            name="Пес", shelter=self.shelter, activity_level=3, sociability=3, stress_resistance=3, weight=10.0
+            name="Пес",
+            shelter=self.shelter,
+            activity_level=3,
+            sociability=3,
+            stress_resistance=3,
+            weight=10.0,
         )
 
     def test_soft_delete_behavior(self):

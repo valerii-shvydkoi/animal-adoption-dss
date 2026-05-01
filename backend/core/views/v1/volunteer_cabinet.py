@@ -1,9 +1,18 @@
 from rest_framework import viewsets
+from drf_spectacular.utils import extend_schema_view, extend_schema
 from core.models import AdoptionRequest
 from core.serializers.adoption_serializers import AdoptionRequestSerializer
 from core.permissions import IsVolunteer
 
 
+@extend_schema_view(
+    list=extend_schema(summary="Заявки на тварин мого притулку"),
+    retrieve=extend_schema(summary="Деталі заявки (для волонтера)"),
+    create=extend_schema(exclude=True),
+    update=extend_schema(summary="Оновити статус заявки"),
+    partial_update=extend_schema(summary="Частково оновити статус заявки"),
+    destroy=extend_schema(exclude=True),
+)
 class VolunteerCabinetViewSet(viewsets.ModelViewSet):
     permission_classes = [IsVolunteer]
     serializer_class = AdoptionRequestSerializer

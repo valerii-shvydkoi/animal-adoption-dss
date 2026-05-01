@@ -14,5 +14,7 @@ class ThrottlingTest(TestCase):
             self.client.post(self.url, {"email": "test@test.com", "password": "wrong"})
 
         # 11-й запит має бути заблокований системою (код 429 Too Many Requests)
-        response = self.client.post(self.url, {"email": "test@test.com", "password": "wrong"})
+        response = self.client.post(
+            self.url, {"email": "test@test.com", "password": "wrong"}
+        )
         self.assertEqual(response.status_code, 429)

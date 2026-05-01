@@ -10,9 +10,15 @@ class Pet(SoftDeleteModel, TimeStampedModel):
     is_available = models.BooleanField(default=True)
 
     # Шкали 1-5 для алгоритму AHP
-    activity_level = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
-    sociability = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
-    stress_resistance = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    activity_level = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    sociability = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
+    stress_resistance = models.IntegerField(
+        validators=[MinValueValidator(1), MaxValueValidator(5)]
+    )
 
     # Фізичні параметри для жорстких обмежень
     weight = models.DecimalField(max_digits=5, decimal_places=2)  # у кг

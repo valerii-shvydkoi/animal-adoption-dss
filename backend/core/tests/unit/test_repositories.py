@@ -5,7 +5,9 @@ from core.repositories.pet_repository import PetRepository
 
 class PetRepositoryTest(TestCase):
     def setUp(self):
-        self.shelter = Shelter.objects.create(name="Притулок", address="Адреса", phone="123")
+        self.shelter = Shelter.objects.create(
+            name="Притулок", address="Адреса", phone="123"
+        )
         self.available_pet = Pet.objects.create(
             name="Доступний",
             shelter=self.shelter,

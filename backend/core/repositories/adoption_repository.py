@@ -9,4 +9,8 @@ class AdoptionRepository:
 
     @staticmethod
     def get_shelter_requests(shelter: Shelter) -> List[AdoptionRequest]:
-        return list(AdoptionRequest.objects.filter(pet__shelter=shelter).select_related("user", "pet"))
+        return list(
+            AdoptionRequest.objects.filter(pet__shelter=shelter).select_related(
+                "user", "pet"
+            )
+        )

@@ -6,7 +6,9 @@ from core.exceptions import PetNotAvailableError
 
 class TransactionTest(TestCase):
     def setUp(self):
-        self.shelter = Shelter.objects.create(name="Притулок", address="Адреса", phone="123")
+        self.shelter = Shelter.objects.create(
+            name="Притулок", address="Адреса", phone="123"
+        )
         self.pet = Pet.objects.create(
             name="Пес",
             shelter=self.shelter,

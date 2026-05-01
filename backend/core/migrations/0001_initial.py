@@ -18,9 +18,22 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="User",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("password", models.CharField(max_length=128, verbose_name="password")),
-                ("last_login", models.DateTimeField(blank=True, null=True, verbose_name="last login")),
+                (
+                    "last_login",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="last login"
+                    ),
+                ),
                 (
                     "is_superuser",
                     models.BooleanField(
@@ -35,7 +48,11 @@ class Migration(migrations.Migration):
                 (
                     "role",
                     models.CharField(
-                        choices=[("USER", "Користувач"), ("VOLUNTEER", "Волонтер"), ("ADMIN", "Адміністратор")],
+                        choices=[
+                            ("USER", "Користувач"),
+                            ("VOLUNTEER", "Волонтер"),
+                            ("ADMIN", "Адміністратор"),
+                        ],
                         default="USER",
                         max_length=20,
                     ),
@@ -72,10 +89,21 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Questionnaire",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
-                ("matrix_data", models.JSONField(help_text="Збережена матриця порівнянь AHP")),
+                (
+                    "matrix_data",
+                    models.JSONField(help_text="Збережена матриця порівнянь AHP"),
+                ),
                 (
                     "user",
                     models.OneToOneField(
@@ -92,7 +120,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Shelter",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 ("name", models.CharField(max_length=255)),
@@ -106,14 +142,26 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="VolunteerRequest",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 ("shelter_name", models.CharField(max_length=255)),
                 (
                     "status",
                     models.CharField(
-                        choices=[("PENDING", "Розглядається"), ("APPROVED", "Схвалено"), ("REJECTED", "Відхилено")],
+                        choices=[
+                            ("PENDING", "Розглядається"),
+                            ("APPROVED", "Схвалено"),
+                            ("REJECTED", "Відхилено"),
+                        ],
                         default="PENDING",
                         max_length=20,
                     ),
@@ -134,13 +182,23 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Volunteer",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 (
                     "shelter",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, related_name="volunteers", to="core.shelter"
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="volunteers",
+                        to="core.shelter",
                     ),
                 ),
                 (
@@ -159,14 +217,29 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="QuestionnaireResult",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
-                ("snapshot_data", models.JSONField(help_text="Збережені результати на момент розрахунку")),
+                (
+                    "snapshot_data",
+                    models.JSONField(
+                        help_text="Збережені результати на момент розрахунку"
+                    ),
+                ),
                 (
                     "questionnaire",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, related_name="results", to="core.questionnaire"
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="results",
+                        to="core.questionnaire",
                     ),
                 ),
             ],
@@ -177,7 +250,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="Pet",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 ("deleted_at", models.DateTimeField(blank=True, null=True)),
@@ -214,7 +295,9 @@ class Migration(migrations.Migration):
                 (
                     "shelter",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, related_name="pets", to="core.shelter"
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="pets",
+                        to="core.shelter",
                     ),
                 ),
             ],
@@ -225,7 +308,15 @@ class Migration(migrations.Migration):
         migrations.CreateModel(
             name="AdoptionRequest",
             fields=[
-                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
                 ("updated_at", models.DateTimeField(auto_now=True)),
                 (
@@ -244,7 +335,9 @@ class Migration(migrations.Migration):
                 (
                     "pet",
                     models.ForeignKey(
-                        on_delete=django.db.models.deletion.CASCADE, related_name="adoption_requests", to="core.pet"
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="adoption_requests",
+                        to="core.pet",
                     ),
                 ),
                 (

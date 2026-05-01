@@ -4,7 +4,11 @@ from core.models import UserRole
 
 class IsVolunteer(permissions.BasePermission):
     def has_permission(self, request, view):
-        return bool(request.user and request.user.is_authenticated and request.user.role == UserRole.VOLUNTEER)
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and request.user.role == UserRole.VOLUNTEER
+        )
 
 
 class IsOwner(permissions.BasePermission):
