@@ -29,9 +29,7 @@ def shelter(db):
 @pytest.fixture
 def volunteer_user(db, shelter):
     v_user = User.objects.create_user(
-        email='volunteer@test.com',
-        password='password123',
-        role=UserRole.VOLUNTEER
+        email="volunteer@test.com", password="password123", role=UserRole.VOLUNTEER
     )
     Volunteer.objects.create(user=v_user, shelter=shelter)
     return v_user
