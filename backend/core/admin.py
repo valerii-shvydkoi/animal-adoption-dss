@@ -1,6 +1,7 @@
 from django.contrib import admin
 from core.models import Pet, VolunteerRequest, AdoptionRequest, RequestStatus, Volunteer
 
+
 # Налаштування відображення заявок на волонтерство
 @admin.register(VolunteerRequest)
 class VolunteerRequestAdmin(admin.ModelAdmin):
@@ -34,6 +35,7 @@ class VolunteerRequestAdmin(admin.ModelAdmin):
         queryset.update(status=RequestStatus.REJECTED)
         self.message_user(request, "Обрані заявки було відхилено.")
 
+
 # Фільтр для м'якого видалення тварин
 class SoftDeletedFilter(admin.SimpleListFilter):
     title = 'Статус видалення'
@@ -49,12 +51,14 @@ class SoftDeletedFilter(admin.SimpleListFilter):
             return queryset.filter(deleted_at__isnull=False)
         return queryset
 
+
 # Налаштування відображення тварин
 @admin.register(Pet)
 class PetAdmin(admin.ModelAdmin):
     list_display = ('name', 'shelter', 'is_available', 'created_at')
     list_filter = ('is_available', SoftDeletedFilter, 'shelter')
     list_editable = ('is_available',)
+
 
 # Налаштування відображення заявок на адопцію
 @admin.register(AdoptionRequest)
@@ -67,8 +71,11 @@ class AdoptionRequestAdmin(admin.ModelAdmin):
     def get_shelter(self, obj):
         return obj.pet.shelter
 
+
 # Кастомний дашборд адміністратора зі статистикою
 old_index = admin.site.index
+
+
 def custom_index(request, extra_context=None):
     extra_context = extra_context or {}
     extra_context['stats'] = {
@@ -77,4 +84,6 @@ def custom_index(request, extra_context=None):
         'total_volunteers': VolunteerRequest.objects.filter(status=RequestStatus.APPROVED).count(),
     }
     return old_index(request, extra_context)
+
+
 admin.site.index = custom_index

@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import patch
 from rest_framework import status
-from core.models import RequestStatus, AdoptionRequest
+
 
 @pytest.mark.django_db
 class TestIntegrationEndpoints:
@@ -10,7 +10,6 @@ class TestIntegrationEndpoints:
     def test_endpoints_status_codes_and_permissions(self, api_client):
         assert api_client.get('/api/v1/health/').status_code == status.HTTP_200_OK
         assert api_client.get('/api/v1/pets/').status_code == status.HTTP_200_OK
-        # Перевіряємо, що доступ без токена обмежений (будь-яка помилка, не 2xx)
         response = api_client.post('/api/v1/questionnaire/')
         assert response.status_code != status.HTTP_201_CREATED
 
@@ -21,6 +20,7 @@ class TestIntegrationEndpoints:
         data = {"matrix": {"activity_vs_sociability": 3, "activity_vs_weight": 0.33}}
         response = auth_client.post('/api/v1/questionnaire/', data, format='json')
         assert response.status_code == status.HTTP_201_CREATED
+        assert response.data['status'] == 'processing'
 
     # Перевірка відхилення невалідної матриці AHP (CR >= 0.1)
     @patch('core.views.v1.questionnaire.QuestionnaireInputSerializer.is_valid')
@@ -72,6 +72,5 @@ class TestIntegrationEndpoints:
     # Перевірка захисту від Race Condition при бронюванні тварини
     @patch('core.services.adoption_service.AdoptionService.create_request')
     def test_race_condition_protection_on_adoption(self, mock_create, auth_client, pet):
-        # Відправляємо запит без questionnaire_result, щоб уникнути помилки кодування None
         response = auth_client.post('/api/v1/adoptions/', {"pet": pet.id}, format='json')
         assert response.status_code == status.HTTP_201_CREATED
