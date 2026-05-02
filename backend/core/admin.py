@@ -1,7 +1,5 @@
 from django.contrib import admin
-from django.db.models import Count
-from core.models import Pet, VolunteerRequest, AdoptionRequest, RequestStatus, VolunteerProfile
-
+from core.models import Pet, VolunteerRequest, AdoptionRequest, RequestStatus, Volunteer
 
 # Налаштування відображення заявок на волонтерство
 @admin.register(VolunteerRequest)
@@ -15,28 +13,26 @@ class VolunteerRequestAdmin(admin.ModelAdmin):
         count = 0
         for req in queryset:
             if req.status != RequestStatus.APPROVED:
-                # 1. Оновлюємо статус заявки
+                # Оновлюємо статус заявки
                 req.status = RequestStatus.APPROVED
                 req.save()
 
-                # 2. Змінюємо роль користувача на волонтера
+                # Змінюємо роль користувача на волонтера
                 req.user.role = 'volunteer'
                 req.user.save()
 
-                # 3. Створюємо або оновлюємо профіль волонтера з прив'язкою до притулку
-                VolunteerProfile.objects.get_or_create(
+                # Створюємо профіль волонтера з прив'язкою до притулку
+                Volunteer.objects.get_or_create(
                     user=req.user,
                     defaults={'shelter': req.shelter}
                 )
                 count += 1
-
         self.message_user(request, f"Успішно схвалено {count} заявок. Користувачам надано права волонтерів.")
 
     @admin.action(description='Відхилити обрані заявки')
     def reject_requests(self, request, queryset):
         queryset.update(status=RequestStatus.REJECTED)
         self.message_user(request, "Обрані заявки було відхилено.")
-
 
 # Фільтр для м'якого видалення тварин
 class SoftDeletedFilter(admin.SimpleListFilter):
@@ -53,14 +49,12 @@ class SoftDeletedFilter(admin.SimpleListFilter):
             return queryset.filter(deleted_at__isnull=False)
         return queryset
 
-
 # Налаштування відображення тварин
 @admin.register(Pet)
 class PetAdmin(admin.ModelAdmin):
     list_display = ('name', 'shelter', 'is_available', 'created_at')
     list_filter = ('is_available', SoftDeletedFilter, 'shelter')
     list_editable = ('is_available',)
-
 
 # Налаштування відображення заявок на адопцію
 @admin.register(AdoptionRequest)
@@ -73,11 +67,8 @@ class AdoptionRequestAdmin(admin.ModelAdmin):
     def get_shelter(self, obj):
         return obj.pet.shelter
 
-
 # Кастомний дашборд адміністратора зі статистикою
 old_index = admin.site.index
-
-
 def custom_index(request, extra_context=None):
     extra_context = extra_context or {}
     extra_context['stats'] = {
@@ -86,6 +77,4 @@ def custom_index(request, extra_context=None):
         'total_volunteers': VolunteerRequest.objects.filter(status=RequestStatus.APPROVED).count(),
     }
     return old_index(request, extra_context)
-
-
 admin.site.index = custom_index

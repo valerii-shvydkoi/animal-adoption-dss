@@ -18,3 +18,4 @@ class RequestStatus(models.TextChoices):
     PENDING = "PENDING", "Розглядається"
     APPROVED = "APPROVED", "Схвалено"
     REJECTED = "REJECTED", "Відхилено"
+    CANCELLED = "CANCELLED", "Скасовано"

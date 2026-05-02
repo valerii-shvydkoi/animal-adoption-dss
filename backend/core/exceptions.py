@@ -32,10 +32,18 @@ def custom_exception_handler(exc, context):
 
     # Якщо помилка перехоплена, форматуємо її під наш стандарт
     if response is not None:
+        # Перевіряємо, чи response.data є словником, перш ніж викликати .get()
+        if isinstance(response.data, dict):
+            detail = response.data.get("detail", str(exc))
+        elif isinstance(response.data, list):
+            detail = response.data[0] if response.data else str(exc)
+        else:
+            detail = str(exc)
+
         custom_data = {
             "status": "error",
             "code": getattr(exc, "default_code", "INVALID_REQUEST"),
-            "detail": response.data.get("detail", str(exc)),
+            "detail": detail,
         }
         response.data = custom_data
 
