@@ -12,14 +12,22 @@ export const usePets = (page = 1) => {
     const fetchPets = async () => {
       setLoading(true);
       try {
+        // Отримуємо відповідь від сервера
         const response = await api.get(`/pets/?page=${page}`);
+        
+        // Логіка захисту: шукаємо масив у results або в самому корені data
+        const results = response.data?.results || response.data;
+        const validatedData = Array.isArray(results) ? results : [];
+        
+        setPets(validatedData);
+        
         // Підтримка формату пагінації DRF
-        setPets(response.data.results || response.data);
-        setHasNext(!!response.data.next);
-        setHasPrev(!!response.data.previous);
+        setHasNext(!!response.data?.next);
+        setHasPrev(!!response.data?.previous);
         setError(null);
       } catch (err) {
         setError(err);
+        setPets([]); // Очищуємо список у разі помилки
       } finally {
         setLoading(false);
       }

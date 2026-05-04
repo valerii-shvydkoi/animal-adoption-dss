@@ -14,7 +14,6 @@ const Catalog = () => {
   const navigate = useNavigate();
 
   const handleRequestClick = (petId) => {
-    // Якщо гість натискає "Хочу цю тварину", відправляємо на логін
     if (!user?.isAuthenticated) {
       navigate('/login');
       return;
@@ -29,14 +28,18 @@ const Catalog = () => {
     <div className="catalog-page">
       <h1>Каталог тварин</h1>
       <div className="pet-grid" style={{ display: 'flex', flexWrap: 'wrap' }}>
-        {pets.map((pet) => (
-          <PetCard
-            key={pet.id}
-            pet={pet}
-            showRequestButton={true}
-            onRequestClick={handleRequestClick}
-          />
-        ))}
+        {Array.isArray(pets) && pets.length > 0 ? (
+          pets.map((pet) => (
+            <PetCard 
+              key={pet.id} 
+              pet={pet} 
+              showRequestButton={true} 
+              onRequestClick={handleRequestClick} 
+            />
+          ))
+        ) : (
+          <p>Наразі тварин не знайдено.</p>
+        )}
       </div>
       <Pagination
         currentPage={page}
