@@ -12,7 +12,6 @@ class TimeStampedModel(models.Model):
 
 class SoftDeleteManager(models.Manager):
     def get_queryset(self):
-        # Повертає лише ті записи, які не були видалені
         return super().get_queryset().filter(deleted_at__isnull=True)
 
 
@@ -20,11 +19,14 @@ class SoftDeleteModel(models.Model):
     deleted_at = models.DateTimeField(null=True, blank=True)
 
     objects = SoftDeleteManager()
-    all_objects = models.Manager()  # Для доступу до всіх записів, включно з видаленими
+    all_objects = models.Manager()
 
     def soft_delete(self):
         self.deleted_at = timezone.now()
-        self.save()
+        self.save(update_fields=["deleted_at"])
+
+    def delete(self, using=None, keep_parents=False):
+        self.soft_delete()
 
     class Meta:
         abstract = True

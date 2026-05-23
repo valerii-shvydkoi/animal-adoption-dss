@@ -3,7 +3,6 @@ from core.models import Pet
 
 
 class FloorConstraint(BaseConstraint):
-    # Блокує великих псів на високих поверхах без ліфта
     def is_blocked(self, pet: Pet, user_data: dict) -> bool:
         floor = user_data.get("floor", 1)
         has_elevator = user_data.get("has_elevator", True)

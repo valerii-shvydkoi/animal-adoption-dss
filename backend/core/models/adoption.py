@@ -22,3 +22,17 @@ class AdoptionRequest(TimeStampedModel):
     status = models.CharField(
         max_length=20, choices=AdoptionStatus.choices, default=AdoptionStatus.PENDING
     )
+
+    message = models.TextField(
+        max_length=500,
+        blank=True,
+        null=True,
+        help_text="Повідомлення для волонтера від користувача",
+    )
+
+    def __str__(self):
+        return f"Заявка від {self.user.email} на {self.pet.name}"
+
+    class Meta:
+        verbose_name = "Заявка на адопцію"
+        verbose_name_plural = "Заявки на адопцію"

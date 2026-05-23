@@ -8,3 +8,7 @@ class Questionnaire(TimeStampedModel):
         User, on_delete=models.CASCADE, related_name="questionnaire"
     )
     matrix_data = models.JSONField(help_text="Збережена матриця порівнянь AHP")
+
+    class Meta:
+        verbose_name = "Анкета"
+        verbose_name_plural = "Анкети користувачів"

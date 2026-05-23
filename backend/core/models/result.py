@@ -10,3 +10,7 @@ class QuestionnaireResult(TimeStampedModel):
     snapshot_data = models.JSONField(
         help_text="Збережені результати на момент розрахунку"
     )
+
+    class Meta:
+        verbose_name = "Результат підбору"
+        verbose_name_plural = "Результати підбору"

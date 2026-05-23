@@ -7,11 +7,21 @@ from core.exceptions import RequestAlreadyExistsError
 class VolunteerRequestTest(TestCase):
     def test_duplicate_request_raises_error(self):
         user = User.objects.create(email="v2@test.com")
-        shelter = Shelter.objects.create(name="Притулок", address="Адреса", phone="123")
+        owner = User.objects.create_user(
+            email="volunteer-request-owner@test.com",
+            password="password123",
+            role="SHELTER_MANAGER",
+        )
+        shelter = Shelter.objects.create(
+            owner=owner,
+            name="Притулок",
+            region="Київська",
+            city="Київ",
+            address="Адреса",
+            phone="123",
+        )
 
-        # Створюємо першу заявку успішно
-        VolunteerRequestService.create(user, shelter.id)
+        VolunteerRequestService.create(user, shelter.id, phone="+380000000000")
 
-        # Друга заявка має викликати помилку
         with self.assertRaises(RequestAlreadyExistsError):
-            VolunteerRequestService.create(user, shelter.id)
+            VolunteerRequestService.create(user, shelter.id, phone="+380000000000")

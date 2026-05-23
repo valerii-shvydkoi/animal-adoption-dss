@@ -15,14 +15,28 @@ def api_client():
 @pytest.fixture
 def user(db):
     return User.objects.create_user(
-        email="user@test.com", password="password123", role="user"
+        email="user@test.com", password="password123", role=UserRole.USER
     )
 
 
 @pytest.fixture
-def shelter(db):
+def shelter_owner(db):
+    return User.objects.create_user(
+        email="shelter-owner@test.com",
+        password="password123",
+        role=UserRole.SHELTER_MANAGER,
+    )
+
+
+@pytest.fixture
+def shelter(db, shelter_owner):
     return Shelter.objects.create(
-        name="Test shelter", address="м. Київ, вул. Тестова", phone="+380000000000"
+        owner=shelter_owner,
+        name="Test shelter",
+        region="Київська",
+        city="Київ",
+        address="м. Київ, вул. Тестова",
+        phone="+380000000000",
     )
 
 
@@ -40,6 +54,7 @@ def pet(db, shelter):
     return Pet.objects.create(
         name="Рекс",
         shelter=shelter,
+        age_months=24,
         activity_level=5,
         sociability=5,
         stress_resistance=5,

@@ -4,7 +4,7 @@ from typing import List
 class FeedbackService:
     @staticmethod
     def generate_advice(blocked_reasons: List[str]) -> List[str]:
-        # Аналізує причини відмови та дає поради
+
         advice = set()
         for reason in blocked_reasons:
             if "авто" in reason:

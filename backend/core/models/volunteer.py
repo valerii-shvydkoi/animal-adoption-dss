@@ -14,3 +14,7 @@ class Volunteer(TimeStampedModel):
 
     def __str__(self):
         return f"{self.user.email} - {self.shelter.name}"
+
+    class Meta:
+        verbose_name = "Волонтер"
+        verbose_name_plural = "Волонтери"

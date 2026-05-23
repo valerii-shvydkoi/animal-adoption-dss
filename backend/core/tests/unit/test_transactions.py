@@ -6,12 +6,23 @@ from core.exceptions import PetNotAvailableError
 
 class TransactionTest(TestCase):
     def setUp(self):
+        self.owner = User.objects.create_user(
+            email="transaction-owner@test.com",
+            password="password123",
+            role="SHELTER_MANAGER",
+        )
         self.shelter = Shelter.objects.create(
-            name="Притулок", address="Адреса", phone="123"
+            owner=self.owner,
+            name="Притулок",
+            region="Київська",
+            city="Київ",
+            address="Адреса",
+            phone="123",
         )
         self.pet = Pet.objects.create(
             name="Пес",
             shelter=self.shelter,
+            age_months=24,
             is_available=False,
             activity_level=1,
             sociability=1,
@@ -21,7 +32,6 @@ class TransactionTest(TestCase):
         self.user = User.objects.create(email="user@test.com")
 
     def test_atomic_rollback_on_error(self):
-        # Якщо тварина недоступна, має викликатись помилка і нічого не записуватись
         with self.assertRaises(PetNotAvailableError):
             AdoptionService.create_request(self.user, self.pet.id, 1)
 

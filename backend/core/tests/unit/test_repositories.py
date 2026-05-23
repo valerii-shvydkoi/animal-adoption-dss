@@ -1,16 +1,27 @@
 from django.test import TestCase
-from core.models import Pet, Shelter
+from core.models import Pet, Shelter, User
 from core.repositories.pet_repository import PetRepository
 
 
 class PetRepositoryTest(TestCase):
     def setUp(self):
+        self.owner = User.objects.create_user(
+            email="repository-owner@test.com",
+            password="password123",
+            role="SHELTER_MANAGER",
+        )
         self.shelter = Shelter.objects.create(
-            name="Притулок", address="Адреса", phone="123"
+            owner=self.owner,
+            name="Притулок",
+            region="Київська",
+            city="Київ",
+            address="Адреса",
+            phone="123",
         )
         self.available_pet = Pet.objects.create(
             name="Доступний",
             shelter=self.shelter,
+            age_months=24,
             is_available=True,
             activity_level=3,
             sociability=3,
@@ -20,6 +31,7 @@ class PetRepositoryTest(TestCase):
         self.unavailable_pet = Pet.objects.create(
             name="Зайнятий",
             shelter=self.shelter,
+            age_months=24,
             is_available=False,
             activity_level=3,
             sociability=3,

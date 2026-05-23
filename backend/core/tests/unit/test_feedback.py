@@ -7,5 +7,4 @@ class FeedbackServiceTest(TestCase):
         reasons = ["Тварина занадто важка для евакуації без власного автомобіля."]
         advice = FeedbackService.generate_advice(reasons)
 
-        # Перевіряємо, чи є в пораді згадка про авто
         self.assertTrue(any("авто" in a for a in advice))

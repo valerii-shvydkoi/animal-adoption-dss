@@ -1,10 +1,10 @@
 from rest_framework.views import exception_handler
-from rest_framework.exceptions import APIException
+from rest_framework.exceptions import APIException, Throttled
 
 
 class CRTooHighError(APIException):
     status_code = 400
-    default_detail = "Індекс узгодженості (CR) занадто високий. Матриця суперечлива."
+    default_detail = "Індекс uzgodženosti (CR) занадто високий. Матриця суперечлива."
     default_code = "CR_TOO_HIGH"
 
 
@@ -26,13 +26,21 @@ class InsufficientPermissionsError(APIException):
     default_code = "INSUFFICIENT_PERMISSIONS"
 
 
+def get_ukrainian_seconds_word(seconds):
+    if seconds % 10 == 1 and seconds % 100 != 11:
+        return "секунду"
+    elif seconds % 10 in [2, 3, 4] and seconds % 100 not in [12, 13, 14]:
+        return "секунди"
+    else:
+        return "секунд"
+
+
 def custom_exception_handler(exc, context):
-    # Спочатку викликаємо стандартний обробник DRF
+
     response = exception_handler(exc, context)
 
-    # Якщо помилка перехоплена, форматуємо її під наш стандарт
     if response is not None:
-        # Перевіряємо, чи response.data є словником, перш ніж викликати .get()
+
         if isinstance(response.data, dict):
             detail = response.data.get("detail", str(exc))
         elif isinstance(response.data, list):
@@ -40,9 +48,20 @@ def custom_exception_handler(exc, context):
         else:
             detail = str(exc)
 
+        err_code = getattr(exc, "default_code", "INVALID_REQUEST")
+
+        if isinstance(exc, Throttled):
+            wait_seconds = int(getattr(exc, "wait", 0))
+            if wait_seconds == 0:
+                wait_seconds = 1
+
+            seconds_word = get_ukrainian_seconds_word(wait_seconds)
+            detail = f"Занадто багато спроб. Будь ласка, зачекайте {wait_seconds} {seconds_word} перед наступним запитом."
+            err_code = "THROTTLED"
+
         custom_data = {
             "status": "error",
-            "code": getattr(exc, "default_code", "INVALID_REQUEST"),
+            "code": err_code,
             "detail": detail,
         }
         response.data = custom_data

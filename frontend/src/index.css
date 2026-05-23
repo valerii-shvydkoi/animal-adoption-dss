@@ -1,0 +1,46 @@
+﻿body {
+  font-family: sans-serif;
+  margin: 0;
+  padding: 0;
+}
+nav {
+  padding: 1rem;
+}
+nav a {
+  color: white;
+  margin-right: 15px;
+  text-decoration: none;
+}
+nav a:hover {
+  text-decoration: underline;
+}
+.error-message {
+  color: red;
+  border: 1px solid red;
+  padding: 10px;
+  margin: 10px 0;
+}
+.loading-spinner {
+  font-weight: bold;
+  color: #555;
+}
+
+body {
+  background-color: #f5f6f7;
+  color: #2d3748;
+}
+
+nav {
+  background: #2d3436 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+nav a {
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  transition: opacity 0.2s;
+}
+nav a:hover {
+  text-decoration: none;
+  opacity: 0.8;
+}

@@ -1,6 +1,6 @@
 from .base import TimeStampedModel, SoftDeleteModel
-from .enums import UserRole, AdoptionStatus, RequestStatus
-from .user import User
+from .enums import UserRole, AdoptionStatus, RequestStatus, PetSpecies, PetGender
+from .user import User, UserProfile
 from .shelter import Shelter
 from .volunteer import Volunteer
 from .pet import Pet
@@ -15,7 +15,10 @@ __all__ = [
     "UserRole",
     "AdoptionStatus",
     "RequestStatus",
+    "PetSpecies",
+    "PetGender",
     "User",
+    "UserProfile",
     "Shelter",
     "Volunteer",
     "Pet",

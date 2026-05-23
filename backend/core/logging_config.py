@@ -1,19 +1,22 @@
 import os
-from pathlib import Path
+from django.conf import settings
 
-BASE_DIR = Path(__file__).resolve().parent.parent.parent
-LOGS_DIR = os.path.join(BASE_DIR, "logs")
+LOG_FILE_PATH = getattr(
+    settings, "LOG_FILE_PATH", os.path.join(settings.BASE_DIR.parent, "app.log")
+)
 
-# Створюємо папку logs, якщо її немає
-os.makedirs(LOGS_DIR, exist_ok=True)
+
+LOGS_DIR = os.path.dirname(LOG_FILE_PATH)
+if LOGS_DIR:
+    os.makedirs(LOGS_DIR, exist_ok=True)
 
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
         "verbose": {
-            "format": "{levelname} {asctime} {module} {message}",
-            "style": "{",
+            "format": "[%(asctime)s] %(levelname)s [%(name)s] %(message)s",
+            "datefmt": "%Y-%m-%d %H:%M:%S",
         },
     },
     "handlers": {
@@ -23,14 +26,16 @@ LOGGING = {
         },
         "file": {
             "class": "logging.FileHandler",
-            "filename": os.path.join(LOGS_DIR, "app.log"),
+            "filename": LOG_FILE_PATH,
             "formatter": "verbose",
+            "encoding": "utf-8",
         },
     },
     "loggers": {
         "django": {
             "handlers": ["console", "file"],
             "level": "INFO",
+            "propagate": True,
         },
         "core": {
             "handlers": ["console", "file"],

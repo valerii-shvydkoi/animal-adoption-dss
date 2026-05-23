@@ -3,9 +3,10 @@ from core.models import Pet
 
 
 class ShelterConstraint(BaseConstraint):
-    # Блокує стресозалежних тварин, якщо поруч немає укриття
     def is_blocked(self, pet: Pet, user_data: dict) -> bool:
-        has_shelter = user_data.get("has_nearby_shelter", False)
+        has_shelter = user_data.get(
+            "has_shelter", user_data.get("has_nearby_shelter", False)
+        )
         return pet.stress_resistance < 3 and not has_shelter
 
     @property

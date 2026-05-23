@@ -3,12 +3,14 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from django.db import connection
 from drf_spectacular.utils import extend_schema
+from drf_spectacular.types import OpenApiTypes
 
 
 @extend_schema(
     summary="Перевірка стану API",
     description="Повертає статус підключення до бази даних та версію системи.",
     auth=[],
+    responses={200: OpenApiTypes.OBJECT},
 )
 @api_view(["GET"])
 @permission_classes([AllowAny])
