@@ -60,7 +60,7 @@ export default function AdminDashboard() {
   const [infrastructure, setInfrastructure] = useState({
     gateway: 'LOADING',
     postgres: 'LOADING',
-    s3: '99.99%',
+    media: 'LOCAL',
   });
   const fetchAnalytics = async (silent = false) => {
     if (!silent) setLoading(true);
@@ -72,14 +72,14 @@ export default function AdminDashboard() {
         gateway:
           healthResult?.status === 'ok' || healthResult?.status === 'healthy' ? 'ONLINE' : 'ERROR',
         postgres: healthResult?.db === 'ok' || healthResult?.database === 'ok' ? 'STABLE' : 'DOWN',
-        s3: '99.99%',
+        media: 'LOCAL',
       });
     } catch (err) {
       console.error('Збій моніторингу інфраструктури:', err);
       setInfrastructure({
         gateway: 'OFFLINE',
         postgres: 'DOWN',
-        s3: 'UNKNOWN',
+        media: 'UNKNOWN',
       });
     }
     try {
@@ -218,7 +218,7 @@ export default function AdminDashboard() {
     },
   ];
   const getStatusColor = (status) => {
-    if (['ONLINE', 'STABLE', '99.99%'].includes(status)) return '#16A34A';
+    if (['ONLINE', 'STABLE', 'LOCAL'].includes(status)) return '#16A34A';
     if (['LOADING'].includes(status)) return '#94A3B8';
     return '#DC2626';
   };
@@ -324,16 +324,16 @@ export default function AdminDashboard() {
             <div style={styles.serverList}>
               {[
                 {
-                  name: 'API Gateway Node',
+                  name: 'REST API Django',
                   val: infrastructure.gateway,
                 },
                 {
-                  name: 'PostgreSQL Cluster',
+                  name: 'PostgreSQL',
                   val: infrastructure.postgres,
                 },
                 {
-                  name: 'Media Storage (S3)',
-                  val: infrastructure.s3,
+                  name: 'Локальне медіасховище',
+                  val: infrastructure.media,
                 },
               ].map((srv, idx, arr) => (
                 <div
