@@ -175,7 +175,7 @@ export default function AdminDashboard() {
       bg: '#E0F2FE',
     },
     {
-      label: 'Успішних адопцій',
+      label: 'Успішних адаптацій',
       value: successfulAdoptions.toLocaleString(),
       icon: <Heart size={28} />,
       color: '#16A34A',

@@ -1,7 +1,7 @@
 {
   "name": "Adoptify",
   "short_name": "Adoptify",
-  "description": "Система підтримки прийняття рішень для адопції тварин в умовах кризових ситуацій",
+  "description": "Система підтримки прийняття рішень для адаптації тварин в умовах кризових ситуацій",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",

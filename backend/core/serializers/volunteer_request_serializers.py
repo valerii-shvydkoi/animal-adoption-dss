@@ -1,5 +1,4 @@
 from rest_framework import serializers
-from core.models.shelter import Shelter
 from core.models.volunteer_request import VolunteerRequest
 from core.models.enums import RequestStatus
 

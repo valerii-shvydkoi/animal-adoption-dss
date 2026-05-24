@@ -29,8 +29,8 @@ Pet._meta.verbose_name = "Тварину"
 Pet._meta.verbose_name_plural = "Каталог тварин"
 VolunteerRequest._meta.verbose_name = "Заявку на волонтерство"
 VolunteerRequest._meta.verbose_name_plural = "Заявки на волонтерство"
-AdoptionRequest._meta.verbose_name = "Заявку на адопцію"
-AdoptionRequest._meta.verbose_name_plural = "Заявки на адопцію"
+AdoptionRequest._meta.verbose_name = "Заявку на адаптацію"
+AdoptionRequest._meta.verbose_name_plural = "Заявки на адаптацію"
 Volunteer._meta.verbose_name = "Волонтера"
 Volunteer._meta.verbose_name_plural = "Волонтери"
 Shelter._meta.verbose_name = "Притулок"
@@ -246,7 +246,7 @@ class PetAdminForm(forms.ModelForm):
     urgency_status = forms.ChoiceField(
         choices=[
             ("", "--- Оберіть статус терміновості ---"),
-            ("REGULAR", "Планова адопція"),
+            ("REGULAR", "Планова адаптація"),
             ("EVACUATION", "Евакуація (із зони бойових дій)"),
             ("MEDICAL", "Лікування (потребує медичного догляду)"),
         ],

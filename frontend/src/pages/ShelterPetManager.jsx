@@ -973,7 +973,7 @@ export default function ShelterPetManager() {
                   options={[
                     {
                       value: 'REGULAR',
-                      label: 'Планова адопція',
+                      label: 'Планова адаптація',
                     },
                     {
                       value: 'EVACUATION',

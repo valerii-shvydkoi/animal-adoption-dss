@@ -30,7 +30,8 @@ from core.views.v1.user import (
     PasswordResetRequestView,
     PasswordResetConfirmView,
     SyncFavoritesView,
-    AdminUserManagementView,
+    AdminUserDetailView,
+    AdminUserListView,
     CustomTokenObtainPairView,
 )
 
@@ -72,12 +73,12 @@ urlpatterns = [
     ),
     path(
         "api/v1/admin/users/",
-        AdminUserManagementView.as_view(),
+        AdminUserListView.as_view(),
         name="admin_users_list",
     ),
     path(
         "api/v1/admin/users/<int:pk>/",
-        AdminUserManagementView.as_view(),
+        AdminUserDetailView.as_view(),
         name="admin_user_detail",
     ),
     path("api/v1/admin/", include(admin_router.urls)),

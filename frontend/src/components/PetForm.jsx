@@ -468,7 +468,7 @@ const PetForm = ({ pet, onSuccess }) => {
               }
               className="adoptify-pet-input"
             >
-              <option value="REGULAR">Планова адопція</option>
+              <option value="REGULAR">Планова адаптація</option>
               <option value="EVACUATION">Евакуація (із зони бойових дій)</option>
               <option value="MEDICAL">Лікування (потребує медичного догляду)</option>
             </select>

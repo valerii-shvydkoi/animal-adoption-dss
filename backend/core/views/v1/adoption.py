@@ -16,7 +16,7 @@ from django.apps import apps
 
 
 @extend_schema_view(
-    list=extend_schema(summary="Список моїх заявок на адопцію"),
+    list=extend_schema(summary="Список моїх заявок на адаптацію"),
     retrieve=extend_schema(
         summary="Деталі заявки",
         parameters=[OpenApiParameter("id", type=int, location=OpenApiParameter.PATH)],

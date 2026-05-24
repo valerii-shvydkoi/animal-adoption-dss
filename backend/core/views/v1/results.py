@@ -1,8 +1,9 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
+from drf_spectacular.utils import extend_schema
 from core.models import QuestionnaireResult, Pet
-from core.serializers.result_serializers import ResultSerializer
+from core.serializers.result_serializers import PetMatchSerializer, ResultSerializer
 from core.services.dss_matching_service import DSSMatchingService
 from core.services.constraint_service import ConstraintService
 
@@ -12,6 +13,9 @@ class ResultsViewSet(viewsets.ReadOnlyModelViewSet):
     serializer_class = ResultSerializer
 
     def get_queryset(self):
+        if getattr(self, "swagger_fake_view", False):
+            return QuestionnaireResult.objects.none()
+
         return (
             QuestionnaireResult.objects.filter(questionnaire__user=self.request.user)
             .select_related("questionnaire")
@@ -19,6 +23,7 @@ class ResultsViewSet(viewsets.ReadOnlyModelViewSet):
         )
 
     @action(detail=False, methods=["get"])
+    @extend_schema(responses=PetMatchSerializer(many=True))
     def matches(self, request):
         latest_result = self.get_queryset().first()
 

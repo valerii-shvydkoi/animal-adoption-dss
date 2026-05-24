@@ -8,4 +8,4 @@ class CoreConfig(AppConfig):
     verbose_name = "Adoptify"
 
     def ready(self):
-        import core.signals
+        import core.signals  # noqa: F401

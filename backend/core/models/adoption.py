@@ -34,5 +34,5 @@ class AdoptionRequest(TimeStampedModel):
         return f"Заявка від {self.user.email} на {self.pet.name}"
 
     class Meta:
-        verbose_name = "Заявка на адопцію"
-        verbose_name_plural = "Заявки на адопцію"
+        verbose_name = "Заявка на адаптацію"
+        verbose_name_plural = "Заявки на адаптацію"

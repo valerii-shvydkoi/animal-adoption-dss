@@ -1,4 +1,4 @@
-from typing import Dict, List, Any, Optional
+from typing import Any, Dict, Optional
 from core.models import Pet
 
 
@@ -188,7 +188,7 @@ class DSSMatchingService:
 
         if not has_pet_experience and (p_stress < 0.4 or p_social < 0.4):
             risks.append(
-                "Тварина має складний характер або низьку стресостійкість. Це може бути важко для першого досвіду адопції."
+                "Тварина має складний характер або низьку стресостійкість. Це може бути важко для першого досвіду адаптації."
             )
         elif has_pet_experience and (p_stress >= 0.4 and p_social >= 0.4):
             positives.append("Ваш досвід допоможе легше адаптувати цю тварину.")

@@ -323,7 +323,7 @@ const PetDetails = () => {
     if (s.includes('ЕВАК') || s === 'EVACUATION') return 'Евакуація';
     if (s.includes('ПОТРЕБ') || s.includes('NEED') || s.includes('MED') || s === 'MEDICAL')
       return 'Лікування';
-    return 'Планова адопція';
+    return 'Планова адаптація';
   };
   const getCompStyles = (score) => {
     if (score >= 85)

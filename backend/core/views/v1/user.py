@@ -10,6 +10,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
+from drf_spectacular.utils import OpenApiTypes, extend_schema
 from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
 
@@ -60,6 +61,7 @@ class CustomTokenObtainPairView(TokenObtainPairView):
 class VerifyEmailView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request, uidb64, token, *args, **kwargs):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
@@ -77,6 +79,7 @@ class VerifyEmailView(APIView):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
+    @extend_schema(request=None, responses=OpenApiTypes.OBJECT)
     def post(self, request, uidb64, token, *args, **kwargs):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
@@ -110,6 +113,10 @@ class VerifyEmailView(APIView):
 class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        request=PasswordResetRequestSerializer,
+        responses=OpenApiTypes.OBJECT,
+    )
     def post(self, request):
         serializer = PasswordResetRequestSerializer(data=request.data)
         if serializer.is_valid():
@@ -169,6 +176,7 @@ class PasswordResetRequestView(APIView):
 class PasswordResetConfirmView(APIView):
     permission_classes = [AllowAny]
 
+    @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request, uidb64, token):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
@@ -180,6 +188,10 @@ class PasswordResetConfirmView(APIView):
             return Response({"status": "valid"}, status=status.HTTP_200_OK)
         return Response({"status": "invalid"}, status=status.HTTP_400_BAD_REQUEST)
 
+    @extend_schema(
+        request=PasswordResetConfirmSerializer,
+        responses=OpenApiTypes.OBJECT,
+    )
     def post(self, request, uidb64, token):
         serializer = PasswordResetConfirmSerializer(data=request.data)
         if serializer.is_valid():
@@ -210,10 +222,12 @@ class PasswordResetConfirmView(APIView):
 class SyncFavoritesView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request):
         fav_ids = list(request.user.favorites.values_list("id", flat=True))
         return Response({"favorites": fav_ids}, status=status.HTTP_200_OK)
 
+    @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
     def post(self, request):
         pet_ids = request.data.get("pet_ids", [])
         if isinstance(pet_ids, list):
@@ -292,3 +306,26 @@ class AdminUserManagementView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class AdminUserListView(AdminUserManagementView):
+    http_method_names = ["get"]
+
+    @extend_schema(
+        operation_id="admin_users_list",
+        responses=UserSerializer(many=True),
+    )
+    def get(self, request):
+        return super().get(request)
+
+
+class AdminUserDetailView(AdminUserManagementView):
+    http_method_names = ["patch"]
+
+    @extend_schema(
+        operation_id="admin_user_partial_update",
+        request=UserSerializer,
+        responses=UserSerializer,
+    )
+    def patch(self, request, pk=None):
+        return super().patch(request, pk=pk)

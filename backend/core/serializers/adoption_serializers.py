@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from drf_spectacular.utils import OpenApiTypes, extend_schema_field
 from core.models import AdoptionRequest
 from core.services.dss_matching_service import DSSMatchingService
 
@@ -19,6 +20,7 @@ class AdoptionRequestSerializer(serializers.ModelSerializer):
         )
         read_only_fields = ("id", "status", "created_at")
 
+    @extend_schema_field(OpenApiTypes.OBJECT)
     def get_pet_details(self, obj):
         request = self.context.get("request")
         photo_url = None
@@ -64,6 +66,7 @@ class VolunteerAdoptionSerializer(serializers.ModelSerializer):
             "created_at",
         )
 
+    @extend_schema_field(OpenApiTypes.OBJECT)
     def get_pet_details(self, obj):
         return {
             "id": obj.pet.id,
@@ -75,6 +78,7 @@ class VolunteerAdoptionSerializer(serializers.ModelSerializer):
             ),
         }
 
+    @extend_schema_field(OpenApiTypes.OBJECT)
     def get_user_details(self, obj):
         profile = getattr(obj.user, "profile", None)
         return {
@@ -86,6 +90,7 @@ class VolunteerAdoptionSerializer(serializers.ModelSerializer):
             "has_shelter": profile.has_shelter if profile else False,
         }
 
+    @extend_schema_field(OpenApiTypes.OBJECT)
     def get_ai_analysis(self, obj):
         if not obj.questionnaire_result or not obj.questionnaire_result.snapshot_data:
             return {"match_percent": None, "explanation": "Анкету не знайдено"}

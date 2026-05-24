@@ -53,7 +53,7 @@ class Pet(SoftDeleteModel, TimeStampedModel):
     )
 
     is_available = models.BooleanField(
-        default=True, verbose_name="Доступний для адопції"
+        default=True, verbose_name="Доступний для адаптації"
     )
 
     species = models.CharField(

@@ -11,8 +11,8 @@ class Migration(migrations.Migration):
         migrations.AlterModelOptions(
             name="adoptionrequest",
             options={
-                "verbose_name": "Заявка на адопцію",
-                "verbose_name_plural": "Заявки на адопцію",
+                "verbose_name": "Заявка на адаптацію",
+                "verbose_name_plural": "Заявки на адаптацію",
             },
         ),
         migrations.AlterModelOptions(

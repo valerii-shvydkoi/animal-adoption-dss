@@ -5,9 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework import status
-from drf_spectacular.utils import extend_schema
-from django.db.models import Count
-
+from drf_spectacular.utils import OpenApiTypes, extend_schema
 
 from core.models import (
     AdoptionRequest,
@@ -91,6 +89,7 @@ def safe_read_logs(limit=10):
 class ShelterAnalyticsView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request):
 
         shelter = Shelter.objects.filter(owner=request.user).first()
@@ -186,6 +185,7 @@ class ShelterAnalyticsView(APIView):
             status=status.HTTP_200_OK,
         )
 
+    @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
     def patch(self, request):
         shelter = Shelter.objects.filter(owner=request.user).first()
         if not shelter:
@@ -235,6 +235,7 @@ class ShelterAnalyticsView(APIView):
 class ShelterDeleteView(APIView):
     permission_classes = [IsAuthenticated]
 
+    @extend_schema(responses=OpenApiTypes.OBJECT)
     def delete(self, request):
         shelter = Shelter.objects.filter(owner=request.user).first()
         if not shelter:
@@ -262,6 +263,7 @@ class ShelterDeleteView(APIView):
 class GlobalAnalyticsView(APIView):
     permission_classes = [IsPlatformAdmin]
 
+    @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request):
         try:
             total_pets = Pet.objects.count()
@@ -319,6 +321,7 @@ class GlobalAnalyticsView(APIView):
 class AdminLogView(APIView):
     permission_classes = [IsPlatformAdmin]
 
+    @extend_schema(responses=OpenApiTypes.OBJECT)
     def get(self, request):
         logs = safe_read_logs(limit=100)
         return Response(logs, status=status.HTTP_200_OK)
@@ -328,6 +331,7 @@ class AdminLogView(APIView):
 class AdminLogClearView(APIView):
     permission_classes = [IsPlatformAdmin]
 
+    @extend_schema(responses=OpenApiTypes.OBJECT)
     def delete(self, request):
         log_path = getattr(
             settings, "LOG_FILE_PATH", os.path.join(settings.BASE_DIR.parent, "app.log")

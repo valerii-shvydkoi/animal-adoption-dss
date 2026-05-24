@@ -7,6 +7,7 @@ from django.shortcuts import get_object_or_404
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from rest_framework import serializers
+from drf_spectacular.utils import OpenApiTypes, extend_schema
 
 
 from core.models.shelter import Shelter
@@ -28,17 +29,28 @@ class ShelterTeamSerializer(serializers.ModelSerializer):
         fields = ["id", "user_email", "role", "created_at"]
 
 
+class ShelterListSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    city = serializers.CharField()
+    is_verified = serializers.BooleanField()
+
+
 logger = logging.getLogger(__name__)
 
 
 class ShelterViewSet(viewsets.ViewSet):
     permission_classes = [IsAuthenticated]
+    queryset = Shelter.objects.all()
+    serializer_class = ShelterListSerializer
+    lookup_value_regex = r"\d+"
 
     def get_permissions(self):
         if self.action == "list":
             return [AllowAny()]
         return super().get_permissions()
 
+    @extend_schema(responses=ShelterListSerializer(many=True))
     def list(self, request):
         """Отримати загальний список притулків для випадаючого меню"""
         shelters = Shelter.objects.all()
@@ -70,6 +82,10 @@ class ShelterViewSet(viewsets.ViewSet):
         return shelter
 
     @action(detail=False, methods=["get", "patch"], url_path="analytics")
+    @extend_schema(
+        request=OpenApiTypes.OBJECT,
+        responses=OpenApiTypes.OBJECT,
+    )
     def analytics(self, request):
         """
         GET: Повертає аналітику притулку разом із поточними даними профілю.
@@ -168,6 +184,7 @@ class ShelterViewSet(viewsets.ViewSet):
             )
 
     @action(detail=False, methods=["get"], url_path="my-team")
+    @extend_schema(responses=ShelterTeamSerializer(many=True))
     def my_team(self, request):
         """Отримати список волонтерів притулку поточного менеджера"""
         shelter = self.get_current_shelter(request)
@@ -181,6 +198,7 @@ class ShelterViewSet(viewsets.ViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=False, methods=["post"], url_path="add-by-email")
+    @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
     def add_volunteer_by_email(self, request):
         """Додати користувача до команди притулку за його email-адресою"""
         shelter = self.get_current_shelter(request)
@@ -246,6 +264,7 @@ class ShelterViewSet(viewsets.ViewSet):
         )
 
     @action(detail=False, methods=["get"], url_path="incoming-requests")
+    @extend_schema(responses=VolunteerRequestSerializer(many=True))
     def incoming_requests(self, request):
         """Отримати список нових заявок від кандидатів саме до цього притулку"""
         shelter = self.get_current_shelter(request)
@@ -262,6 +281,7 @@ class ShelterViewSet(viewsets.ViewSet):
         return Response(serializer.data, status=status.HTTP_200_OK)
 
     @action(detail=True, methods=["delete"], url_path="remove-volunteer")
+    @extend_schema(responses=OpenApiTypes.OBJECT)
     def remove_volunteer(self, request, pk=None):
         """Видалити волонтера з команди притулку"""
         shelter = self.get_current_shelter(request)
@@ -293,6 +313,7 @@ class ShelterViewSet(viewsets.ViewSet):
         )
 
     @action(detail=True, methods=["post"], url_path="approve-request")
+    @extend_schema(responses=OpenApiTypes.OBJECT)
     def approve_member_request(self, request, pk=None):
         """Схвалити заявку кандидата менеджером притулку"""
         shelter = self.get_current_shelter(request)
@@ -329,6 +350,7 @@ class ShelterViewSet(viewsets.ViewSet):
         )
 
     @action(detail=True, methods=["post"], url_path="reject-request")
+    @extend_schema(responses=OpenApiTypes.OBJECT)
     def reject_member_request(self, request, pk=None):
         """Відхилити заявку кандидата менеджером притулку"""
         shelter = self.get_current_shelter(request)

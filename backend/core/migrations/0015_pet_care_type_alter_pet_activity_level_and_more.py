@@ -141,7 +141,7 @@ class Migration(migrations.Migration):
             model_name="pet",
             name="is_available",
             field=models.BooleanField(
-                default=True, verbose_name="Доступний для адопції"
+                default=True, verbose_name="Доступний для адаптації"
             ),
         ),
         migrations.AlterField(

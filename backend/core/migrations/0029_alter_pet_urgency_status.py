@@ -13,7 +13,7 @@ class Migration(migrations.Migration):
             name="urgency_status",
             field=models.CharField(
                 choices=[
-                    ("REGULAR", "Планова адопція"),
+                    ("REGULAR", "Планова адаптація"),
                     ("EVACUATION", "Евакуація (із зони бойових дій)"),
                     ("MEDICAL", "Лікування (потребує медичного догляду)"),
                 ],

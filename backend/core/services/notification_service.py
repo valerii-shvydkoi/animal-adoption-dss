@@ -10,7 +10,7 @@ User = get_user_model()
 class NotificationService:
     @staticmethod
     def send_adoption_status_email(email: str, status: str, pet_name: str) -> None:
-        subject = f"Оновлення статусу заявки на адопцію: {pet_name}"
+        subject = f"Оновлення статусу заявки на адаптацію: {pet_name}"
         message = f"Статус вашої заявки було змінено на: {status}."
 
         send_mail(

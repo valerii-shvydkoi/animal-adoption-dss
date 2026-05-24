@@ -1,0 +1,15 @@
+[run]
+source = core
+omit =
+    */admin.py
+    */management/*
+    */migrations/*
+    */serializers/*
+    */tests/*
+    */views/*
+    core/repositories/adoption_repository.py
+    core/repositories/questionnaire_repository.py
+
+[report]
+show_missing = True
+skip_empty = True

@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from core.models import QuestionnaireResult, Pet
 from core.services.dss_matching_service import DSSMatchingService
 
@@ -27,6 +28,7 @@ class PetMatchSerializer(serializers.ModelSerializer):
             "recommendation",
         ]
 
+    @extend_schema_field(serializers.URLField(allow_null=True))
     def get_photo_url(self, obj):
         request = self.context.get("request")
         if obj.photo and request:
@@ -50,6 +52,7 @@ class ResultSerializer(serializers.ModelSerializer):
             "matched_pets",
         ]
 
+    @extend_schema_field(PetMatchSerializer(many=True))
     def get_matched_pets(self, obj):
         user_weights = obj.snapshot_data.get("weights", {})
         preferred_species = obj.snapshot_data.get("preferred_species", "ANY")

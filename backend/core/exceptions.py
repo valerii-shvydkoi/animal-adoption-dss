@@ -4,13 +4,13 @@ from rest_framework.exceptions import APIException, Throttled
 
 class CRTooHighError(APIException):
     status_code = 400
-    default_detail = "Індекс uzgodženosti (CR) занадто високий. Матриця суперечлива."
+    default_detail = "Індекс узгодженості (CR) занадто високий. Матриця суперечлива."
     default_code = "CR_TOO_HIGH"
 
 
 class PetNotAvailableError(APIException):
     status_code = 400
-    default_detail = "Ця тварина вже недоступна для адопції."
+    default_detail = "Ця тварина вже недоступна для адаптації."
     default_code = "PET_NOT_AVAILABLE"
 
 

@@ -36,7 +36,7 @@ export default function VolunteerAdoptions() {
         setIsLoading(false);
       })
       .catch((err) => {
-        console.error('Помилка завантаження заявок на адопцію:', err);
+        console.error('Помилка завантаження заявок на адаптацію:', err);
         setRequests([]);
         setIsLoading(false);
       });
@@ -49,8 +49,8 @@ export default function VolunteerAdoptions() {
     const confirmMessage = {
       REVIEW: 'Позначити заявку як переглянуту і залишити її в роботі?',
       APPROVE:
-        'Ви впевнені, що хочете СХВАЛИТИ цю заявку на адопцію? Тварину буде автоматично знято з публікації.',
-      REJECT: 'Ви впевнені, що хочете ВІДХИЛИТИ цю заявку на адопцію?',
+        'Ви впевнені, що хочете СХВАЛИТИ цю заявку на адаптацію? Тварину буде автоматично знято з публікації.',
+      REJECT: 'Ви впевнені, що хочете ВІДХИЛИТИ цю заявку на адаптацію?',
     }[action];
     if (!window.confirm(confirmMessage)) return;
     setIsSaving(id);
@@ -77,7 +77,7 @@ export default function VolunteerAdoptions() {
         setIsSaving(null);
       })
       .catch((err) => {
-        console.error('Помилка зміни статусу адопції:', err);
+        console.error('Помилка зміни статусу адаптації:', err);
         alert(err.response?.data?.detail || 'Не вдалося оновити статус заявки.');
         setIsSaving(null);
       });
@@ -129,7 +129,7 @@ export default function VolunteerAdoptions() {
               color: brandPrimary,
             }}
           />
-          Заявки на адопцію
+          Заявки на адаптацію
         </h1>
 
         <div className="filter-tabs">
@@ -169,7 +169,7 @@ export default function VolunteerAdoptions() {
       {isLoading ? (
         <div className="loader-container">
           <div className="spinner"></div>
-          <p>Синхронізація із базою даних адопції...</p>
+          <p>Синхронізація із базою даних адаптації...</p>
         </div>
       ) : filteredRequests.length === 0 ? (
         <div className="empty-state-box">
@@ -351,7 +351,7 @@ export default function VolunteerAdoptions() {
                           <Clock size={16} className="animate-spin" /> Обробка...
                         </span>
                       ) : (
-                        'Схвалити адопцію'
+                        'Схвалити адаптацію'
                       )}
                     </button>
                   </div>

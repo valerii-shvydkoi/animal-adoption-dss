@@ -239,7 +239,7 @@ export default function VolunteerDashboard() {
                   }}
                 >
                   Ви є офіційним волонтером притулку! Скористайтеся швидким меню нижче або верхньою
-                  панеллю навігації для керування процесами адопції.
+                  панеллю навігації для керування процесами адаптації.
                 </p>
 
                 <div className="menu-grid">
@@ -268,7 +268,7 @@ export default function VolunteerDashboard() {
                         <UsersThree size={22} weight="bold" />
                       </div>
                       <div>
-                        <span className="menu-card-title">Заявки на адопцію</span>
+                        <span className="menu-card-title">Заявки на адаптацію</span>
                         <span className="menu-card-desc">Обробка анкет від кандидатів</span>
                       </div>
                     </div>
@@ -316,7 +316,7 @@ export default function VolunteerDashboard() {
                     lineHeight: '1.5',
                   }}
                 >
-                  Робота з анкетами адопції тварин та перегляд списку підопічних стане доступною
+                  Робота з анкетами адаптації тварин та перегляд списку підопічних стане доступною
                   одразу після того, як керівник обраного притулку перевірить та затвердить вашу
                   кандидатуру.
                 </p>

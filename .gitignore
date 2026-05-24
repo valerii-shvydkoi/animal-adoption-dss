@@ -10,6 +10,7 @@ backend/.coverage
 htmlcov/
 app.log
 backend/app.log
+logs/*.log
 
 # Залежності та зібрані файли клієнтської частини
 frontend/node_modules/

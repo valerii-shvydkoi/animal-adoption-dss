@@ -11,7 +11,7 @@ export const getErrorMessage = (error) => {
       case 'REQUEST_ALREADY_EXISTS':
         return 'Ви вже подавали таку заявку раніше.';
       case 'PET_NOT_AVAILABLE':
-        return 'На жаль, ця тварина вже недоступна для адопції.';
+        return 'На жаль, ця тварина вже недоступна для адаптації.';
       default:
         break;
     }

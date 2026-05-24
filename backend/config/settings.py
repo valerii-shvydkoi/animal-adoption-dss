@@ -129,9 +129,14 @@ SIMPLE_JWT = {
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "Adoptify API",
-    "DESCRIPTION": "API для системи підтримки прийняття рішень щодо адопції тварин",
+    "DESCRIPTION": "API для системи підтримки прийняття рішень щодо адаптації тварин",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
+    "ENUM_NAME_OVERRIDES": {
+        "AdoptionStatusEnum": "core.models.enums.AdoptionStatus.choices",
+        "RequestStatusEnum": "core.models.enums.RequestStatus.choices",
+        "PetCompatibilityEnum": "core.models.pet.Pet.COMPATIBILITY_CHOICES",
+    },
 }
 API_DOCS_ENABLED = env.bool("API_DOCS_ENABLED", default=DEBUG)
 
@@ -163,4 +168,4 @@ if IS_TESTING:
     }
     EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
-from core.logging_config import LOGGING
+from core.logging_config import LOGGING  # noqa: E402,F401

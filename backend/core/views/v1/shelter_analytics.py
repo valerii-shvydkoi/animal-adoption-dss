@@ -5,7 +5,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 from django.apps import apps
 from django.db.models import Count
-from drf_spectacular.utils import extend_schema, OpenApiExample
+from drf_spectacular.utils import extend_schema
 
 from core.serializers.shelter_analytics_serializers import ShelterAnalyticsSerializer
 
@@ -104,7 +104,7 @@ class ShelterAnalyticsView(APIView):
             if total_requests > 0:
                 success_ratio = (approved_requests / total_requests) * 100
                 if success_ratio >= 70:
-                    top_trend = "Високий попит на адопцію"
+                    top_trend = "Високий попит на адаптацію"
                 elif pending_requests > approved_requests:
                     top_trend = "Зростання черги заявок"
                 else:

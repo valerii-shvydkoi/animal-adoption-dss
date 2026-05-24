@@ -35,6 +35,6 @@ class PetGender(models.TextChoices):
 
 
 class PetUrgencyStatus(models.TextChoices):
-    REGULAR = "REGULAR", "Планова адопція"
+    REGULAR = "REGULAR", "Планова адаптація"
     EVACUATION = "EVACUATION", "Евакуація (із зони бойових дій)"
     MEDICAL = "MEDICAL", "Лікування (потребує медичного догляду)"

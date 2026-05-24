@@ -1,5 +1,6 @@
 import json
 from rest_framework import serializers
+from drf_spectacular.utils import OpenApiTypes, extend_schema_field
 from core.models import Pet, QuestionnaireResult
 from core.services.dss_matching_service import DSSMatchingService
 from core.models.enums import PetUrgencyStatus
@@ -168,6 +169,7 @@ class PetSerializer(serializers.ModelSerializer):
             validated_data["shelter"] = instance.shelter
         return super().update(instance, validated_data)
 
+    @extend_schema_field(OpenApiTypes.URI)
     def get_photo(self, obj):
         if obj.photo:
             request = self.context.get("request")
@@ -181,6 +183,7 @@ class PetSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Вага повинна бути більше нуля.")
         return value
 
+    @extend_schema_field(serializers.IntegerField(allow_null=True))
     def get_compatibility_score(self, obj):
         request = self.context.get("request")
         view = self.context.get("view")
@@ -226,6 +229,7 @@ class PetSerializer(serializers.ModelSerializer):
         except Exception:
             return None
 
+    @extend_schema_field(OpenApiTypes.OBJECT)
     def get_dss_analytics(self, obj):
         request = self.context.get("request")
         if not request or not request.user.is_authenticated:
@@ -261,6 +265,7 @@ class PetSerializer(serializers.ModelSerializer):
             pass
         return None
 
+    @extend_schema_field(serializers.CharField())
     def get_volunteer_name(self, obj):
         try:
             if obj.created_by:

@@ -843,7 +843,7 @@ const Navbar = () => {
                             color={volunteerColor}
                             weight={isLinkActive('/volunteer/adoptions') ? 'fill' : 'duotone'}
                           />
-                          Заявки на адопцію
+                          Заявки на адаптацію
                         </Link>
                         <div
                           style={{

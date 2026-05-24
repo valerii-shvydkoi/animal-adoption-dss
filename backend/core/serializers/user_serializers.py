@@ -1,6 +1,7 @@
 import re
 from datetime import timedelta
 from rest_framework import serializers
+from drf_spectacular.utils import extend_schema_field
 from django.contrib.auth import get_user_model
 from django.utils import timezone
 from django.core.mail import send_mail
@@ -165,9 +166,11 @@ class UserSerializer(serializers.ModelSerializer):
             "latest_questionnaire_result_id",
         )
 
+    @extend_schema_field(serializers.ListField(child=serializers.IntegerField()))
     def get_favorite_ids(self, obj):
         return list(obj.favorites.values_list("id", flat=True))
 
+    @extend_schema_field(serializers.BooleanField())
     def get_has_pending_volunteer(self, obj):
         return VolunteerRequest.objects.filter(
             user=obj,
@@ -175,6 +178,7 @@ class UserSerializer(serializers.ModelSerializer):
             is_new_shelter=False,
         ).exists()
 
+    @extend_schema_field(serializers.BooleanField())
     def get_has_pending_shelter(self, obj):
         return VolunteerRequest.objects.filter(
             user=obj,
@@ -182,6 +186,7 @@ class UserSerializer(serializers.ModelSerializer):
             is_new_shelter=True,
         ).exists()
 
+    @extend_schema_field(serializers.IntegerField(allow_null=True))
     def get_latest_questionnaire_result_id(self, obj):
         latest_result = (
             QuestionnaireResult.objects.filter(questionnaire__user=obj)
@@ -197,6 +202,7 @@ class UserSerializer(serializers.ModelSerializer):
             return latest_result.id
         return None
 
+    @extend_schema_field(serializers.BooleanField())
     def get_has_questionnaire_result(self, obj):
         return self.get_latest_questionnaire_result_id(obj) is not None
 

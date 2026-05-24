@@ -1,6 +1,5 @@
 import logging
 from django.db import models
-from django.core.exceptions import ValidationError
 from .base import TimeStampedModel
 from .user import User
 from .shelter import Shelter

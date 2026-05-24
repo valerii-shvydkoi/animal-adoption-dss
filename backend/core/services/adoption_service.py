@@ -31,19 +31,35 @@ class AdoptionService:
                     {"detail": "Ви вже подали активну заявку на цю тварину."}
                 )
 
-            if not result_id:
-                latest_result = (
+            questionnaire_result = None
+
+            if result_id:
+                questionnaire_result = (
+                    QuestionnaireResult.objects.filter(questionnaire__user=user)
+                    .filter(id=result_id)
+                    .first()
+                )
+
+                if questionnaire_result is None:
+                    raise ValidationError(
+                        {
+                            "detail": (
+                                "Результат анкети не знайдено "
+                                "або він не належить користувачу."
+                            )
+                        }
+                    )
+            else:
+                questionnaire_result = (
                     QuestionnaireResult.objects.filter(questionnaire__user=user)
                     .order_by("-created_at")
                     .first()
                 )
-                if latest_result:
-                    result_id = latest_result.id
 
             request = AdoptionRequest.objects.create(
                 user=user,
                 pet=pet,
-                questionnaire_result_id=result_id,
+                questionnaire_result=questionnaire_result,
                 message=message,
                 status=AdoptionStatus.PENDING,
             )

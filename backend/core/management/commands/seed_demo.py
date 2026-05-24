@@ -43,11 +43,6 @@ DEMO_ACCOUNTS = [
         "name": "Марія Користувачка",
     },
     {
-        "email": "new.user@adoptify.demo",
-        "role": UserRole.USER,
-        "name": "Олексій Без анкети",
-    },
-    {
         "email": "volunteer@adoptify.demo",
         "role": UserRole.VOLUNTEER,
         "name": "Данило Волонтер",
@@ -69,6 +64,13 @@ DEMO_ACCOUNTS = [
         "role": UserRole.USER,
         "name": "Андрій Засновник",
     },
+]
+
+PRIMARY_DEMO_EMAILS = [
+    "user@adoptify.demo",
+    "manager@adoptify.demo",
+    "volunteer@adoptify.demo",
+    "admin@adoptify.demo",
 ]
 
 
@@ -569,8 +571,8 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS("Демо-базу Adoptify підготовлено."))
         self.stdout.write("Акаунти для демонстрації:")
-        for account in DEMO_ACCOUNTS[:5]:
-            self.stdout.write(f"- {account['email']} / {DEMO_PASSWORD}")
+        for email in PRIMARY_DEMO_EMAILS:
+            self.stdout.write(f"- {email} / {DEMO_PASSWORD}")
 
     def create_user(self, account):
         user, _ = User.objects.update_or_create(
@@ -597,7 +599,7 @@ class Command(BaseCommand):
                 "has_cats": False,
                 "has_dogs": False,
                 "available_walk_hours": 2,
-                "has_pet_experience": account["email"] != "new.user@adoptify.demo",
+                "has_pet_experience": True,
                 "floor": 4,
                 "preferred_species": "ANY",
                 "preferred_age": "ANY",
@@ -803,7 +805,6 @@ class Command(BaseCommand):
 
     def create_requests(self, accounts, shelters, pets):
         user = accounts["user@adoptify.demo"]
-        new_user = accounts["new.user@adoptify.demo"]
         if pets:
             user.favorites.set(pets[:4])
             AdoptionRequest.objects.update_or_create(
@@ -811,7 +812,7 @@ class Command(BaseCommand):
                 pet=pets[0],
                 defaults={
                     "status": AdoptionStatus.PENDING,
-                    "message": "Хочу познайомитися та обговорити умови адопції.",
+                    "message": "Хочу познайомитися та обговорити умови адаптації.",
                 },
             )
             AdoptionRequest.objects.update_or_create(
@@ -822,15 +823,6 @@ class Command(BaseCommand):
                     "message": "Готова пройти додаткове інтерв'ю з волонтером.",
                 },
             )
-            AdoptionRequest.objects.update_or_create(
-                user=new_user,
-                pet=pets[4],
-                defaults={
-                    "status": AdoptionStatus.PENDING,
-                    "message": "Поки не проходив анкету, але хочу отримати консультацію.",
-                },
-            )
-
         VolunteerRequest.objects.update_or_create(
             user=accounts["volunteer@adoptify.demo"],
             shelter=shelters[0],

@@ -6,7 +6,6 @@ from rest_framework.exceptions import PermissionDenied
 from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
 from core.models import Pet, QuestionnaireResult
 from core.serializers.pet_serializers import PetSerializer
-from core.permissions import IsVolunteer
 from core.services.dss_matching_service import DSSMatchingService
 from django.apps import apps
 
@@ -166,9 +165,6 @@ class PetViewSet(viewsets.ModelViewSet):
 
         if is_managed and self.request.user.is_authenticated:
             user = self.request.user
-            user_role = (
-                getattr(user, "role", "").upper() if hasattr(user, "role") else ""
-            )
             shelter = self._get_user_shelter(user)
 
             if shelter:
