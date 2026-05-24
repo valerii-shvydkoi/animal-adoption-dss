@@ -50,14 +50,18 @@ const CreateRequest = () => {
                 );
               }
             }
+            if (profileResponse.data?.latest_questionnaire_result_id) {
+              setLatestResultId(profileResponse.data.latest_questionnaire_result_id);
+            }
           }
         } catch (profErr) {
           console.error('Не вдалося завантажити дані профілю', profErr);
         }
         try {
           const resultsResponse = await api.get('/results/');
-          if (isMounted && resultsResponse.data && resultsResponse.data.length > 0) {
-            const latestResult = resultsResponse.data[0];
+          const resultsData = resultsResponse.data?.results || resultsResponse.data;
+          if (isMounted && Array.isArray(resultsData) && resultsData.length > 0) {
+            const latestResult = resultsData[0];
             setLatestResultId(latestResult.id);
           }
         } catch {
@@ -648,8 +652,7 @@ const CreateRequest = () => {
                         }}
                       />
                       <span>
-                        Рекомендуємо пройти анкету підбору в профілі, щоб волонтер швидше схвалив
-                        заявку.
+                        Рекомендуємо пройти анкету підбору, щоб волонтер швидше схвалив заявку.
                       </span>
                     </>
                   )}
@@ -680,7 +683,7 @@ const CreateRequest = () => {
                   !submitting && (e.currentTarget.style.transform = 'translateY(0)')
                 }
               >
-                {submitting ? 'Відправка заявки...' : 'Відпустити заявку волонтеру'}
+                {submitting ? 'Відправка заявки...' : 'Відправити заявку волонтеру'}
               </button>
             </form>
           </>

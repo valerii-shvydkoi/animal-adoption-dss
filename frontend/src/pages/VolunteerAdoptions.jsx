@@ -190,7 +190,11 @@ export default function VolunteerAdoptions() {
             }
             if (!applicantName) {
               applicantName =
-                userObj.name || req.applicant_name || userObj.username || 'Користувач';
+                userObj.name ||
+                req.applicant_name ||
+                userObj.username ||
+                userObj.email ||
+                'Користувач';
             }
             const applicantPhone =
               profileObj.phone_number || userObj.phone || req.applicant_phone || 'Не вказано';

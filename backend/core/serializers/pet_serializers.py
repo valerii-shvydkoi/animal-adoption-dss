@@ -183,6 +183,12 @@ class PetSerializer(serializers.ModelSerializer):
                     "shelter": "Бекенд не зміг визначити ваш притулок автоматично. Перевірте профіль користувача."
                 }
             )
+
+        shelter = validated_data.get("shelter")
+        if shelter:
+            validated_data.setdefault("oblast", getattr(shelter, "region", "") or "")
+            validated_data.setdefault("city", getattr(shelter, "city", "") or "")
+
         return super().create(validated_data)
 
     def update(self, instance, validated_data):

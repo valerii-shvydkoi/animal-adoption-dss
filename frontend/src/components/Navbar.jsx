@@ -96,7 +96,7 @@ const Navbar = () => {
       nameFromProfile && nameFromProfile.trim() !== ''
         ? nameFromProfile
         : user.email && typeof user.email === 'string'
-          ? user.email.split('@')[0]
+          ? user.email
           : '';
     if (!finalName) return 'Профіль';
     return finalName.length > 22 ? finalName.substring(0, 20) + '...' : finalName;
@@ -412,10 +412,10 @@ const Navbar = () => {
                   <div
                     className="adoptify-nav-dropdown"
                     style={{
-                      position: 'absolute',
-                      top: 'calc(100% + 12px)',
-                      right: 0,
-                      width: isMobile ? '230px' : '260px',
+                      position: isMobile ? 'fixed' : 'absolute',
+                      top: isMobile ? '72px' : 'calc(100% + 12px)',
+                      right: isMobile ? '12px' : 0,
+                      width: isMobile ? 'calc(100vw - 24px)' : '260px',
                       background: '#1E293B',
                       borderRadius: '16px',
                       border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -600,38 +600,42 @@ const Navbar = () => {
                       />
                       Мій профіль
                     </Link>
-                    <Link
-                      to="/my-results"
-                      className={dropdownItemClassName}
-                      style={{
-                        ...dropdownItemStyle,
-                        color: isLinkActive('/my-results') ? tokens.brandPrimary : '#F8FAFC',
-                      }}
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <ChartBar
-                        size={18}
-                        color={isLinkActive('/my-results') ? tokens.brandPrimary : '#94A3B8'}
-                        weight={isLinkActive('/my-results') ? 'fill' : 'duotone'}
-                      />
-                      Мої результати
-                    </Link>
-                    <Link
-                      to="/my-requests"
-                      className={dropdownItemClassName}
-                      style={{
-                        ...dropdownItemStyle,
-                        color: isLinkActive('/my-requests') ? tokens.brandPrimary : '#F8FAFC',
-                      }}
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <Tray
-                        size={18}
-                        color={isLinkActive('/my-requests') ? tokens.brandPrimary : '#94A3B8'}
-                        weight={isLinkActive('/my-requests') ? 'fill' : 'duotone'}
-                      />
-                      Мої заявки
-                    </Link>
+                    {!isVolunteer && !isShelterManager && !isAdmin && (
+                      <>
+                        <Link
+                          to="/my-results"
+                          className={dropdownItemClassName}
+                          style={{
+                            ...dropdownItemStyle,
+                            color: isLinkActive('/my-results') ? tokens.brandPrimary : '#F8FAFC',
+                          }}
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <ChartBar
+                            size={18}
+                            color={isLinkActive('/my-results') ? tokens.brandPrimary : '#94A3B8'}
+                            weight={isLinkActive('/my-results') ? 'fill' : 'duotone'}
+                          />
+                          Мої результати
+                        </Link>
+                        <Link
+                          to="/my-requests"
+                          className={dropdownItemClassName}
+                          style={{
+                            ...dropdownItemStyle,
+                            color: isLinkActive('/my-requests') ? tokens.brandPrimary : '#F8FAFC',
+                          }}
+                          onClick={() => setIsMenuOpen(false)}
+                        >
+                          <Tray
+                            size={18}
+                            color={isLinkActive('/my-requests') ? tokens.brandPrimary : '#94A3B8'}
+                            weight={isLinkActive('/my-requests') ? 'fill' : 'duotone'}
+                          />
+                          Мої заявки
+                        </Link>
+                      </>
+                    )}
 
                     <div
                       style={{
@@ -936,10 +940,10 @@ const Navbar = () => {
                   <div
                     className="adoptify-nav-dropdown"
                     style={{
-                      position: 'absolute',
-                      top: 'calc(100% + 12px)',
-                      right: 0,
-                      width: '230px',
+                      position: 'fixed',
+                      top: '72px',
+                      right: '12px',
+                      width: 'calc(100vw - 24px)',
                       background: '#1E293B',
                       borderRadius: '16px',
                       border: '1px solid rgba(255, 255, 255, 0.1)',
@@ -1333,6 +1337,11 @@ const Navbar = () => {
         }
 
         @media (max-width: 480px) {
+          .adoptify-nav-dropdown .adoptify-dropdown-item {
+            white-space: normal !important;
+            line-height: 1.35 !important;
+            min-height: 40px !important;
+          }
           .auth-modal-card {
             padding: 24px 20px !important;
             border-radius: 20px !important;

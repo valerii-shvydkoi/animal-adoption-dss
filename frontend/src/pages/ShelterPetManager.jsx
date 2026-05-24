@@ -23,6 +23,8 @@ export default function ShelterPetManager() {
   const [petSpecies, setPetSpecies] = useState('DOG');
   const [petGender, setPetGender] = useState('MALE');
   const [petBreed, setPetBreed] = useState('');
+  const [petOblast, setPetOblast] = useState('');
+  const [petCity, setPetCity] = useState('');
   const [petAgeMonths, setPetAgeMonths] = useState('');
   const [petWeight, setPetWeight] = useState('');
   const [petUrgency, setPetUrgency] = useState('REGULAR');
@@ -113,6 +115,8 @@ export default function ShelterPetManager() {
     setPetSpecies('DOG');
     setPetGender('MALE');
     setPetBreed('');
+    setPetOblast('');
+    setPetCity('');
     setPetAgeMonths('');
     setPetWeight('');
     setPetUrgency('REGULAR');
@@ -139,6 +143,8 @@ export default function ShelterPetManager() {
     setPetSpecies(pet.species || 'DOG');
     setPetGender(pet.gender || 'MALE');
     setPetBreed(pet.breed || '');
+    setPetOblast(pet.oblast || '');
+    setPetCity(pet.city || '');
     setPetAgeMonths(pet.age_months !== undefined ? pet.age_months : '');
     setPetWeight(pet.weight !== undefined ? pet.weight : '');
     setPetUrgency(pet.urgency_status || 'REGULAR');
@@ -204,6 +210,8 @@ export default function ShelterPetManager() {
       species: petSpecies,
       gender: petGender,
       breed: petBreed.trim(),
+      oblast: petOblast.trim(),
+      city: petCity.trim(),
       age_months: parsedAge,
       weight: parsedWeight,
       urgency_status: petUrgency,
@@ -653,7 +661,7 @@ export default function ShelterPetManager() {
                     }}
                   >
                     <span className="status-badge badge-gray">
-                      {pet.species === 'DOG' ? 'Собака' : pet.species === 'CAT' ? 'Кішка' : 'Інше'}
+                      {pet.species === 'DOG' ? 'Собака' : 'Кішка'}
                       {pet.breed && ` • ${pet.breed}`}
                     </span>
 
@@ -876,6 +884,60 @@ export default function ShelterPetManager() {
                   gap: '20px',
                 }}
               >
+                <div>
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      color: textMuted,
+                      textTransform: 'uppercase',
+                      marginBottom: '8px',
+                    }}
+                  >
+                    Область перебування
+                  </label>
+                  <input
+                    type="text"
+                    disabled={isSaving}
+                    className="form-input-custom"
+                    value={petOblast}
+                    onChange={(e) => setPetOblast(e.target.value)}
+                    placeholder="Наприклад, Київська"
+                  />
+                </div>
+                <div>
+                  <label
+                    style={{
+                      display: 'block',
+                      fontSize: '12px',
+                      fontWeight: '700',
+                      color: textMuted,
+                      textTransform: 'uppercase',
+                      marginBottom: '8px',
+                    }}
+                  >
+                    Місто перебування
+                  </label>
+                  <input
+                    type="text"
+                    disabled={isSaving}
+                    className="form-input-custom"
+                    value={petCity}
+                    onChange={(e) => setPetCity(e.target.value)}
+                    placeholder="Наприклад, Київ"
+                  />
+                </div>
+              </div>
+
+              <div
+                className="form-grid-2"
+                style={{
+                  display: 'grid',
+                  gridTemplateColumns: '1fr 1fr',
+                  gap: '20px',
+                }}
+              >
                 <CustomSelect
                   label="Вид"
                   value={petSpecies}
@@ -889,10 +951,6 @@ export default function ShelterPetManager() {
                     {
                       value: 'CAT',
                       label: 'Кішка',
-                    },
-                    {
-                      value: 'OTHER',
-                      label: 'Інше',
                     },
                   ]}
                 />

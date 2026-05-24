@@ -157,6 +157,13 @@ const StaticStyles = () => (
       content: ''; position: absolute; bottom: 90%; left: 50%; transform: translateX(-50%);
       border-width: 6px; border-style: solid; border-color: #0F172A transparent transparent transparent;
     }
+    .consistency-badge {
+      position: fixed !important;
+      top: 84px !important;
+      right: 20px !important;
+      z-index: 1200 !important;
+      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+    }
     .pointer-anim { display: inline-flex; align-items: center; justify-content: center; animation: bounceSideways 1s infinite; margin-right: 8px; }
     @keyframes bounceSideways { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-5px); } }
     .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); border: 0; }
@@ -165,6 +172,12 @@ const StaticStyles = () => (
       .main-card { padding: 24px 16px !important; border-radius: 20px !important; }
       .step-header-text { font-size: 24px !important; line-height: 1.2 !important; }
       .step-desc-text { font-size: 14px !important; padding: 0 4px !important; }
+      .consistency-badge {
+        top: auto !important;
+        right: 12px !important;
+        bottom: 16px !important;
+        max-width: calc(100vw - 24px) !important;
+      }
 
       .checkbox-label {
         flex: 1 1 100% !important;
@@ -1232,7 +1245,7 @@ const Questionnaire = () => {
 
                       {isBothAnswered && (
                         <div
-                          className="slide-fade-in"
+                          className="slide-fade-in consistency-badge"
                           style={{
                             background: liveCR <= 0.1 ? '#F0FDF4' : '#FEF2F2',
                             color: liveCR <= 0.1 ? '#16A34A' : '#DC2626',

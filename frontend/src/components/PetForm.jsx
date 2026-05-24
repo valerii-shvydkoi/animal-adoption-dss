@@ -25,6 +25,7 @@ const DEFAULT_FORM_VALUES = {
   urgency_status: 'REGULAR',
   video_url: '',
   allow_virtual_adoption: false,
+  oblast: '',
   good_with_children: 'UNKNOWN',
   good_with_cats: 'UNKNOWN',
   good_with_dogs: 'UNKNOWN',
@@ -408,6 +409,29 @@ const PetForm = ({ pet, onSuccess }) => {
             gap: '16px',
           }}
         >
+          <div>
+            <label
+              className="adoptify-input-label"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '4px',
+              }}
+            >
+              <MapPin size={16} weight="bold" /> Область перебування
+            </label>
+            <input
+              placeholder="Наприклад: Київська"
+              value={formData.oblast}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  oblast: e.target.value,
+                })
+              }
+              className="adoptify-pet-input"
+            />
+          </div>
           <div>
             <label
               className="adoptify-input-label"
