@@ -205,7 +205,9 @@ const PetDetails = () => {
       setLoading(true);
       setError(null);
       try {
-        const petResponse = await api.get(`/pets/${id}/`);
+        const petResponse = await api.get(`/pets/${id}/`, {
+          skipAuth: !user?.isAuthenticated,
+        });
         if (isMounted) setPet(petResponse.data);
       } catch (err) {
         if (isMounted)

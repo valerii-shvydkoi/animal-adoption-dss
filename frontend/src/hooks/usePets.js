@@ -27,16 +27,20 @@ const readFreshCache = (cache, key, ttl) => {
 
 const getReadableApiError = (err, fallback) => {
   const status = err.response?.status;
+  if (!err.response) {
+    return 'Backend недоступний. Запустіть сервер на порту 8000 або перевірте Docker Compose і повторіть дію.';
+  }
   if (status === 429) {
     return 'Забагато запитів за короткий час. Зачекайте кілька секунд і оновіть каталог.';
   }
-  if (status === 502 || status === 503 || status === 504) {
+  if (status === 500 || status === 502 || status === 503 || status === 504) {
     return 'Сервер тимчасово недоступний. Перевірте, що backend запущений, і повторіть дію.';
   }
   return err.response?.data?.detail || fallback;
 };
 
-export const usePets = (page = 1, filters = {}, pageSize = 12) => {
+export const usePets = (page = 1, filters = {}, pageSize = 12, options = {}) => {
+  const { skipAuth = false } = options;
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -67,7 +71,10 @@ export const usePets = (page = 1, filters = {}, pageSize = 12) => {
         urgency_status: filters.urgency_status || undefined,
         is_sterilized: filters.is_sterilized || undefined,
       };
-      const cacheKey = getCacheKey(params);
+      const cacheKey = getCacheKey({
+        ...params,
+        __auth: skipAuth ? 'guest' : 'auth',
+      });
       const cached = readFreshCache(petsCache, cacheKey, PETS_CACHE_TTL);
 
       if (cached) {
@@ -82,7 +89,7 @@ export const usePets = (page = 1, filters = {}, pageSize = 12) => {
 
       try {
         if (!petsRequests.has(cacheKey)) {
-          petsRequests.set(cacheKey, api.get('/pets/', { params }));
+          petsRequests.set(cacheKey, api.get('/pets/', { params, skipAuth }));
         }
         const response = await petsRequests.get(cacheKey);
         const results = response.data?.results || response.data;
@@ -139,6 +146,7 @@ export const usePets = (page = 1, filters = {}, pageSize = 12) => {
     filters.good_with_dogs,
     filters.urgency_status,
     filters.is_sterilized,
+    skipAuth,
   ]);
 
   return {
@@ -168,7 +176,7 @@ export const useAvailableLocations = () => {
 
       try {
         if (!locationsRequest) {
-          locationsRequest = api.get('/pets/locations/');
+          locationsRequest = api.get('/pets/locations/', { skipAuth: true });
         }
         const response = await locationsRequest;
         const nextLocations =

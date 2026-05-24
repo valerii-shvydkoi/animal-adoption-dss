@@ -28,13 +28,26 @@ const clearAuthSession = () => {
   localStorage.removeItem('accessToken');
   localStorage.removeItem('refreshToken');
   localStorage.removeItem('userRole');
+  delete api.defaults.headers.common.Authorization;
+  delete api.defaults.headers.common.authorization;
   window.dispatchEvent(new Event('authExpired'));
 };
 api.interceptors.request.use(
   (config) => {
+    config.headers = config.headers || {};
+
+    if (config.skipAuth) {
+      delete config.headers.Authorization;
+      delete config.headers.authorization;
+      return config;
+    }
+
     const token = localStorage.getItem('accessToken');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
+    } else {
+      delete config.headers.Authorization;
+      delete config.headers.authorization;
     }
     return config;
   },
@@ -43,12 +56,15 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   async (error) => {
-    const originalRequest = error.config;
+    const originalRequest = error.config || {};
     if (
       originalRequest.url &&
       originalRequest.url.includes('/auth/token/') &&
       !originalRequest.url.includes('/refresh/')
     ) {
+      return Promise.reject(error);
+    }
+    if (originalRequest.skipAuth) {
       return Promise.reject(error);
     }
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -68,6 +84,7 @@ api.interceptors.response.use(
         });
         localStorage.setItem('accessToken', res.data.access);
         api.defaults.headers.common['Authorization'] = `Bearer ${res.data.access}`;
+        originalRequest.headers = originalRequest.headers || {};
         originalRequest.headers['Authorization'] = `Bearer ${res.data.access}`;
         return api(originalRequest);
       } catch (refreshError) {

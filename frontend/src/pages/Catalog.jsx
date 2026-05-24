@@ -284,7 +284,9 @@ const Catalog = () => {
   const [searchTerm, setSearchTerm] = useState(filters.search);
   const isPwaCardActive = isInstallable && !isDismissed && !isHidingProcess;
   const computedPageSize = isPwaCardActive ? pageSize - 1 : pageSize;
-  const { pets, loading, error, hasNext, hasPrev } = usePets(page, filters, computedPageSize);
+  const { pets, loading, error, hasNext, hasPrev } = usePets(page, filters, computedPageSize, {
+    skipAuth: !user?.isAuthenticated,
+  });
   const { locations } = useAvailableLocations();
   const handleInstallAppClick = async () => {
     await promptInstall();

@@ -63,6 +63,19 @@ npm install
 npm run dev
 ```
 
+Для Vite-режиму backend має бути доступний на `http://127.0.0.1:8000`. Якщо працюєте без Docker для frontend, спочатку запустіть API:
+
+```bash
+docker compose up -d db backend
+```
+
+Після цього перевірте `http://localhost:8000/api/v1/health/` і відкривайте адресу, яку показав Vite. Якщо backend слухає інший порт або адресу, задайте проксі явно:
+
+```powershell
+$env:VITE_DEV_API_PROXY_TARGET = "http://127.0.0.1:8000"
+npm run dev
+```
+
 ## Перевірки якості
 
 ```bash
