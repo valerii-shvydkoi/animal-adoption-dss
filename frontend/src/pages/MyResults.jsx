@@ -93,7 +93,9 @@ const MyResults = () => {
   const [sendingRequest, setSendingRequest] = useState(false);
   const [requestSuccess, setRequestSuccess] = useState(false);
   const [submitError, setSubmitError] = useState(null);
+  const [matchesPage, setMatchesPage] = useState(1);
   const textareaRef = useRef(null);
+  const matchesPerPage = 3;
   useEffect(() => {
     api
       .get('/results/matches/')
@@ -197,6 +199,13 @@ const MyResults = () => {
       recommendation: match.recommendation || petData.recommendation || '',
     };
   });
+  const totalMatchPages = Math.max(1, Math.ceil(enrichedMatches.length / matchesPerPage));
+  const normalizedMatchesPage = Math.min(matchesPage, totalMatchPages);
+  const visibleMatches = enrichedMatches.slice(
+    (normalizedMatchesPage - 1) * matchesPerPage,
+    normalizedMatchesPage * matchesPerPage
+  );
+  const firstVisibleRank = (normalizedMatchesPage - 1) * matchesPerPage + 1;
   return (
     <div className="results-page-wrapper">
       <StaticStyles />
@@ -401,7 +410,84 @@ const MyResults = () => {
                 marginTop: '8px',
               }}
             >
-              <ResultsList results={enrichedMatches} onRequestClick={handleRequestClick} />
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '12px',
+                  marginBottom: '16px',
+                  flexWrap: 'wrap',
+                }}
+              >
+                <div
+                  style={{
+                    color: textSecondary,
+                    fontSize: '14px',
+                    fontWeight: '700',
+                  }}
+                >
+                  Топ-{matchesPerPage} на сторінці · усього {enrichedMatches.length} рекомендацій
+                </div>
+
+                {totalMatchPages > 1 && (
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '8px',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <button
+                      type="button"
+                      disabled={normalizedMatchesPage === 1}
+                      onClick={() => setMatchesPage((page) => Math.max(1, page - 1))}
+                      style={{
+                        padding: '10px 14px',
+                        borderRadius: '12px',
+                        border: `1px solid ${borderDefault}`,
+                        background: normalizedMatchesPage === 1 ? bgSurface : bgWhite,
+                        color: normalizedMatchesPage === 1 ? '#94A3B8' : textPrimary,
+                        fontWeight: '700',
+                        cursor: normalizedMatchesPage === 1 ? 'not-allowed' : 'pointer',
+                      }}
+                    >
+                      Назад
+                    </button>
+                    <span
+                      style={{
+                        color: textSecondary,
+                        fontSize: '14px',
+                        fontWeight: '800',
+                      }}
+                    >
+                      {normalizedMatchesPage} / {totalMatchPages}
+                    </span>
+                    <button
+                      type="button"
+                      disabled={normalizedMatchesPage === totalMatchPages}
+                      onClick={() => setMatchesPage((page) => Math.min(totalMatchPages, page + 1))}
+                      style={{
+                        padding: '10px 14px',
+                        borderRadius: '12px',
+                        border: `1px solid ${borderDefault}`,
+                        background: normalizedMatchesPage === totalMatchPages ? bgSurface : bgWhite,
+                        color: normalizedMatchesPage === totalMatchPages ? '#94A3B8' : textPrimary,
+                        fontWeight: '700',
+                        cursor:
+                          normalizedMatchesPage === totalMatchPages ? 'not-allowed' : 'pointer',
+                      }}
+                    >
+                      Далі
+                    </button>
+                  </div>
+                )}
+              </div>
+              <ResultsList
+                results={visibleMatches}
+                onRequestClick={handleRequestClick}
+                startRank={firstVisibleRank}
+              />
             </div>
           ) : (
             <div

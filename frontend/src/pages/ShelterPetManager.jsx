@@ -37,6 +37,7 @@ export default function ShelterPetManager() {
   const [petGoodWithChildren, setPetGoodWithChildren] = useState('UNKNOWN');
   const [petGoodWithCats, setPetGoodWithCats] = useState('UNKNOWN');
   const [petGoodWithDogs, setPetGoodWithDogs] = useState('UNKNOWN');
+  const [petBehaviorTags, setPetBehaviorTags] = useState('');
   const [petActivityLevel, setPetActivityLevel] = useState(3);
   const [petSociability, setPetSociability] = useState(3);
   const [petStressResistance, setPetStressResistance] = useState(3);
@@ -126,6 +127,7 @@ export default function ShelterPetManager() {
     setPetGoodWithChildren('UNKNOWN');
     setPetGoodWithCats('UNKNOWN');
     setPetGoodWithDogs('UNKNOWN');
+    setPetBehaviorTags('');
     setPetActivityLevel(3);
     setPetSociability(3);
     setPetStressResistance(3);
@@ -158,6 +160,9 @@ export default function ShelterPetManager() {
     setPetGoodWithChildren(pet.good_with_children || 'UNKNOWN');
     setPetGoodWithCats(pet.good_with_cats || 'UNKNOWN');
     setPetGoodWithDogs(pet.good_with_dogs || 'UNKNOWN');
+    setPetBehaviorTags(
+      Array.isArray(pet.behavior_tags) ? pet.behavior_tags.join(', ') : pet.behavior_tags || ''
+    );
     setPetActivityLevel(pet.activity_level || 3);
     setPetSociability(pet.sociability || 3);
     setPetStressResistance(pet.stress_resistance || 3);
@@ -211,6 +216,10 @@ export default function ShelterPetManager() {
       good_with_children: petGoodWithChildren,
       good_with_cats: petGoodWithCats,
       good_with_dogs: petGoodWithDogs,
+      behavior_tags: petBehaviorTags
+        .split(',')
+        .map((tag) => tag.trim())
+        .filter(Boolean),
       activity_level: Number(petActivityLevel),
       sociability: Number(petSociability),
       stress_resistance: Number(petStressResistance),
@@ -226,7 +235,14 @@ export default function ShelterPetManager() {
     if (petPhotoFile) {
       Object.entries(payload).forEach(([key, value]) => {
         if (value !== null && value !== undefined && value !== '') {
-          requestPayload.append(key, typeof value === 'boolean' ? String(value) : value);
+          requestPayload.append(
+            key,
+            Array.isArray(value)
+              ? JSON.stringify(value)
+              : typeof value === 'boolean'
+                ? String(value)
+                : value
+          );
         }
       });
       requestPayload.append('photo', petPhotoFile);
@@ -1207,6 +1223,29 @@ export default function ShelterPetManager() {
                   Дозволити віртуальну опіку
                 </span>
               </label>
+
+              <div>
+                <label
+                  style={{
+                    display: 'block',
+                    fontSize: '12px',
+                    fontWeight: '700',
+                    color: textMuted,
+                    textTransform: 'uppercase',
+                    marginBottom: '8px',
+                  }}
+                >
+                  Теги характеру
+                </label>
+                <input
+                  type="text"
+                  className="form-input-custom"
+                  disabled={isSaving}
+                  value={petBehaviorTags}
+                  onChange={(e) => setPetBehaviorTags(e.target.value)}
+                  placeholder="лагідна, активна, любить прогулянки"
+                />
+              </div>
 
               <div className="section-divider">
                 <span

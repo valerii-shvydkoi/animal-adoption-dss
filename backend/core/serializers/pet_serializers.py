@@ -38,7 +38,13 @@ class PetSerializer(serializers.ModelSerializer):
         )
 
     def to_internal_value(self, data):
-        data = data.copy() if hasattr(data, "copy") else dict(data)
+        if hasattr(data, "lists"):
+            data = {
+                key: values if len(values) > 1 else values[0]
+                for key, values in data.lists()
+            }
+        else:
+            data = data.copy() if hasattr(data, "copy") else dict(data)
 
         def get_scalar_value(val):
             if isinstance(val, list) and len(val) > 0:
@@ -120,13 +126,28 @@ class PetSerializer(serializers.ModelSerializer):
 
         if "behavior_tags" in data:
             raw_tags = get_scalar_value(data["behavior_tags"])
-            if isinstance(raw_tags, str) and raw_tags.strip():
+            if raw_tags is None or str(raw_tags).strip().lower() in [
+                "",
+                "null",
+                "none",
+            ]:
+                data["behavior_tags"] = []
+            elif isinstance(raw_tags, str):
                 try:
-                    data["behavior_tags"] = json.loads(raw_tags)
-                except Exception:
+                    parsed_tags = json.loads(raw_tags)
+                except (TypeError, ValueError, json.JSONDecodeError):
+                    parsed_tags = raw_tags.split(",")
+
+                if isinstance(parsed_tags, list):
                     data["behavior_tags"] = [
-                        t.strip() for t in raw_tags.split(",") if t.strip()
+                        str(tag).strip() for tag in parsed_tags if str(tag).strip()
                     ]
+                else:
+                    data["behavior_tags"] = []
+            elif isinstance(raw_tags, list):
+                data["behavior_tags"] = [
+                    str(tag).strip() for tag in raw_tags if str(tag).strip()
+                ]
 
         for field in ["activity_level", "sociability", "stress_resistance"]:
             if field in data:

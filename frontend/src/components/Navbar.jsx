@@ -80,6 +80,9 @@ const Navbar = () => {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
+  useEffect(() => {
+    setIsMenuOpen(false);
+  }, [location.pathname, role, user?.email]);
   const getActiveIndex = () => {
     if (location.pathname === '/' || location.pathname === '/catalog') return 0;
     if (location.pathname.startsWith('/questionnaire')) return 1;
@@ -420,9 +423,11 @@ const Navbar = () => {
                       border: '1px solid rgba(255, 255, 255, 0.1)',
                       boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
                       padding: '8px 0',
-                      overflow: 'hidden',
+                      maxHeight: 'calc(100dvh - 88px)',
+                      overflowY: 'auto',
+                      overflowX: 'hidden',
                       animation: 'fadeIn 0.15s ease-out',
-                      zIndex: 1010,
+                      zIndex: 10000,
                     }}
                   >
                     {isMobile && (
@@ -942,9 +947,11 @@ const Navbar = () => {
                       border: '1px solid rgba(255, 255, 255, 0.1)',
                       boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
                       padding: '8px 0',
-                      overflow: 'hidden',
+                      maxHeight: 'calc(100dvh - 88px)',
+                      overflowY: 'auto',
+                      overflowX: 'hidden',
                       animation: 'fadeIn 0.15s ease-out',
-                      zIndex: 1010,
+                      zIndex: 10000,
                     }}
                   >
                     <div

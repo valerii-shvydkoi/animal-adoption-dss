@@ -2,7 +2,7 @@ import React from 'react';
 import PetCard from '../UI/PetCard';
 import ExplainabilityCard from './ExplainabilityCard';
 import { Info } from '@phosphor-icons/react';
-const ResultsList = ({ results, onRequestClick }) => (
+const ResultsList = ({ results, onRequestClick, startRank = 1 }) => (
   <div
     className="results-container"
     style={{
@@ -55,10 +55,10 @@ const ResultsList = ({ results, onRequestClick }) => (
         fontFamily: 'inherit',
       }}
     >
-      Тварини, що найбільше вам підходять:
+      Рекомендації СППР для адаптації:
     </h3>
 
-    {results.map((res) => {
+    {results.map((res, index) => {
       const petData = res.pet || res;
       const rawPercent =
         res.match_percent !== undefined && res.match_percent !== null
@@ -127,7 +127,7 @@ const ResultsList = ({ results, onRequestClick }) => (
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  Сумісність: {displayPercent}%
+                  #{startRank + index} · Сумісність: {displayPercent}%
                 </div>
                 <div
                   style={{

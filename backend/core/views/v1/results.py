@@ -83,8 +83,14 @@ class ResultsViewSet(viewsets.ReadOnlyModelViewSet):
                         else getattr(pet, "gender", "")
                     ),
                     "age_months": getattr(pet, "age_months", 0),
+                    "weight": getattr(pet, "weight", None),
                     "breed": getattr(pet, "breed", ""),
                     "description": getattr(pet, "description", ""),
+                    "behavior_tags": getattr(pet, "behavior_tags", []),
+                    "is_sterilized": getattr(pet, "is_sterilized", "UNKNOWN"),
+                    "good_with_children": getattr(pet, "good_with_children", "UNKNOWN"),
+                    "good_with_cats": getattr(pet, "good_with_cats", "UNKNOWN"),
+                    "good_with_dogs": getattr(pet, "good_with_dogs", "UNKNOWN"),
                     "photo_url": (
                         request.build_absolute_uri(pet.photo.url)
                         if getattr(pet, "photo", None)
@@ -105,6 +111,6 @@ class ResultsViewSet(viewsets.ReadOnlyModelViewSet):
                 "created_at": latest_result.created_at,
                 "top_priority": explanation.get("top_priority"),
                 "top_priority_text": explanation.get("text"),
-                "matches": matched_pets[:5],
+                "matches": matched_pets[:9],
             }
         )
