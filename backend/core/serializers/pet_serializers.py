@@ -304,9 +304,7 @@ class PetSerializer(serializers.ModelSerializer):
                 )
 
                 profile = getattr(author, "profile", None)
-                display_name = (
-                    getattr(profile, "first_name", "") or author.email.split("@")[0]
-                )
+                display_name = getattr(profile, "first_name", "") or author.email
 
                 if user_role == "VOLUNTEER":
                     return f"Волонтер ({display_name})"
@@ -324,8 +322,7 @@ class PetSerializer(serializers.ModelSerializer):
                 if volunteer and volunteer.user:
                     profile = getattr(volunteer.user, "profile", None)
                     display_name = (
-                        getattr(profile, "first_name", "")
-                        or volunteer.user.email.split("@")[0]
+                        getattr(profile, "first_name", "") or volunteer.user.email
                     )
                     return f"Волонтер ({display_name})"
 
