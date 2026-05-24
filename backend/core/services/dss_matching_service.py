@@ -3,6 +3,44 @@ from core.models import Pet
 
 
 class DSSMatchingService:
+    DEFAULT_PET_WEIGHT_KG = 10.0
+    DEFAULT_PET_AGE_MONTHS = 12.0
+    TRAIT_SCALE_MAX = 5.0
+    BABY_MAX_MONTHS = 6
+    YOUNG_PET_MONTHS = 12
+    ADULT_MAX_MONTHS = 60
+    AGE_DECAY_MONTHS = 24
+    MIN_AGE_SCORE = 0.2
+    NON_PREFERRED_ADULT_SCORE = 0.5
+    NON_PREFERRED_SENIOR_SCORE = 0.3
+    MATURE_CHARACTER_SCORE = 0.7
+    STRESS_RISK_THRESHOLD = 0.6
+    SHELTER_STRESS_WEIGHT = 0.6
+    SHELTER_PORTABILITY_WEIGHT = 0.4
+    SHELTER_PORTABLE_WEIGHT_KG = 20.0
+    MIN_PORTABILITY_SCORE = 0.1
+    HIGH_FLOOR_WITHOUT_ELEVATOR = 3
+    FLOOR_CARRY_WEIGHT_KG = 12.0
+    FLOOR_HEAVY_WARNING_KG = 15.0
+    NO_CAR_EVAC_WEIGHT_KG = 10.0
+    NO_CAR_WARNING_WEIGHT_KG = 12.0
+    CAR_EVAC_WEIGHT_KG = 45.0
+    MIN_CAR_EVAC_SCORE = 0.5
+    GENERAL_WEIGHT_LIMIT_KG = 55.0
+    CHILD_CONFLICT_MULTIPLIER = 0.3
+    PET_CONFLICT_MULTIPLIER = 0.4
+    UNKNOWN_CHILD_MULTIPLIER = 0.85
+    UNKNOWN_PET_MULTIPLIER = 0.9
+    ACTIVE_PET_THRESHOLD = 0.6
+    MIN_WALK_HOURS_FOR_ACTIVE_PET = 2
+    EXPERIENCE_SENSITIVE_THRESHOLD = 0.4
+    MIN_THEORETICAL_SCORE = 0.25
+    MAX_THEORETICAL_SCORE = 0.85
+    MIN_MATCH_PERCENT = 15
+    MAX_MATCH_PERCENT = 99
+    HIGH_MATCH_THRESHOLD = 80
+    MEDIUM_MATCH_THRESHOLD = 60
+
     @staticmethod
     def _profile_bool(user_profile, field: str, default: bool = False) -> bool:
         value = getattr(user_profile, field, default)
@@ -41,24 +79,47 @@ class DSSMatchingService:
             if pet.species != preferred_species:
                 return None
 
-        p_weight_kg = float(getattr(pet, "weight", 10) or 10)
-        p_age_months = float(getattr(pet, "age_months", 12) or 12)
+        p_weight_kg = float(
+            getattr(pet, "weight", DSSMatchingService.DEFAULT_PET_WEIGHT_KG)
+            or DSSMatchingService.DEFAULT_PET_WEIGHT_KG
+        )
+        p_age_months = float(
+            getattr(pet, "age_months", DSSMatchingService.DEFAULT_PET_AGE_MONTHS)
+            or DSSMatchingService.DEFAULT_PET_AGE_MONTHS
+        )
 
         if preferred_age and preferred_age != "ANY":
-            if preferred_age == "BABY" and p_age_months > 6:
+            if (
+                preferred_age == "BABY"
+                and p_age_months > DSSMatchingService.BABY_MAX_MONTHS
+            ):
                 return None
-            elif preferred_age == "ADULT" and (p_age_months <= 6 or p_age_months > 60):
+            elif preferred_age == "ADULT" and (
+                p_age_months <= DSSMatchingService.BABY_MAX_MONTHS
+                or p_age_months > DSSMatchingService.ADULT_MAX_MONTHS
+            ):
                 return None
-            elif preferred_age == "SENIOR" and p_age_months <= 60:
+            elif (
+                preferred_age == "SENIOR"
+                and p_age_months <= DSSMatchingService.ADULT_MAX_MONTHS
+            ):
                 return None
 
         score = 0.0
         positives = []
         risks = []
 
-        p_stress = float(getattr(pet, "stress_resistance", 3)) / 5.0
-        p_social = float(getattr(pet, "sociability", 3)) / 5.0
-        p_activity = float(getattr(pet, "activity_level", 3)) / 5.0
+        p_stress = (
+            float(getattr(pet, "stress_resistance", 3))
+            / DSSMatchingService.TRAIT_SCALE_MAX
+        )
+        p_social = (
+            float(getattr(pet, "sociability", 3)) / DSSMatchingService.TRAIT_SCALE_MAX
+        )
+        p_activity = (
+            float(getattr(pet, "activity_level", 3))
+            / DSSMatchingService.TRAIT_SCALE_MAX
+        )
 
         has_elevator = DSSMatchingService._profile_bool(
             user_profile, "has_elevator", True
@@ -83,29 +144,57 @@ class DSSMatchingService:
         age_score = 1.0
         if preferred_age == "BABY":
             age_score = (
-                1.0 if p_age_months <= 6 else max(0.2, 1.0 - (p_age_months / 24))
+                1.0
+                if p_age_months <= DSSMatchingService.BABY_MAX_MONTHS
+                else max(
+                    DSSMatchingService.MIN_AGE_SCORE,
+                    1.0 - (p_age_months / DSSMatchingService.AGE_DECAY_MONTHS),
+                )
             )
         elif preferred_age == "ADULT":
-            age_score = 1.0 if 6 < p_age_months <= 60 else 0.5
+            age_score = (
+                1.0
+                if DSSMatchingService.BABY_MAX_MONTHS
+                < p_age_months
+                <= DSSMatchingService.ADULT_MAX_MONTHS
+                else DSSMatchingService.NON_PREFERRED_ADULT_SCORE
+            )
         elif preferred_age == "SENIOR":
-            age_score = 1.0 if p_age_months > 60 else 0.3
+            age_score = (
+                1.0
+                if p_age_months > DSSMatchingService.ADULT_MAX_MONTHS
+                else DSSMatchingService.NON_PREFERRED_SENIOR_SCORE
+            )
 
-        character_score = (p_social + (1.0 if p_age_months < 12 else 0.7)) / 2.0
+        character_score = (
+            p_social
+            + (
+                1.0
+                if p_age_months < DSSMatchingService.YOUNG_PET_MONTHS
+                else DSSMatchingService.MATURE_CHARACTER_SCORE
+            )
+        ) / 2.0
 
         if not has_shelter:
             shelter_score = p_stress
-            if p_stress < 0.6:
+            if p_stress < DSSMatchingService.STRESS_RISK_THRESHOLD:
                 risks.append(
                     "У вас немає укриття, а тваринка чутлива до гучних звуків (тривог/вибухів)."
                 )
         else:
-            shelter_score = (p_stress * 0.6) + (
-                max(1.0 - (p_weight_kg / 20.0), 0.1) * 0.4
+            shelter_score = (p_stress * DSSMatchingService.SHELTER_STRESS_WEIGHT) + (
+                max(
+                    1.0 - (p_weight_kg / DSSMatchingService.SHELTER_PORTABLE_WEIGHT_KG),
+                    DSSMatchingService.MIN_PORTABILITY_SCORE,
+                )
+                * DSSMatchingService.SHELTER_PORTABILITY_WEIGHT
             )
 
-        if not has_elevator and floor > 3:
-            floor_score = max(1.0 - (p_weight_kg / 12.0), 0.0)
-            if p_weight_kg > 15:
+        if not has_elevator and floor > DSSMatchingService.HIGH_FLOOR_WITHOUT_ELEVATOR:
+            floor_score = max(
+                1.0 - (p_weight_kg / DSSMatchingService.FLOOR_CARRY_WEIGHT_KG), 0.0
+            )
+            if p_weight_kg > DSSMatchingService.FLOOR_HEAVY_WARNING_KG:
                 risks.append(
                     f"У вас {floor} поверх без ліфта. Носити тварину вагою {p_weight_kg} кг на руках буде вкрай важко."
                 )
@@ -113,15 +202,24 @@ class DSSMatchingService:
             floor_score = 1.0
 
         if not has_car:
-            evac_score = max(1.0 - (p_weight_kg / 10.0), 0.1)
-            if p_weight_kg > 12:
+            evac_score = max(
+                1.0 - (p_weight_kg / DSSMatchingService.NO_CAR_EVAC_WEIGHT_KG),
+                DSSMatchingService.MIN_PORTABILITY_SCORE,
+            )
+            if p_weight_kg > DSSMatchingService.NO_CAR_WARNING_WEIGHT_KG:
                 risks.append(
                     "У вас немає авто. Евакуювати велику тварину громадським транспортом дуже складно."
                 )
         else:
-            evac_score = max(1.0 - (p_weight_kg / 45.0), 0.5)
+            evac_score = max(
+                1.0 - (p_weight_kg / DSSMatchingService.CAR_EVAC_WEIGHT_KG),
+                DSSMatchingService.MIN_CAR_EVAC_SCORE,
+            )
 
-        weight_score = max(1.0 - (p_weight_kg / 55.0), 0.1)
+        weight_score = max(
+            1.0 - (p_weight_kg / DSSMatchingService.GENERAL_WEIGHT_LIMIT_KG),
+            DSSMatchingService.MIN_PORTABILITY_SCORE,
+        )
 
         pet_features = {
             "stress": p_stress,
@@ -147,10 +245,10 @@ class DSSMatchingService:
 
         if has_children:
             if good_with_children == "NO":
-                safety_multiplier *= 0.3
+                safety_multiplier *= DSSMatchingService.CHILD_CONFLICT_MULTIPLIER
                 risks.append("КРИТИЧНО: Тварина не ладнає з маленькими дітьми!")
             elif good_with_children == "UNKNOWN":
-                safety_multiplier *= 0.85
+                safety_multiplier *= DSSMatchingService.UNKNOWN_CHILD_MULTIPLIER
                 risks.append(
                     "Невідомо, як тварина реагує на дітей. Потрібне дуже обережне знайомство."
                 )
@@ -159,10 +257,10 @@ class DSSMatchingService:
 
         if has_cats:
             if good_with_cats == "NO":
-                safety_multiplier *= 0.4
+                safety_multiplier *= DSSMatchingService.PET_CONFLICT_MULTIPLIER
                 risks.append("КРИТИЧНО: Тварина проявляє агресію до котів!")
             elif good_with_cats == "UNKNOWN":
-                safety_multiplier *= 0.9
+                safety_multiplier *= DSSMatchingService.UNKNOWN_PET_MULTIPLIER
                 risks.append("Невідомо, чи уживеться ця тварина з вашим котиком.")
             elif good_with_cats == "YES":
                 positives.append(
@@ -171,26 +269,35 @@ class DSSMatchingService:
 
         if has_dogs:
             if good_with_dogs == "NO":
-                safety_multiplier *= 0.4
+                safety_multiplier *= DSSMatchingService.PET_CONFLICT_MULTIPLIER
                 risks.append("КРИТИЧНО: Тварина не ладнає з іншими собаками!")
             elif good_with_dogs == "UNKNOWN":
-                safety_multiplier *= 0.9
+                safety_multiplier *= DSSMatchingService.UNKNOWN_PET_MULTIPLIER
                 risks.append(
                     "Сумісність з іншими собаками невідома. Знайомство має проходити на нейтральній території."
                 )
             elif good_with_dogs == "YES":
                 positives.append("Має чудовий досвід спілкування з іншими собаками.")
 
-        if p_activity > 0.6 and walk_hours < 2:
+        if (
+            p_activity > DSSMatchingService.ACTIVE_PET_THRESHOLD
+            and walk_hours < DSSMatchingService.MIN_WALK_HOURS_FOR_ACTIVE_PET
+        ):
             risks.append(
                 f"Тварина має рівень активності {int(p_activity * 5)}/5. Виділених вами {walk_hours} год. вигулу може бути недостатньо."
             )
 
-        if not has_pet_experience and (p_stress < 0.4 or p_social < 0.4):
+        if not has_pet_experience and (
+            p_stress < DSSMatchingService.EXPERIENCE_SENSITIVE_THRESHOLD
+            or p_social < DSSMatchingService.EXPERIENCE_SENSITIVE_THRESHOLD
+        ):
             risks.append(
                 "Тварина має складний характер або низьку стресостійкість. Це може бути важко для першого досвіду адаптації."
             )
-        elif has_pet_experience and (p_stress >= 0.4 and p_social >= 0.4):
+        elif has_pet_experience and (
+            p_stress >= DSSMatchingService.EXPERIENCE_SENSITIVE_THRESHOLD
+            and p_social >= DSSMatchingService.EXPERIENCE_SENSITIVE_THRESHOLD
+        ):
             positives.append("Ваш досвід допоможе легше адаптувати цю тварину.")
 
         if str(getattr(pet, "is_sterilized", "UNKNOWN")).lower() == "true":
@@ -214,29 +321,28 @@ class DSSMatchingService:
 
         score = score * safety_multiplier
 
-        MIN_THEORETICAL = 0.25
-        MAX_THEORETICAL = 0.85
-
-        if score >= MAX_THEORETICAL:
-            final_percent = 99
-        elif score <= MIN_THEORETICAL:
-            final_percent = 15
+        if score >= DSSMatchingService.MAX_THEORETICAL_SCORE:
+            final_percent = DSSMatchingService.MAX_MATCH_PERCENT
+        elif score <= DSSMatchingService.MIN_THEORETICAL_SCORE:
+            final_percent = DSSMatchingService.MIN_MATCH_PERCENT
         else:
-            normalized_score = (score - MIN_THEORETICAL) / (
-                MAX_THEORETICAL - MIN_THEORETICAL
+            normalized_score = (score - DSSMatchingService.MIN_THEORETICAL_SCORE) / (
+                DSSMatchingService.MAX_THEORETICAL_SCORE
+                - DSSMatchingService.MIN_THEORETICAL_SCORE
             )
             final_percent = int(normalized_score * 100)
 
-        final_percent = min(max(final_percent, 15), 99)
+        final_percent = min(
+            max(final_percent, DSSMatchingService.MIN_MATCH_PERCENT),
+            DSSMatchingService.MAX_MATCH_PERCENT,
+        )
 
-        if final_percent > 80 and len(risks) == 0:
-            recommendation = (
-                "Ідеальний збіг! Ваші умови та характер тварини повністю гармонують."
-            )
-        elif final_percent > 60:
-            recommendation = "Гарний варіант. Зверніть увагу на зазначені рекомендації щодо адаптації."
+        if final_percent > DSSMatchingService.HIGH_MATCH_THRESHOLD and len(risks) == 0:
+            recommendation = "Найсильніший збіг: умови користувача добре відповідають потребам тварини, тому можна переходити до знайомства."
+        elif final_percent > DSSMatchingService.MEDIUM_MATCH_THRESHOLD:
+            recommendation = "Перспективний варіант. Перед адаптацією варто обговорити з волонтером зазначені застереження."
         else:
-            recommendation = "Ця тварина потребує особливих умов, яких зараз не вистачає. Будьте готові інвестувати час у виховання."
+            recommendation = "Потрібна додаткова перевірка умов. Така адаптація можлива, але потребує досвіду, часу або допомоги притулку."
 
         return {
             "match_percent": final_percent,
