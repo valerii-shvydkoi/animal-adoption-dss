@@ -79,29 +79,31 @@ class VolunteerAdoptionViewSet(viewsets.ReadOnlyModelViewSet):
             "pet", "user", "user__profile", "questionnaire_result"
         )
 
-        if user_role == "VOLUNTEER":
+        shelter = None
+        try:
+            Shelter = apps.get_model("core", "Shelter")
+            Volunteer = apps.get_model("core", "Volunteer")
+
+            if user_role == "SHELTER_MANAGER":
+                shelter = Shelter.objects.filter(owner=user).first()
+
+            if not shelter:
+                volunteer = (
+                    Volunteer.objects.filter(user=user)
+                    .select_related("shelter")
+                    .first()
+                )
+                if volunteer:
+                    shelter = volunteer.shelter
+        except Exception:
+            shelter = None
+
+        if shelter:
+            qs = qs.filter(pet__shelter=shelter)
+        elif user_role == "VOLUNTEER":
             qs = qs.filter(pet__created_by=user)
         else:
-            shelter = None
-            try:
-                Shelter = apps.get_model("core", "Shelter")
-                shelter = Shelter.objects.filter(owner=user).first()
-                if not shelter:
-                    Volunteer = apps.get_model("core", "Volunteer")
-                    volunteer = (
-                        Volunteer.objects.filter(user=user)
-                        .select_related("shelter")
-                        .first()
-                    )
-                    if volunteer:
-                        shelter = volunteer.shelter
-            except Exception:
-                pass
-
-            if shelter:
-                qs = qs.filter(pet__shelter=shelter)
-            else:
-                qs = qs.none()
+            qs = qs.none()
 
         return qs.order_by(
             models.Case(
@@ -155,23 +157,29 @@ class VolunteerAdoptionViewSet(viewsets.ReadOnlyModelViewSet):
                 )
 
                 if match_res:
+                    explanation = snapshot.get("explanation", {})
                     item["ai_analysis"] = {
                         "match_percent": match_res["match_percent"],
                         "positives": match_res["positives"],
                         "risks": match_res["risks"],
-                        "top_priority": snapshot.get("top_priority", "Безпека тварини"),
+                        "recommendation": match_res["recommendation"],
+                        "top_priority": explanation.get("top_priority"),
+                        "top_priority_text": explanation.get("text"),
                     }
 
             if "ai_analysis" not in item or not item["ai_analysis"]:
                 item["ai_analysis"] = {
-                    "match_percent": 50,
-                    "positives": [
-                        "Параметри тварини частково відповідають загальним критеріям."
-                    ],
+                    "match_percent": None,
+                    "positives": [],
                     "risks": [
-                        "Користувач не надав дані анкети. Потрібне детальне ручне інтерв'ю."
+                        "Користувач ще не заповнив анкету підбору. Потрібне ручне уточнення умов адаптації."
                     ],
-                    "top_priority": "Не визначено",
+                    "recommendation": (
+                        "Запитайте користувача про умови проживання, досвід і очікування "
+                        "перед ухваленням рішення."
+                    ),
+                    "top_priority": None,
+                    "top_priority_text": None,
                 }
         return serialized_data
 

@@ -83,6 +83,7 @@ export const AuthProvider = ({ children }) => {
         : [];
       const mergedFavs = mergeFavoriteIds(guestFavs, serverFavs);
       setStoredFavoriteIds(mergedFavs, formattedUser);
+      clearGuestFavoriteIds();
       emitFavoritesUpdated();
       if (mergedFavs.length > 0) {
         try {
@@ -92,14 +93,11 @@ export const AuthProvider = ({ children }) => {
           const rawData = syncRes.data.favorites || [];
           if (Array.isArray(rawData)) {
             setStoredFavoriteIds(rawData.map(Number), formattedUser);
-            clearGuestFavoriteIds();
             emitFavoritesUpdated();
           }
         } catch (err) {
           console.error('Помилка синхронізації обраного на бекенді при вході:', err);
         }
-      } else {
-        clearGuestFavoriteIds();
       }
       return response.data;
     } catch (error) {

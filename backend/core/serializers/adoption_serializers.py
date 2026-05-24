@@ -93,7 +93,16 @@ class VolunteerAdoptionSerializer(serializers.ModelSerializer):
     @extend_schema_field(OpenApiTypes.OBJECT)
     def get_ai_analysis(self, obj):
         if not obj.questionnaire_result or not obj.questionnaire_result.snapshot_data:
-            return {"match_percent": None, "explanation": "Анкету не знайдено"}
+            return {
+                "match_percent": None,
+                "positives": [],
+                "risks": [
+                    "Користувач ще не заповнив анкету підбору. Потрібне ручне уточнення умов адаптації."
+                ],
+                "recommendation": "Попросіть користувача пройти анкету або уточніть умови під час розмови.",
+                "top_priority": None,
+                "top_priority_text": None,
+            }
 
         data = obj.questionnaire_result.snapshot_data
         weights = data.get("weights", {})
@@ -106,13 +115,24 @@ class VolunteerAdoptionSerializer(serializers.ModelSerializer):
             preferred_age=data.get("preferred_age", "ANY"),
         )
 
+        explanation = data.get("explanation", {})
+        if not match_info:
+            return {
+                "top_priority": explanation.get("top_priority"),
+                "top_priority_text": explanation.get("text"),
+                "match_percent": None,
+                "positives": [],
+                "risks": [
+                    "Тварина не відповідає базовим фільтрам анкети за видом або віком."
+                ],
+                "recommendation": "Запропонуйте користувачу переглянути інші рекомендації або змінити базові побажання.",
+            }
+
         return {
-            "top_priority": data.get("explanation", {}).get("top_priority", "Невідомо"),
-            "match_percent": match_info["match_percent"] if match_info else 15,
-            "positives": match_info["positives"] if match_info else [],
-            "risks": (
-                match_info["risks"]
-                if match_info
-                else ["Невідповідність за базовими критеріями (вид або вік)"]
-            ),
+            "top_priority": explanation.get("top_priority"),
+            "top_priority_text": explanation.get("text"),
+            "match_percent": match_info["match_percent"],
+            "positives": match_info["positives"],
+            "risks": match_info["risks"],
+            "recommendation": match_info["recommendation"],
         }

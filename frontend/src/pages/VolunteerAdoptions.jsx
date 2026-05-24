@@ -21,6 +21,17 @@ const textMain = tokens.textPrimary || '#0F172A';
 const textMuted = tokens.textSecondary || '#64748B';
 const borderColor = tokens.borderDefault || '#E2E8F0';
 const brandPrimary = tokens.brandPrimary || '#EA580C';
+const priorityTranslations = {
+  shelter: 'безпека та укриття',
+  activity: 'рівень активності',
+  social: 'соціальність',
+  stress: 'стресостійкість',
+  floor: 'поверх і ліфт',
+  weight: 'вага тварини',
+  evacuation: 'готовність до евакуації',
+  age: 'вік тварини',
+  character: 'характер',
+};
 export default function VolunteerAdoptions() {
   const [requests, setRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -214,14 +225,6 @@ export default function VolunteerAdoptions() {
             ) {
               matchPercent = petObj.compatibility_score;
             }
-            const hasAnalytics =
-              !!analytics.match_percent ||
-              !!analytics.top_priority ||
-              Array.isArray(analytics.positives) ||
-              Array.isArray(analytics.risks);
-            const recommendationText = analytics.top_priority
-              ? `Найважливіший критерій користувача: ${analytics.top_priority}`
-              : req.compatibility_recommendation || 'Аналіз умов відсутній';
             const positivesList = Array.isArray(analytics.positives)
               ? analytics.positives
               : Array.isArray(req.compatibility_positives)
@@ -232,6 +235,19 @@ export default function VolunteerAdoptions() {
               : Array.isArray(req.compatibility_risks)
                 ? req.compatibility_risks
                 : [];
+            const topPriorityLabel =
+              priorityTranslations[analytics.top_priority] || analytics.top_priority;
+            const hasAnalytics =
+              matchPercent !== null ||
+              !!analytics.recommendation ||
+              !!topPriorityLabel ||
+              positivesList.length > 0 ||
+              risksList.length > 0;
+            const recommendationText =
+              analytics.recommendation ||
+              (topPriorityLabel
+                ? `Найважливіший критерій користувача: ${topPriorityLabel}`
+                : req.compatibility_recommendation || 'Аналіз умов відсутній');
             return (
               <div key={req.id} className="request-card">
                 <div className="card-top">

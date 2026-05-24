@@ -93,7 +93,7 @@ class PetPagination(PageNumberPagination):
             ),
             OpenApiParameter(
                 name="urgency_status",
-                description="Кризовий статус (HIGH/MEDIUM/LOW/MEDICAL)",
+                description="Кризовий статус (REGULAR/EVACUATION/MEDICAL)",
                 required=False,
                 type=str,
             ),
@@ -321,7 +321,11 @@ class PetViewSet(viewsets.ModelViewSet):
                         preferred_species=preferred_species,
                         preferred_age=preferred_age,
                     )
-                    score = match["match_percent"] if match else 15
+                    score = (
+                        match["match_percent"]
+                        if match
+                        else DSSMatchingService.MIN_MATCH_PERCENT
+                    )
                     p.temp_score = score
                     p.compatibility_score = score
 
@@ -361,7 +365,11 @@ class PetViewSet(viewsets.ModelViewSet):
                     preferred_species=preferred_species,
                     preferred_age=preferred_age,
                 )
-                obj.compatibility_score = match["match_percent"] if match else 15
+                obj.compatibility_score = (
+                    match["match_percent"]
+                    if match
+                    else DSSMatchingService.MIN_MATCH_PERCENT
+                )
         return obj
 
     @action(detail=False, methods=["get"])

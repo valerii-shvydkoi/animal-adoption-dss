@@ -7,6 +7,8 @@ from core.serializers.result_serializers import PetMatchSerializer, ResultSerial
 from core.services.dss_matching_service import DSSMatchingService
 from core.services.constraint_service import ConstraintService
 
+MAX_MATCH_RESULTS = 9
+
 
 class ResultsViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
@@ -111,6 +113,6 @@ class ResultsViewSet(viewsets.ReadOnlyModelViewSet):
                 "created_at": latest_result.created_at,
                 "top_priority": explanation.get("top_priority"),
                 "top_priority_text": explanation.get("text"),
-                "matches": matched_pets[:9],
+                "matches": matched_pets[:MAX_MATCH_RESULTS],
             }
         )

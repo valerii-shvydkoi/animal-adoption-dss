@@ -122,6 +122,19 @@ class TestIntegrationEndpoints:
         response = auth_volunteer_client.get("/api/v1/volunteer/cabinet/")
         assert response.status_code == status.HTTP_200_OK
 
+    def test_volunteer_sees_shelter_adoption_requests(
+        self, auth_volunteer_client, adoption_request
+    ):
+        response = auth_volunteer_client.get("/api/v1/volunteer/adoptions/")
+
+        assert response.status_code == status.HTTP_200_OK
+        payload = response.data.get("results", response.data)
+        assert any(item["id"] == adoption_request.id for item in payload)
+        request_item = next(
+            item for item in payload if item["id"] == adoption_request.id
+        )
+        assert request_item["ai_analysis"]["match_percent"] is None
+
     def test_pet_deletion_cascades_to_adoptions(
         self, auth_volunteer_client, pet, adoption_request
     ):

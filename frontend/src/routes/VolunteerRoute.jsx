@@ -6,8 +6,7 @@ export const VolunteerRoute = () => {
   const location = useLocation();
   if (loading) return <LoadingSpinner />;
   const currentRole = (role || user?.role || '').toUpperCase();
-  const hasAccess =
-    user?.isAuthenticated && (currentRole === 'VOLUNTEER' || currentRole === 'ADMIN');
+  const hasAccess = user?.isAuthenticated && currentRole === 'VOLUNTEER';
   return hasAccess ? (
     <Outlet />
   ) : (
