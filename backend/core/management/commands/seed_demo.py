@@ -1,6 +1,10 @@
 from decimal import Decimal
 from io import BytesIO
+from pathlib import Path
+from urllib.parse import quote
+from urllib.request import Request, urlopen
 
+from django.conf import settings
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from django.core.management import call_command
@@ -72,6 +76,33 @@ PRIMARY_DEMO_EMAILS = [
     "volunteer@adoptify.demo",
     "admin@adoptify.demo",
 ]
+
+PET_PHOTO_QUERIES = {
+    1: "german shepherd dog",
+    2: "domestic shorthair cat",
+    3: "labrador retriever dog",
+    4: "tabby cat",
+    5: "husky dog",
+    6: "calico cat",
+    7: "corgi dog",
+    8: "british shorthair cat",
+    9: "spaniel dog",
+    10: "ginger cat",
+    11: "laika dog",
+    12: "fluffy cat",
+    13: "dachshund dog",
+    14: "gray cat",
+    15: "pitbull dog",
+    16: "siamese cat",
+    17: "shepherd dog",
+    18: "maine coon cat",
+    19: "small puppy dog",
+    20: "black cat",
+    21: "rabbit pet",
+    22: "doberman dog",
+    23: "white gray cat",
+    24: "pet rat",
+}
 
 
 PET_BLUEPRINTS = [
@@ -559,6 +590,7 @@ class Command(BaseCommand):
         if options["reset"]:
             self.stdout.write(self.style.WARNING("Очищення бази даних..."))
             call_command("flush", interactive=False, verbosity=0)
+            self.cleanup_demo_media()
 
         accounts = {item["email"]: self.create_user(item) for item in DEMO_ACCOUNTS}
         shelters = self.create_shelters(accounts)
@@ -714,11 +746,39 @@ class Command(BaseCommand):
             if not skip_media:
                 pet.photo.save(
                     f"demo_pet_{index:02d}.jpg",
-                    self.build_demo_image(index, species, urgency),
+                    self.build_demo_photo(index, species, urgency),
                     save=True,
                 )
             pets.append(pet)
         return pets
+
+    def cleanup_demo_media(self):
+        photos_dir = Path(settings.MEDIA_ROOT) / "pets" / "photos"
+        if not photos_dir.exists():
+            return
+        for file_path in photos_dir.glob("demo_pet_*.jpg"):
+            file_path.unlink(missing_ok=True)
+
+    def build_demo_photo(self, index, species, urgency):
+        query = PET_PHOTO_QUERIES.get(index)
+        if not query:
+            query = "dog" if species == PetSpecies.DOG else "cat"
+
+        try:
+            encoded_query = quote(query.replace(" ", ","))
+            url = (
+                f"https://loremflickr.com/900/650/{encoded_query}?lock={202600 + index}"
+            )
+            request = Request(url, headers={"User-Agent": "Adoptify demo seed/1.0"})
+            with urlopen(request, timeout=12) as response:
+                content_type = response.headers.get("Content-Type", "")
+                content = response.read(4 * 1024 * 1024)
+                if content_type.startswith("image/") and len(content) > 5000:
+                    return ContentFile(content)
+        except Exception:
+            pass
+
+        return self.build_demo_image(index, species, urgency)
 
     def build_demo_image(self, index, species, urgency):
         palette = [
