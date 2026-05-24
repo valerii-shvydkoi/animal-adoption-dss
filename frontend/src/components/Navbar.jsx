@@ -90,7 +90,7 @@ const Navbar = () => {
   };
   const activeIndex = getActiveIndex();
   const getDisplayUsername = () => {
-    if (!user) return 'Користувач';
+    if (!user) return 'Профіль';
     const nameFromProfile = user.name || user.first_name || user.profile?.first_name;
     const finalName =
       nameFromProfile && nameFromProfile.trim() !== ''
@@ -98,14 +98,12 @@ const Navbar = () => {
         : user.email && typeof user.email === 'string'
           ? user.email.split('@')[0]
           : '';
-    if (!finalName) {
-      return 'Користувач';
-    }
+    if (!finalName) return 'Профіль';
     return finalName.length > 22 ? finalName.substring(0, 20) + '...' : finalName;
   };
   const displayName = getDisplayUsername();
   const avatarContent =
-    displayName !== 'Користувач' ? (
+    displayName !== 'Профіль' ? (
       displayName.charAt(0).toUpperCase()
     ) : (
       <User size={16} weight="bold" />
@@ -546,7 +544,7 @@ const Navbar = () => {
                             color={adminColor}
                             weight={isLinkActive('/admin/users') ? 'fill' : 'duotone'}
                           />
-                          Користувачі та Ролі
+                          Користувачі та ролі
                         </Link>
                         <Link
                           to="/admin/logs"

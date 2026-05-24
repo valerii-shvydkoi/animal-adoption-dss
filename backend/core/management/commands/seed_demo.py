@@ -583,7 +583,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--skip-media",
             action="store_true",
-            help="Не генерувати локальні зображення тварин.",
+            help="Не завантажувати та не генерувати фото тварин.",
         )
 
     def handle(self, *args, **options):

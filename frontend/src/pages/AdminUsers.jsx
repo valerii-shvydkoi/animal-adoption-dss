@@ -327,7 +327,7 @@ export default function AdminUsers() {
               letterSpacing: '-0.02em',
             }}
           >
-            Користувачі та Ролі
+            Користувачі та ролі
           </h1>
           <p
             style={{

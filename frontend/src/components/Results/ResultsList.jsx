@@ -28,8 +28,12 @@ const ResultsList = ({ results, onRequestClick, startRank = 1 }) => (
           grid-template-columns: 1fr;
           gap: 16px;
         }
+        .results-score-row {
+          flex-wrap: wrap;
+        }
         .results-match-title {
           font-size: 22px !important;
+          white-space: normal !important;
         }
       }
 
@@ -109,6 +113,7 @@ const ResultsList = ({ results, onRequestClick, startRank = 1 }) => (
               }}
             >
               <div
+                className="results-score-row"
                 style={{
                   display: 'flex',
                   alignItems: 'center',

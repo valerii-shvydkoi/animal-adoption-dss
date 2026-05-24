@@ -210,7 +210,7 @@ const PetForm = ({ pet, onSuccess }) => {
                 cursor: 'pointer',
               }}
             />
-            Active profile (Шукає дім)
+            Активна картка (шукає дім)
           </label>
         </div>
 
