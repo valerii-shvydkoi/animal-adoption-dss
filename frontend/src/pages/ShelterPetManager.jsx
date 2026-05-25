@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
+import { useFeedback } from '../context/FeedbackContext';
 import { tokens } from '../styles/tokens';
 import {
   Plus,
@@ -14,6 +15,7 @@ import {
   User,
 } from '@phosphor-icons/react';
 export default function ShelterPetManager() {
+  const { confirm, notify } = useFeedback();
   const [pets, setPets] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -86,23 +88,31 @@ export default function ShelterPetManager() {
       }
       throw new Error('Немає прямого доступу до буфера');
     } catch (err) {
-      const fallbackText = prompt('Вставте посилання на фотографію сюди (Ctrl+V або Cmd+V):');
-      if (fallbackText) {
-        setPetPhotoUrl(fallbackText.trim());
-        setPetPhotoFile(null);
-        setPetPhotoPreview(fallbackText.trim());
-      }
+      console.warn('Не вдалося прочитати буфер обміну:', err);
+      notify({
+        type: 'info',
+        title: 'Вставте URL вручну',
+        message: 'Браузер не дав доступ до буфера. Вставте посилання у поле "Посилання на фото".',
+      });
     }
   };
   const handlePhotoFileChange = (event) => {
     const file = event.target.files?.[0];
     if (!file) return;
     if (!file.type.startsWith('image/')) {
-      alert('Оберіть файл зображення у форматі JPG, PNG або WebP.');
+      notify({
+        type: 'warning',
+        title: 'Неправильний формат',
+        message: 'Оберіть файл зображення у форматі JPG, PNG або WebP.',
+      });
       return;
     }
     if (file.size > 5 * 1024 * 1024) {
-      alert('Фото завелике. Максимальний розмір файлу — 5 МБ.');
+      notify({
+        type: 'warning',
+        title: 'Фото завелике',
+        message: 'Максимальний розмір файлу - 5 МБ.',
+      });
       return;
     }
     setPetPhotoFile(file);
@@ -180,18 +190,28 @@ export default function ShelterPetManager() {
     const parsedAge = parseInt(petAgeMonths, 10);
     const parsedWeight = parseFloat(petWeight);
     if (isNaN(parsedAge) || parsedAge < 1) {
-      alert('Вік тварини повинен бути не менше 1 місяця');
+      notify({
+        type: 'warning',
+        title: 'Перевірте вік',
+        message: 'Вік тварини повинен бути не менше 1 місяця.',
+      });
       return;
     }
     if (isNaN(parsedWeight) || parsedWeight <= 0) {
-      alert('Вага тварини повинна бути більшою за 0 кг');
+      notify({
+        type: 'warning',
+        title: 'Перевірте вагу',
+        message: 'Вага тварини повинна бути більшою за 0 кг.',
+      });
       return;
     }
     let cleanPhotoUrl = petPhotoUrl.trim();
     if (cleanPhotoUrl.length > 500) {
-      alert(
-        `Помилка: Посилання на фото занадто довге (${cleanPhotoUrl.length} симв.). Максимально дозволена довжина — 500 символів.`
-      );
+      notify({
+        type: 'warning',
+        title: 'Посилання занадто довге',
+        message: `Максимальна довжина посилання - 500 символів. Зараз: ${cleanPhotoUrl.length}.`,
+      });
       return;
     }
     if (
@@ -199,7 +219,11 @@ export default function ShelterPetManager() {
       !cleanPhotoUrl.startsWith('http://') &&
       !cleanPhotoUrl.startsWith('https://')
     ) {
-      alert("Помилка: Посилання на фото повинно обов'язково починатися з http:// або https://");
+      notify({
+        type: 'warning',
+        title: 'Некоректне посилання',
+        message: 'Посилання на фото повинно починатися з http:// або https://.',
+      });
       return;
     }
     let sterilizedValue = null;
@@ -262,41 +286,87 @@ export default function ShelterPetManager() {
       } else {
         await api.post('/pets/', requestPayload, requestConfig);
       }
+      notify({
+        type: 'success',
+        title: editingPetId ? 'Картку оновлено' : 'Тваринку додано',
+        message: editingPetId
+          ? 'Зміни вже доступні в каталозі.'
+          : 'Нова картка доступна для користувачів у каталозі.',
+      });
       setIsModalOpen(false);
       fetchShelterPets();
     } catch (err) {
       console.error('Помилка збереження картки тварини:', err);
+      let errorMessage;
       if (err.response && err.response.data) {
         const statusCode = err.response.status;
         const detail = err.response.data.detail || JSON.stringify(err.response.data, null, 2);
-        alert(`Не вдалося зберегти картку (${statusCode}).\n${detail}`);
+        errorMessage = `Не вдалося зберегти картку (${statusCode}). ${detail}`;
       } else if (err.request) {
-        alert('Сервер не відповів (Network Error). Перевірте, чи працює Django бекенд.');
+        errorMessage = 'Сервер не відповів. Перевірте, чи працює Django бекенд.';
       } else {
-        alert(`Помилка: ${err.message}`);
+        errorMessage = `Помилка: ${err.message}`;
       }
+      notify({
+        type: 'error',
+        title: 'Картку не збережено',
+        message: errorMessage || 'Перевірте заповнення полів і спробуйте ще раз.',
+      });
     } finally {
       setIsSaving(false);
     }
   };
   const handleSetAdopted = async (id) => {
-    if (!window.confirm("Перевести тварину в статус 'Вже в сім'ї'?")) return;
+    const isConfirmed = await confirm({
+      title: 'Позначити тваринку адаптованою?',
+      message:
+        'Картка залишиться в системі, але зникне з активних рекомендацій і каталогу для пошуку дому.',
+      confirmLabel: 'Позначити',
+      variant: 'info',
+    });
+    if (!isConfirmed) return;
     try {
       await api.patch(`/pets/${id}/`, {
         is_available: false,
       });
+      notify({
+        type: 'success',
+        title: 'Статус оновлено',
+        message: 'Тваринку переведено у статус "Вже в сімʼї".',
+      });
       fetchShelterPets();
     } catch (err) {
       console.error('Помилка оновлення статусу:', err);
+      notify({
+        type: 'error',
+        title: 'Статус не оновлено',
+        message: err.response?.data?.detail || 'Не вдалося змінити статус тваринки.',
+      });
     }
   };
   const handleDeletePet = async (id) => {
-    if (!window.confirm('Ви впевнені, що хочете видалити цю картку?')) return;
+    const isConfirmed = await confirm({
+      title: 'Видалити картку тваринки?',
+      message: 'Картка буде прибрана з каталогу та робочого списку притулку.',
+      confirmLabel: 'Видалити',
+      variant: 'danger',
+    });
+    if (!isConfirmed) return;
     try {
       await api.delete(`/pets/${id}/`);
+      notify({
+        type: 'success',
+        title: 'Картку видалено',
+        message: 'Список тваринок оновлено.',
+      });
       fetchShelterPets();
     } catch (err) {
       console.error('Помилка видалення:', err);
+      notify({
+        type: 'error',
+        title: 'Картку не видалено',
+        message: err.response?.data?.detail || 'Не вдалося видалити картку тваринки.',
+      });
     }
   };
   const renderUrgencyBadge = (status) => {

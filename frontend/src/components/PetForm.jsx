@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
+import { useFeedback } from '../context/FeedbackContext';
 import { tokens } from '../styles/tokens';
 import {
   PawPrint,
@@ -33,6 +34,7 @@ const DEFAULT_FORM_VALUES = {
   behavior_tags: '',
 };
 const PetForm = ({ pet, onSuccess }) => {
+  const { notify } = useFeedback();
   const getInitialValues = (petData) => {
     return {
       ...DEFAULT_FORM_VALUES,
@@ -120,9 +122,11 @@ const PetForm = ({ pet, onSuccess }) => {
     } catch (err) {
       console.error('Помилка збереження тварини', err.response?.data || err);
       const serverError = err.response?.data ? JSON.stringify(err.response.data) : '';
-      alert(
-        `Помилка при збереженні! Перевірте правильність заповнення полів.\nДеталі: ${serverError}`
-      );
+      notify({
+        type: 'error',
+        title: 'Не вдалося зберегти тваринку',
+        message: serverError || 'Перевірте правильність заповнення полів і спробуйте ще раз.',
+      });
     } finally {
       setLoading(false);
     }

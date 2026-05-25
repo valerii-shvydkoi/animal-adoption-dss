@@ -18,6 +18,7 @@ import {
   X,
 } from '@phosphor-icons/react';
 import adminService from '../services/adminService';
+import { useFeedback } from '../context/FeedbackContext';
 const LIGHT_THEME_CSS = `
   #content,
   .content,
@@ -106,6 +107,7 @@ const LIGHT_THEME_CSS = `
   }
 `;
 export default function AdminShelters() {
+  const { confirm } = useFeedback();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
@@ -207,14 +209,17 @@ export default function AdminShelters() {
     }
   };
   const handleReject = async (id) => {
-    if (
-      !window.confirm(
+    const isConfirmed = await confirm({
+      title:
+        activeType === 'shelters' ? 'Відхилити запит на притулок?' : 'Відхилити заявку волонтера?',
+      message:
         activeType === 'shelters'
-          ? 'Ви впевнені, що хочете відхилити цей запит на реєстрацію притулку? Ця дія незворотна.'
-          : 'Ви впевнені, що хочете відхилити заявку волонтера?'
-      )
-    )
-      return;
+          ? 'Запит буде відхилено, а заявник побачить оновлений статус у своєму профілі.'
+          : 'Кандидат не буде доданий до команди притулку.',
+      confirmLabel: 'Відхилити',
+      variant: 'warning',
+    });
+    if (!isConfirmed) return;
     setActionLoadingId(id);
     setAlert({
       type: '',

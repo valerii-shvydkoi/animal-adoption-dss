@@ -1,10 +1,12 @@
 import { useEffect, useState, useRef } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../services/api';
+import { useFeedback } from '../context/FeedbackContext';
 import { CircleNotch, CheckCircle, WarningCircle } from '@phosphor-icons/react';
 import { tokens } from '../styles/tokens';
 const VerifyEmail = () => {
   const { uid, token } = useParams();
+  const { notify } = useFeedback();
   const [status, setStatus] = useState('loading');
   const [message, setMessage] = useState('Підтверджуємо вашу електронну пошту...');
   const hasCalledAPI = useRef(false);
@@ -38,7 +40,11 @@ const VerifyEmail = () => {
   }, [uid, token]);
   const handleCloseTab = () => {
     window.close();
-    alert('Будь ласка, закрийте цю вкладку вручну за допомогою хрестика вгорі браузера.');
+    notify({
+      type: 'info',
+      title: 'Вкладку можна закрити',
+      message: 'Якщо браузер не закрив її автоматично, закрийте сторінку вручну.',
+    });
   };
   return (
     <div

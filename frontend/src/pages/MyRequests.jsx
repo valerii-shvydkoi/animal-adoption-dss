@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import LoadingSpinner from '../components/UI/LoadingSpinner';
+import { useFeedback } from '../context/FeedbackContext';
 import {
   ClipboardText,
   Tray,
@@ -51,6 +52,7 @@ const RequestsStyles = () => (
   `}</style>
 );
 const MyRequests = () => {
+  const { confirm, notify } = useFeedback();
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -68,14 +70,30 @@ const MyRequests = () => {
     }
   };
   const handleCancel = async (id) => {
-    if (window.confirm('Ви впевнені, що хочете скасувати заявку на знайомство?')) {
-      try {
-        await api.patch(`/adoptions/${id}/cancel/`);
-        fetchRequests();
-      } catch (err) {
-        console.error('Помилка скасування заявки', err);
-        alert('Не вдалося скасувати заявку.');
-      }
+    const isConfirmed = await confirm({
+      title: 'Скасувати заявку?',
+      message:
+        'Заявка перейде у статус “Скасовано вами”. За потреби ви зможете подати нову заявку пізніше.',
+      confirmLabel: 'Скасувати заявку',
+      variant: 'warning',
+    });
+    if (!isConfirmed) return;
+
+    try {
+      await api.patch(`/adoptions/${id}/cancel/`);
+      fetchRequests();
+      notify({
+        type: 'success',
+        title: 'Заявку скасовано',
+        message: 'Статус оновлено у вашому кабінеті.',
+      });
+    } catch (err) {
+      console.error('Помилка скасування заявки', err);
+      notify({
+        type: 'error',
+        title: 'Не вдалося скасувати заявку',
+        message: err.response?.data?.detail || 'Спробуйте повторити дію пізніше.',
+      });
     }
   };
   if (loading) {

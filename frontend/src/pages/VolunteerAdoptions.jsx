@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { volunteerAdoptionApi, tokens } from '../services/api';
+import { useFeedback } from '../context/FeedbackContext';
 import {
   CheckCircle,
   XCircle,
@@ -33,6 +34,7 @@ const priorityTranslations = {
   character: 'характер',
 };
 export default function VolunteerAdoptions() {
+  const { confirm, notify } = useFeedback();
   const [requests, setRequests] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(null);
@@ -55,43 +57,68 @@ export default function VolunteerAdoptions() {
   useEffect(() => {
     fetchAdoptionRequests();
   }, []);
-  const handleUpdateStatus = (id, action) => {
+  const handleUpdateStatus = async (id, action) => {
     if (isSaving !== null) return;
-    const confirmMessage = {
-      REVIEW: 'Позначити заявку як переглянуту і залишити її в роботі?',
-      APPROVE:
-        'Ви впевнені, що хочете СХВАЛИТИ цю заявку на адаптацію? Тварину буде автоматично знято з публікації.',
-      REJECT: 'Ви впевнені, що хочете ВІДХИЛИТИ цю заявку на адаптацію?',
+    const confirmConfig = {
+      REVIEW: {
+        title: 'Позначити заявку переглянутою?',
+        message: 'Заявка залишиться в роботі, а користувач бачитиме оновлений статус.',
+        confirmLabel: 'Позначити',
+        variant: 'info',
+      },
+      APPROVE: {
+        title: 'Схвалити заявку на адаптацію?',
+        message:
+          'Тварину буде автоматично знято з публікації, а інші активні заявки буде відхилено.',
+        confirmLabel: 'Схвалити',
+        variant: 'success',
+      },
+      REJECT: {
+        title: 'Відхилити заявку?',
+        message: 'Користувач побачить статус відхилення у розділі власних заявок.',
+        confirmLabel: 'Відхилити',
+        variant: 'warning',
+      },
     }[action];
-    if (!window.confirm(confirmMessage)) return;
+    const isConfirmed = await confirm(confirmConfig);
+    if (!isConfirmed) return;
+
     setIsSaving(id);
-    const apiCall =
-      action === 'REVIEW'
-        ? volunteerAdoptionApi.reviewRequest(id)
-        : action === 'APPROVE'
-          ? volunteerAdoptionApi.approveRequest(id)
-          : volunteerAdoptionApi.rejectRequest(id);
-    apiCall
-      .then(() => {
-        const updatedStatus =
-          action === 'REVIEW' ? 'REVIEWED' : action === 'APPROVE' ? 'APPROVED' : 'REJECTED';
-        setRequests((prev) =>
-          prev.map((req) =>
-            req.id === id
-              ? {
-                  ...req,
-                  status: updatedStatus,
-                }
-              : req
-          )
-        );
-        setIsSaving(null);
-      })
-      .catch((err) => {
-        console.error('Помилка зміни статусу адаптації:', err);
-        alert(err.response?.data?.detail || 'Не вдалося оновити статус заявки.');
-        setIsSaving(null);
+    try {
+      const apiCall =
+        action === 'REVIEW'
+          ? volunteerAdoptionApi.reviewRequest(id)
+          : action === 'APPROVE'
+            ? volunteerAdoptionApi.approveRequest(id)
+            : volunteerAdoptionApi.rejectRequest(id);
+      await apiCall;
+      const updatedStatus =
+        action === 'REVIEW' ? 'REVIEWED' : action === 'APPROVE' ? 'APPROVED' : 'REJECTED';
+      setRequests((prev) =>
+        prev.map((req) =>
+          req.id === id
+            ? {
+                ...req,
+                status: updatedStatus,
+              }
+            : req
+        )
+      );
+      notify({
+        type: 'success',
+        title: 'Статус оновлено',
+        message: 'Заявку успішно синхронізовано з базою.',
       });
+    } catch (err) {
+      console.error('Помилка зміни статусу адаптації:', err);
+      notify({
+        type: 'error',
+        title: 'Не вдалося оновити статус',
+        message: err.response?.data?.detail || 'Спробуйте повторити дію пізніше.',
+      });
+    } finally {
+      setIsSaving(null);
+    }
   };
   const renderStatus = (status) => {
     switch (status?.toUpperCase()) {

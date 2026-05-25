@@ -2,8 +2,10 @@ import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { tokens } from '../styles/tokens';
 import AnalyticsDashboard from '../components/Shelter/AnalyticsDashboard';
+import { useFeedback } from '../context/FeedbackContext';
 import { ChartLineUp, X } from '@phosphor-icons/react';
 const ShelterDashboard = () => {
+  const { notify } = useFeedback();
   const [isEditing, setIsEditing] = useState(false);
   const [shelterName, setShelterName] = useState('');
   const [shelterAddress, setShelterAddress] = useState('');
@@ -45,7 +47,11 @@ const ShelterDashboard = () => {
   const handleUpdateShelter = async (e) => {
     e.preventDefault();
     if (!shelterName.trim()) {
-      alert('Назва притулку не може бути порожньою.');
+      notify({
+        type: 'warning',
+        title: 'Перевірте назву',
+        message: 'Назва притулку не може бути порожньою.',
+      });
       return;
     }
     try {
@@ -55,12 +61,20 @@ const ShelterDashboard = () => {
         phone: shelterPhone.trim(),
         description: shelterDescription.trim(),
       });
-      alert('Профіль притулку успішно оновлено.');
+      notify({
+        type: 'success',
+        title: 'Профіль оновлено',
+        message: 'Дані притулку успішно збережено.',
+      });
       setIsEditing(false);
       setRefreshKey((prev) => prev + 1);
     } catch (err) {
       console.error('Помилка оновлення притулку:', err);
-      alert(err.response?.data?.detail || 'Не вдалося оновити профіль.');
+      notify({
+        type: 'error',
+        title: 'Не вдалося оновити профіль',
+        message: err.response?.data?.detail || 'Спробуйте повторити дію пізніше.',
+      });
     }
   };
   const styles = {

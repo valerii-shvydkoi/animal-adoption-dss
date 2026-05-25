@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../services/api';
+import { useFeedback } from '../../context/FeedbackContext';
 import { tokens } from '../../styles/tokens';
 import LoadingSpinner from '../UI/LoadingSpinner';
 import {
@@ -16,6 +17,7 @@ import {
   ChartPieSlice,
 } from '@phosphor-icons/react';
 const AnalyticsDashboard = ({ onOpenEditProfile }) => {
+  const { confirm, notify } = useFeedback();
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -34,18 +36,30 @@ const AnalyticsDashboard = ({ onOpenEditProfile }) => {
       });
   }, []);
   const handleDeleteShelter = async () => {
-    const isConfirmed = window.confirm(
-      'Ви впевнені, що хочете видалити цей притулок? Цю дію неможливо скасувати. Усі дані про тварин та заявки будуть втрачені!'
-    );
+    const isConfirmed = await confirm({
+      title: 'Видалити притулок?',
+      message:
+        'Цю дію неможливо скасувати. Дані про тваринок, команду притулку та заявки буде видалено.',
+      confirmLabel: 'Видалити',
+      variant: 'danger',
+    });
     if (!isConfirmed) return;
     try {
       await api.delete('/shelter/delete/');
-      alert('Притулок успішно видалено.');
+      notify({
+        type: 'success',
+        title: 'Притулок видалено',
+        message: 'Профіль організації та повʼязані дані очищено.',
+      });
       localStorage.removeItem('token');
       window.location.href = '/';
     } catch (err) {
       console.error('Помилка при видаленні притулку:', err);
-      alert(err.response?.data?.detail || 'Не вдалося видалити притулок.');
+      notify({
+        type: 'error',
+        title: 'Притулок не видалено',
+        message: err.response?.data?.detail || 'Не вдалося видалити притулок.',
+      });
     }
   };
   if (loading) return <LoadingSpinner />;

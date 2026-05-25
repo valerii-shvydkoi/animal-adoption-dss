@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
 import { tokens } from '../styles/tokens';
+import { useFeedback } from '../context/FeedbackContext';
 import {
   Pencil,
   X,
@@ -17,6 +18,7 @@ import {
   House,
 } from '@phosphor-icons/react';
 export default function ShelterApplications() {
+  const { notify } = useFeedback();
   const [applications, setApplications] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -68,9 +70,21 @@ export default function ShelterApplications() {
       await api.post(endpoint);
       setIsModalOpen(false);
       fetchVolunteerRequests();
+      notify({
+        type: 'success',
+        title: 'Статус оновлено',
+        message:
+          appStatus === 'APPROVED'
+            ? 'Кандидата додано до команди притулку.'
+            : 'Заявку кандидата відхилено.',
+      });
     } catch (err) {
       console.error('Помилка оновлення статусу заявки:', err);
-      alert(err.response?.data?.detail || 'Не вдалося оновити статус.');
+      notify({
+        type: 'error',
+        title: 'Не вдалося оновити статус',
+        message: err.response?.data?.detail || 'Спробуйте повторити дію пізніше.',
+      });
     } finally {
       setIsSaving(false);
     }

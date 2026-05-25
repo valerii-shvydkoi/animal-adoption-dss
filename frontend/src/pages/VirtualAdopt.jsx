@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Coins, HandHeart, ShieldCheck, Spinner } from '@phosphor-icons/react';
+import { useFeedback } from '../context/FeedbackContext';
 const tokens = {
   brandPrimary: '#EA580C',
   brandPrimaryLight: '#FFF7ED',
@@ -16,6 +17,7 @@ const amounts = [100, 200, 500, 1000];
 const VirtualAdopt = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const { notify } = useFeedback();
   const [selectedAmount, setSelectedAmount] = useState(200);
   const [customAmount, setCustomAmount] = useState('');
   const [isMonthly, setIsMonthly] = useState(true);
@@ -33,15 +35,21 @@ const VirtualAdopt = () => {
     e.preventDefault();
     const finalAmount = selectedAmount === 'custom' ? Number(customAmount) : selectedAmount;
     if (!finalAmount || finalAmount < 10) {
-      alert('Будь ласка, введіть суму від 10 грн.');
+      notify({
+        type: 'warning',
+        title: 'Перевірте суму',
+        message: 'Введіть суму підтримки від 10 грн.',
+      });
       return;
     }
     setIsSubmitting(true);
     setTimeout(() => {
       setIsSubmitting(false);
-      alert(
-        `Дякуємо за вашу допомогу. Оплата ${finalAmount} грн (${isMonthly ? 'щомісячний внесок' : 'одноразово'}) пройшла успішно.`
-      );
+      notify({
+        type: 'success',
+        title: 'Дякуємо за підтримку',
+        message: `Оплата ${finalAmount} грн (${isMonthly ? 'щомісячний внесок' : 'одноразово'}) пройшла успішно.`,
+      });
       if (id) {
         navigate(`/pet/${id}`);
       } else {

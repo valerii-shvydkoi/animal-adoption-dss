@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { UserMinus, Users, Spinner, UserPlus } from '@phosphor-icons/react';
 import { shelterApi, tokens } from '../services/api';
+import { useFeedback } from '../context/FeedbackContext';
+
 export default function ShelterTeam() {
+  const { confirm, notify } = useFeedback();
   const [members, setMembers] = useState([]);
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -39,7 +42,11 @@ export default function ShelterTeam() {
     setSubmitLoading(true);
     try {
       const res = await shelterApi.addVolunteerByEmail(email);
-      alert(res.data.detail);
+      notify({
+        type: 'success',
+        title: 'Команду оновлено',
+        message: res.data.detail,
+      });
       if (res.data.volunteer) {
         const newVolunteer = {
           id: res.data.volunteer.id,
@@ -52,20 +59,40 @@ export default function ShelterTeam() {
       setEmailInput('');
     } catch (err) {
       const backendError = err.response?.data?.detail;
-      alert(
-        backendError || 'Не вдалося додати волонтера. Перевірте, чи зареєстрований цей користувач.'
-      );
+      notify({
+        type: 'error',
+        title: 'Не вдалося додати волонтера',
+        message:
+          backendError ||
+          'Перевірте, чи зареєстрований цей користувач і чи має доступ до притулку.',
+      });
     } finally {
       setSubmitLoading(false);
     }
   };
   const handleRemoveVolunteer = async (volunteerId, email) => {
-    if (!window.confirm(`Ви впевнені, що хочете видалити ${email} з команди притулку?`)) return;
+    const isConfirmed = await confirm({
+      title: 'Видалити волонтера з команди?',
+      message: `${email} втратить доступ до керування тваринами та заявками цього притулку.`,
+      confirmLabel: 'Видалити',
+      variant: 'warning',
+    });
+    if (!isConfirmed) return;
+
     try {
       await shelterApi.removeVolunteer(volunteerId);
       setMembers((prev) => prev.filter((m) => m.id !== volunteerId));
+      notify({
+        type: 'success',
+        title: 'Волонтера видалено',
+        message: 'Список команди притулку оновлено.',
+      });
     } catch (err) {
-      alert(err.response?.data?.detail || 'Не вдалося видалити волонтера.');
+      notify({
+        type: 'error',
+        title: 'Не вдалося видалити волонтера',
+        message: err.response?.data?.detail || 'Спробуйте повторити дію пізніше.',
+      });
     }
   };
   if (loading) {

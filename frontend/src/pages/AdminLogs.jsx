@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
+import { useFeedback } from '../context/FeedbackContext';
 import { tokens as globalTokens } from '../styles/tokens';
 import {
   TerminalWindow,
@@ -23,6 +24,7 @@ const tokens = {
   radiusXl: '24px',
 };
 export default function AdminLogs() {
+  const { confirm, notify } = useFeedback();
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -63,21 +65,32 @@ export default function AdminLogs() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
   const handleClearLogs = async () => {
-    if (
-      !window.confirm(
-        'Ви впевнені, що хочете безповоротно очистити журнал системних логів у файлі app.log?'
-      )
-    )
-      return;
+    const isConfirmed = await confirm({
+      title: 'Очистити системні логи?',
+      message: 'Журнал app.log буде очищено. Дія потрібна лише для службового обслуговування.',
+      confirmLabel: 'Очистити',
+      variant: 'warning',
+    });
+    if (!isConfirmed) return;
     setError(null);
     try {
       await api.delete('/admin/logs/clear/');
       setLogs([]);
+      notify({
+        type: 'success',
+        title: 'Логи очищено',
+        message: 'Системний журнал готовий до нової демонстрації.',
+      });
     } catch (err) {
       console.error('Помилка очищення логів:', err);
-      setError(
-        'Не вдалося очистити логи на сервері. Можливо, недостатньо прав або файл заблоковано системою.'
-      );
+      const message =
+        'Не вдалося очистити логи на сервері. Можливо, недостатньо прав або файл заблоковано системою.';
+      setError(message);
+      notify({
+        type: 'error',
+        title: 'Логи не очищено',
+        message,
+      });
     }
   };
   const downloadLogFile = () => {
