@@ -425,479 +425,487 @@ const Navbar = () => {
                       borderRadius: '16px',
                       border: '1px solid rgba(255, 255, 255, 0.1)',
                       boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
-                      padding: '8px 0 12px',
+                      padding: 0,
                       maxHeight: 'calc(100dvh - 96px)',
-                      overflowY: 'auto',
+                      overflow: 'hidden',
                       overflowX: 'hidden',
                       overscrollBehavior: 'contain',
                       WebkitOverflowScrolling: 'touch',
+                      display: 'flex',
+                      flexDirection: 'column',
                       animation: 'fadeIn 0.15s ease-out',
                       zIndex: 10000,
                     }}
                   >
-                    {isMobile && (
-                      <>
-                        <div
-                          style={{
-                            padding: '10px 20px 6px',
-                            fontSize: '11px',
-                            fontWeight: '800',
-                            color: '#94A3B8',
-                            letterSpacing: '1px',
-                            textTransform: 'uppercase',
-                          }}
-                        >
-                          Навігація
-                        </div>
-                        <Link
-                          to="/"
-                          className={dropdownItemClassName}
-                          style={{
-                            ...dropdownItemStyle,
-                            color: isLinkActive('/') ? tokens.brandPrimary : '#F8FAFC',
-                          }}
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <PawPrint
-                            size={18}
-                            color={isLinkActive('/') ? tokens.brandPrimary : '#94A3B8'}
-                            weight={isLinkActive('/') ? 'fill' : 'duotone'}
-                          />
-                          Каталог тварин
-                        </Link>
-                        <Link
-                          to="/questionnaire"
-                          className={dropdownItemClassName}
-                          style={{
-                            ...dropdownItemStyle,
-                            color: isLinkActive('/questionnaire') ? tokens.brandPrimary : '#F8FAFC',
-                          }}
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <ClipboardText
-                            size={18}
-                            color={isLinkActive('/questionnaire') ? tokens.brandPrimary : '#94A3B8'}
-                            weight={isLinkActive('/questionnaire') ? 'fill' : 'duotone'}
-                          />
-                          Анкета підбору
-                        </Link>
-                        <div
-                          style={{
-                            height: '1px',
-                            background: 'rgba(255, 255, 255, 0.05)',
-                            margin: '8px',
-                          }}
-                        ></div>
-                      </>
-                    )}
+                    <div className="adoptify-dropdown-scroll">
+                      {isMobile && (
+                        <>
+                          <div
+                            style={{
+                              padding: '10px 20px 6px',
+                              fontSize: '11px',
+                              fontWeight: '800',
+                              color: '#94A3B8',
+                              letterSpacing: '1px',
+                              textTransform: 'uppercase',
+                            }}
+                          >
+                            Навігація
+                          </div>
+                          <Link
+                            to="/"
+                            className={dropdownItemClassName}
+                            style={{
+                              ...dropdownItemStyle,
+                              color: isLinkActive('/') ? tokens.brandPrimary : '#F8FAFC',
+                            }}
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <PawPrint
+                              size={18}
+                              color={isLinkActive('/') ? tokens.brandPrimary : '#94A3B8'}
+                              weight={isLinkActive('/') ? 'fill' : 'duotone'}
+                            />
+                            Каталог тварин
+                          </Link>
+                          <Link
+                            to="/questionnaire"
+                            className={dropdownItemClassName}
+                            style={{
+                              ...dropdownItemStyle,
+                              color: isLinkActive('/questionnaire')
+                                ? tokens.brandPrimary
+                                : '#F8FAFC',
+                            }}
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <ClipboardText
+                              size={18}
+                              color={
+                                isLinkActive('/questionnaire') ? tokens.brandPrimary : '#94A3B8'
+                              }
+                              weight={isLinkActive('/questionnaire') ? 'fill' : 'duotone'}
+                            />
+                            Анкета підбору
+                          </Link>
+                          <div
+                            style={{
+                              height: '1px',
+                              background: 'rgba(255, 255, 255, 0.05)',
+                              margin: '8px',
+                            }}
+                          ></div>
+                        </>
+                      )}
 
-                    {isAdmin && (
-                      <>
-                        <div
-                          style={{
-                            padding: '10px 20px 6px',
-                            fontSize: '11px',
-                            fontWeight: '800',
-                            color: adminColor,
-                            letterSpacing: '1px',
-                            textTransform: 'uppercase',
-                          }}
-                        >
-                          Адмін-панель
-                        </div>
-                        <Link
-                          to="/admin/dashboard"
-                          className="adoptify-dropdown-item admin-item"
-                          style={{
-                            ...dropdownItemStyle,
-                            color: adminColor,
-                          }}
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <ShieldWarning
-                            size={18}
-                            color={adminColor}
-                            weight={isLinkActive('/admin/dashboard') ? 'fill' : 'duotone'}
-                          />
-                          Глобальна аналітика
-                        </Link>
-                        <Link
-                          to="/admin/shelters"
-                          className="adoptify-dropdown-item admin-item"
-                          style={{
-                            ...dropdownItemStyle,
-                            color: adminColor,
-                          }}
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <Storefront
-                            size={18}
-                            color={adminColor}
-                            weight={isLinkActive('/admin/shelters') ? 'fill' : 'duotone'}
-                          />
-                          Реєстр притулків
-                        </Link>
-                        <Link
-                          to="/admin/users"
-                          className="adoptify-dropdown-item admin-item"
-                          style={{
-                            ...dropdownItemStyle,
-                            color: adminColor,
-                          }}
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <UsersThree
-                            size={18}
-                            color={adminColor}
-                            weight={isLinkActive('/admin/users') ? 'fill' : 'duotone'}
-                          />
-                          Користувачі та ролі
-                        </Link>
-                        <Link
-                          to="/admin/logs"
-                          className="adoptify-dropdown-item admin-item"
-                          style={{
-                            ...dropdownItemStyle,
-                            color: adminColor,
-                          }}
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <TerminalWindow
-                            size={18}
-                            color={adminColor}
-                            weight={isLinkActive('/admin/logs') ? 'fill' : 'duotone'}
-                          />
-                          Логи та Помилки
-                        </Link>
-                        <div
-                          style={{
-                            height: '1px',
-                            background: 'rgba(255, 255, 255, 0.05)',
-                            margin: '8px',
-                          }}
-                        ></div>
-                      </>
-                    )}
+                      {isAdmin && (
+                        <>
+                          <div
+                            style={{
+                              padding: '10px 20px 6px',
+                              fontSize: '11px',
+                              fontWeight: '800',
+                              color: adminColor,
+                              letterSpacing: '1px',
+                              textTransform: 'uppercase',
+                            }}
+                          >
+                            Адмін-панель
+                          </div>
+                          <Link
+                            to="/admin/dashboard"
+                            className="adoptify-dropdown-item admin-item"
+                            style={{
+                              ...dropdownItemStyle,
+                              color: adminColor,
+                            }}
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <ShieldWarning
+                              size={18}
+                              color={adminColor}
+                              weight={isLinkActive('/admin/dashboard') ? 'fill' : 'duotone'}
+                            />
+                            Глобальна аналітика
+                          </Link>
+                          <Link
+                            to="/admin/shelters"
+                            className="adoptify-dropdown-item admin-item"
+                            style={{
+                              ...dropdownItemStyle,
+                              color: adminColor,
+                            }}
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <Storefront
+                              size={18}
+                              color={adminColor}
+                              weight={isLinkActive('/admin/shelters') ? 'fill' : 'duotone'}
+                            />
+                            Реєстр притулків
+                          </Link>
+                          <Link
+                            to="/admin/users"
+                            className="adoptify-dropdown-item admin-item"
+                            style={{
+                              ...dropdownItemStyle,
+                              color: adminColor,
+                            }}
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <UsersThree
+                              size={18}
+                              color={adminColor}
+                              weight={isLinkActive('/admin/users') ? 'fill' : 'duotone'}
+                            />
+                            Користувачі та ролі
+                          </Link>
+                          <Link
+                            to="/admin/logs"
+                            className="adoptify-dropdown-item admin-item"
+                            style={{
+                              ...dropdownItemStyle,
+                              color: adminColor,
+                            }}
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <TerminalWindow
+                              size={18}
+                              color={adminColor}
+                              weight={isLinkActive('/admin/logs') ? 'fill' : 'duotone'}
+                            />
+                            Логи та Помилки
+                          </Link>
+                          <div
+                            style={{
+                              height: '1px',
+                              background: 'rgba(255, 255, 255, 0.05)',
+                              margin: '8px',
+                            }}
+                          ></div>
+                        </>
+                      )}
 
-                    <div
-                      style={{
-                        padding: '10px 20px 6px',
-                        fontSize: '11px',
-                        fontWeight: '800',
-                        color: '#94A3B8',
-                        letterSpacing: '1px',
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      Особисті дані
-                    </div>
-                    <Link
-                      to="/profile"
-                      className={dropdownItemClassName}
-                      style={{
-                        ...dropdownItemStyle,
-                        color: isLinkActive('/profile') ? tokens.brandPrimary : '#F8FAFC',
-                      }}
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <UserCircle
-                        size={18}
-                        color={isLinkActive('/profile') ? tokens.brandPrimary : '#94A3B8'}
-                        weight={isLinkActive('/profile') ? 'fill' : 'duotone'}
-                      />
-                      Мій профіль
-                    </Link>
-                    {!isVolunteer && !isShelterManager && !isAdmin && (
-                      <>
-                        <Link
-                          to="/my-results"
-                          className={dropdownItemClassName}
-                          style={{
-                            ...dropdownItemStyle,
-                            color: isLinkActive('/my-results') ? tokens.brandPrimary : '#F8FAFC',
-                          }}
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <ChartBar
-                            size={18}
-                            color={isLinkActive('/my-results') ? tokens.brandPrimary : '#94A3B8'}
-                            weight={isLinkActive('/my-results') ? 'fill' : 'duotone'}
-                          />
-                          Мої результати
-                        </Link>
-                        <Link
-                          to="/my-requests"
-                          className={dropdownItemClassName}
-                          style={{
-                            ...dropdownItemStyle,
-                            color: isLinkActive('/my-requests') ? tokens.brandPrimary : '#F8FAFC',
-                          }}
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <Tray
-                            size={18}
-                            color={isLinkActive('/my-requests') ? tokens.brandPrimary : '#94A3B8'}
-                            weight={isLinkActive('/my-requests') ? 'fill' : 'duotone'}
-                          />
-                          Мої заявки
-                        </Link>
-                      </>
-                    )}
-
-                    <div
-                      style={{
-                        height: '1px',
-                        background: 'rgba(255, 255, 255, 0.05)',
-                        margin: '8px',
-                      }}
-                    ></div>
-
-                    {!isVolunteer && !isShelterManager && !isAdmin && (
                       <div
                         style={{
-                          padding: '4px 0',
+                          padding: '10px 20px 6px',
+                          fontSize: '11px',
+                          fontWeight: '800',
+                          color: '#94A3B8',
+                          letterSpacing: '1px',
+                          textTransform: 'uppercase',
                         }}
                       >
-                        <div
-                          style={{
-                            padding: '4px 20px 6px',
-                            fontSize: '11px',
-                            fontWeight: '800',
-                            color: '#94A3B8',
-                            letterSpacing: '1px',
-                            textTransform: 'uppercase',
-                          }}
-                        >
-                          Партнерство
-                        </div>
-
-                        <Link
-                          to="/become-volunteer"
-                          className={dropdownItemClassName}
-                          style={{
-                            ...dropdownItemStyle,
-                            color: isLinkActive('/become-volunteer')
-                              ? tokens.brandPrimary
-                              : '#F8FAFC',
-                          }}
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <HandHeart
-                            size={18}
-                            color={
-                              isLinkActive('/become-volunteer') ? tokens.brandPrimary : '#94A3B8'
-                            }
-                            weight={isLinkActive('/become-volunteer') ? 'fill' : 'duotone'}
-                          />
-                          Стати волонтером
-                        </Link>
-
-                        <Link
-                          to="/register-shelter"
-                          className={dropdownItemClassName}
-                          style={{
-                            ...dropdownItemStyle,
-                            color: isLinkActive('/register-shelter')
-                              ? tokens.brandPrimary
-                              : '#F8FAFC',
-                          }}
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <Storefront
-                            size={18}
-                            color={
-                              isLinkActive('/register-shelter') ? tokens.brandPrimary : '#94A3B8'
-                            }
-                            weight={isLinkActive('/register-shelter') ? 'fill' : 'duotone'}
-                          />
-                          Зареєструвати притулок
-                        </Link>
-
-                        <div
-                          style={{
-                            height: '1px',
-                            background: 'rgba(255, 255, 255, 0.05)',
-                            margin: '8px',
-                          }}
-                        ></div>
+                        Особисті дані
                       </div>
-                    )}
-
-                    {isShelterManager && (
-                      <>
-                        <div
-                          style={{
-                            padding: '10px 20px 6px',
-                            fontSize: '11px',
-                            fontWeight: '800',
-                            color: shelterColor,
-                            letterSpacing: '1px',
-                            textTransform: 'uppercase',
-                          }}
-                        >
-                          Кабінет Притулку
-                        </div>
-                        <Link
-                          to="/shelter/dashboard"
-                          className="adoptify-dropdown-item shelter-item"
-                          style={{
-                            ...dropdownItemStyle,
-                            color: shelterColor,
-                          }}
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <ChartLineUp
-                            size={18}
-                            color={shelterColor}
-                            weight={isLinkActive('/shelter/dashboard') ? 'fill' : 'duotone'}
-                          />
-                          Аналітика
-                        </Link>
-                        <Link
-                          to="/shelter/pets"
-                          className="adoptify-dropdown-item shelter-item"
-                          style={{
-                            ...dropdownItemStyle,
-                            color: shelterColor,
-                          }}
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <Storefront
-                            size={18}
-                            color={shelterColor}
-                            weight={isLinkActive('/shelter/pets') ? 'fill' : 'duotone'}
-                          />
-                          Управління тваринами
-                        </Link>
-                        <Link
-                          to="/shelter/team"
-                          className="adoptify-dropdown-item shelter-item"
-                          style={{
-                            ...dropdownItemStyle,
-                            color: shelterColor,
-                          }}
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <User
-                            size={18}
-                            color={shelterColor}
-                            weight={isLinkActive('/shelter/team') ? 'fill' : 'duotone'}
-                          />
-                          Управління командою
-                        </Link>
-                        <Link
-                          to="/shelter/applications"
-                          className="adoptify-dropdown-item shelter-item"
-                          style={{
-                            ...dropdownItemStyle,
-                            color: shelterColor,
-                          }}
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <ClipboardText
-                            size={18}
-                            color={shelterColor}
-                            weight={isLinkActive('/shelter/applications') ? 'fill' : 'duotone'}
-                          />
-                          Заявки на волонтерство
-                        </Link>
-                        <div
-                          style={{
-                            height: '1px',
-                            background: 'rgba(255, 255, 255, 0.05)',
-                            margin: '8px',
-                          }}
-                        ></div>
-                      </>
-                    )}
-
-                    {isVolunteer && (
-                      <>
-                        <div
-                          style={{
-                            padding: '10px 20px 6px',
-                            fontSize: '11px',
-                            fontWeight: '800',
-                            color: volunteerColor,
-                            letterSpacing: '1px',
-                            textTransform: 'uppercase',
-                          }}
-                        >
-                          Панель волонтера
-                        </div>
-
-                        <Link
-                          to="/volunteer/pets"
-                          className="adoptify-dropdown-item volunteer-item"
-                          style={{
-                            ...dropdownItemStyle,
-                            color: volunteerColor,
-                          }}
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <PawPrint
-                            size={18}
-                            color={volunteerColor}
-                            weight={isLinkActive('/volunteer/pets') ? 'fill' : 'duotone'}
-                          />
-                          Мої підопічні
-                        </Link>
-
-                        <Link
-                          to="/volunteer/adoptions"
-                          className="adoptify-dropdown-item volunteer-item"
-                          style={{
-                            ...dropdownItemStyle,
-                            color: volunteerColor,
-                          }}
-                          onClick={() => setIsMenuOpen(false)}
-                        >
-                          <ShieldCheck
-                            size={18}
-                            color={volunteerColor}
-                            weight={isLinkActive('/volunteer/adoptions') ? 'fill' : 'duotone'}
-                          />
-                          Заявки на адаптацію
-                        </Link>
-                        <div
-                          style={{
-                            height: '1px',
-                            background: 'rgba(255, 255, 255, 0.05)',
-                            margin: '8px',
-                          }}
-                        ></div>
-                      </>
-                    )}
-
-                    <div
-                      style={{
-                        padding: '10px 20px 6px',
-                        fontSize: '11px',
-                        fontWeight: '800',
-                        color: '#64748B',
-                        letterSpacing: '1px',
-                        textTransform: 'uppercase',
-                      }}
-                    >
-                      Система та сесія
-                    </div>
-
-                    {isInstallable && (
-                      <button
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          promptInstall();
-                        }}
-                        className="adoptify-dropdown-item pwa-item"
+                      <Link
+                        to="/profile"
+                        className={dropdownItemClassName}
                         style={{
                           ...dropdownItemStyle,
-                          color: systemColor,
+                          color: isLinkActive('/profile') ? tokens.brandPrimary : '#F8FAFC',
+                        }}
+                        onClick={() => setIsMenuOpen(false)}
+                      >
+                        <UserCircle
+                          size={18}
+                          color={isLinkActive('/profile') ? tokens.brandPrimary : '#94A3B8'}
+                          weight={isLinkActive('/profile') ? 'fill' : 'duotone'}
+                        />
+                        Мій профіль
+                      </Link>
+                      {!isVolunteer && !isShelterManager && !isAdmin && (
+                        <>
+                          <Link
+                            to="/my-results"
+                            className={dropdownItemClassName}
+                            style={{
+                              ...dropdownItemStyle,
+                              color: isLinkActive('/my-results') ? tokens.brandPrimary : '#F8FAFC',
+                            }}
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <ChartBar
+                              size={18}
+                              color={isLinkActive('/my-results') ? tokens.brandPrimary : '#94A3B8'}
+                              weight={isLinkActive('/my-results') ? 'fill' : 'duotone'}
+                            />
+                            Мої результати
+                          </Link>
+                          <Link
+                            to="/my-requests"
+                            className={dropdownItemClassName}
+                            style={{
+                              ...dropdownItemStyle,
+                              color: isLinkActive('/my-requests') ? tokens.brandPrimary : '#F8FAFC',
+                            }}
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <Tray
+                              size={18}
+                              color={isLinkActive('/my-requests') ? tokens.brandPrimary : '#94A3B8'}
+                              weight={isLinkActive('/my-requests') ? 'fill' : 'duotone'}
+                            />
+                            Мої заявки
+                          </Link>
+                        </>
+                      )}
+
+                      <div
+                        style={{
+                          height: '1px',
+                          background: 'rgba(255, 255, 255, 0.05)',
+                          margin: '8px',
+                        }}
+                      ></div>
+
+                      {!isVolunteer && !isShelterManager && !isAdmin && (
+                        <div
+                          style={{
+                            padding: '4px 0',
+                          }}
+                        >
+                          <div
+                            style={{
+                              padding: '4px 20px 6px',
+                              fontSize: '11px',
+                              fontWeight: '800',
+                              color: '#94A3B8',
+                              letterSpacing: '1px',
+                              textTransform: 'uppercase',
+                            }}
+                          >
+                            Партнерство
+                          </div>
+
+                          <Link
+                            to="/become-volunteer"
+                            className={dropdownItemClassName}
+                            style={{
+                              ...dropdownItemStyle,
+                              color: isLinkActive('/become-volunteer')
+                                ? tokens.brandPrimary
+                                : '#F8FAFC',
+                            }}
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <HandHeart
+                              size={18}
+                              color={
+                                isLinkActive('/become-volunteer') ? tokens.brandPrimary : '#94A3B8'
+                              }
+                              weight={isLinkActive('/become-volunteer') ? 'fill' : 'duotone'}
+                            />
+                            Стати волонтером
+                          </Link>
+
+                          <Link
+                            to="/register-shelter"
+                            className={dropdownItemClassName}
+                            style={{
+                              ...dropdownItemStyle,
+                              color: isLinkActive('/register-shelter')
+                                ? tokens.brandPrimary
+                                : '#F8FAFC',
+                            }}
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <Storefront
+                              size={18}
+                              color={
+                                isLinkActive('/register-shelter') ? tokens.brandPrimary : '#94A3B8'
+                              }
+                              weight={isLinkActive('/register-shelter') ? 'fill' : 'duotone'}
+                            />
+                            Зареєструвати притулок
+                          </Link>
+
+                          <div
+                            style={{
+                              height: '1px',
+                              background: 'rgba(255, 255, 255, 0.05)',
+                              margin: '8px',
+                            }}
+                          ></div>
+                        </div>
+                      )}
+
+                      {isShelterManager && (
+                        <>
+                          <div
+                            style={{
+                              padding: '10px 20px 6px',
+                              fontSize: '11px',
+                              fontWeight: '800',
+                              color: shelterColor,
+                              letterSpacing: '1px',
+                              textTransform: 'uppercase',
+                            }}
+                          >
+                            Кабінет Притулку
+                          </div>
+                          <Link
+                            to="/shelter/dashboard"
+                            className="adoptify-dropdown-item shelter-item"
+                            style={{
+                              ...dropdownItemStyle,
+                              color: shelterColor,
+                            }}
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <ChartLineUp
+                              size={18}
+                              color={shelterColor}
+                              weight={isLinkActive('/shelter/dashboard') ? 'fill' : 'duotone'}
+                            />
+                            Аналітика
+                          </Link>
+                          <Link
+                            to="/shelter/pets"
+                            className="adoptify-dropdown-item shelter-item"
+                            style={{
+                              ...dropdownItemStyle,
+                              color: shelterColor,
+                            }}
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <Storefront
+                              size={18}
+                              color={shelterColor}
+                              weight={isLinkActive('/shelter/pets') ? 'fill' : 'duotone'}
+                            />
+                            Управління тваринами
+                          </Link>
+                          <Link
+                            to="/shelter/team"
+                            className="adoptify-dropdown-item shelter-item"
+                            style={{
+                              ...dropdownItemStyle,
+                              color: shelterColor,
+                            }}
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <User
+                              size={18}
+                              color={shelterColor}
+                              weight={isLinkActive('/shelter/team') ? 'fill' : 'duotone'}
+                            />
+                            Управління командою
+                          </Link>
+                          <Link
+                            to="/shelter/applications"
+                            className="adoptify-dropdown-item shelter-item"
+                            style={{
+                              ...dropdownItemStyle,
+                              color: shelterColor,
+                            }}
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <ClipboardText
+                              size={18}
+                              color={shelterColor}
+                              weight={isLinkActive('/shelter/applications') ? 'fill' : 'duotone'}
+                            />
+                            Заявки на волонтерство
+                          </Link>
+                          <div
+                            style={{
+                              height: '1px',
+                              background: 'rgba(255, 255, 255, 0.05)',
+                              margin: '8px',
+                            }}
+                          ></div>
+                        </>
+                      )}
+
+                      {isVolunteer && (
+                        <>
+                          <div
+                            style={{
+                              padding: '10px 20px 6px',
+                              fontSize: '11px',
+                              fontWeight: '800',
+                              color: volunteerColor,
+                              letterSpacing: '1px',
+                              textTransform: 'uppercase',
+                            }}
+                          >
+                            Панель волонтера
+                          </div>
+
+                          <Link
+                            to="/volunteer/pets"
+                            className="adoptify-dropdown-item volunteer-item"
+                            style={{
+                              ...dropdownItemStyle,
+                              color: volunteerColor,
+                            }}
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <PawPrint
+                              size={18}
+                              color={volunteerColor}
+                              weight={isLinkActive('/volunteer/pets') ? 'fill' : 'duotone'}
+                            />
+                            Мої підопічні
+                          </Link>
+
+                          <Link
+                            to="/volunteer/adoptions"
+                            className="adoptify-dropdown-item volunteer-item"
+                            style={{
+                              ...dropdownItemStyle,
+                              color: volunteerColor,
+                            }}
+                            onClick={() => setIsMenuOpen(false)}
+                          >
+                            <ShieldCheck
+                              size={18}
+                              color={volunteerColor}
+                              weight={isLinkActive('/volunteer/adoptions') ? 'fill' : 'duotone'}
+                            />
+                            Заявки на адаптацію
+                          </Link>
+                          <div
+                            style={{
+                              height: '1px',
+                              background: 'rgba(255, 255, 255, 0.05)',
+                              margin: '8px',
+                            }}
+                          ></div>
+                        </>
+                      )}
+
+                      <div
+                        style={{
+                          padding: '10px 20px 6px',
+                          fontSize: '11px',
+                          fontWeight: '800',
+                          color: '#64748B',
+                          letterSpacing: '1px',
+                          textTransform: 'uppercase',
                         }}
                       >
-                        <DownloadSimple size={18} color={systemColor} weight="bold" />
-                        Встановити додаток
-                      </button>
-                    )}
+                        Система та сесія
+                      </div>
+
+                      {isInstallable && (
+                        <button
+                          onClick={() => {
+                            setIsMenuOpen(false);
+                            promptInstall();
+                          }}
+                          className="adoptify-dropdown-item pwa-item"
+                          style={{
+                            ...dropdownItemStyle,
+                            color: systemColor,
+                          }}
+                        >
+                          <DownloadSimple size={18} color={systemColor} weight="bold" />
+                          Встановити додаток
+                        </button>
+                      )}
+                    </div>
 
                     <div className="adoptify-dropdown-footer">
                       <button
@@ -1291,18 +1299,32 @@ const Navbar = () => {
         .adoptify-nav-dropdown {
           max-width: calc(100vw - 24px) !important;
           max-height: calc(100dvh - 96px) !important;
-          overflow-y: auto !important;
+          overflow: hidden !important;
           overscroll-behavior: contain;
+          display: flex !important;
+          flex-direction: column !important;
           -webkit-tap-highlight-color: transparent;
         }
 
+        .adoptify-dropdown-scroll {
+          min-height: 0;
+          max-height: calc(100dvh - 156px);
+          padding: 8px 0 4px;
+          overflow-x: hidden;
+          overflow-y: auto;
+          overscroll-behavior: contain;
+          scrollbar-gutter: stable;
+          -webkit-overflow-scrolling: touch;
+        }
+
         .adoptify-dropdown-footer {
-          position: sticky;
-          bottom: 0;
+          position: relative;
           z-index: 2;
-          padding: 8px 0 2px;
-          margin-top: 4px;
-          background: linear-gradient(180deg, rgba(30, 41, 59, 0.88), #1E293B 42%);
+          flex-shrink: 0;
+          padding: 8px 0 10px;
+          margin-top: 0;
+          background: #1E293B;
+          border-top: 1px solid rgba(255, 255, 255, 0.08);
           box-shadow: 0 -10px 18px rgba(15, 23, 42, 0.22);
         }
 

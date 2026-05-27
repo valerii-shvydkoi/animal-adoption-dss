@@ -219,6 +219,11 @@ const PetCard = ({ pet, context = 'catalog', onRequestClick }) => {
     };
   };
   const shelterName = pet.shel_name || pet.shelter_name || pet.shelter?.name;
+  const behaviorTags = Array.isArray(pet.behavior_tags)
+    ? pet.behavior_tags.filter((tag) => typeof tag === 'string' && tag.trim())
+    : [];
+  const visibleBehaviorTags = behaviorTags.slice(0, 2);
+  const hiddenBehaviorTagCount = Math.max(behaviorTags.length - visibleBehaviorTags.length, 0);
   const isShelterMode =
     pet.care_type === 'SHELTER' || String(pet.care_type).toUpperCase() === 'SHELTER';
   const ownerLabel = isShelterMode
@@ -320,9 +325,6 @@ const PetCard = ({ pet, context = 'catalog', onRequestClick }) => {
           .pet-fluid-location {
             font-size: 12px !important;
             line-height: 1.4 !important;
-            display: inline !important;
-            overflow: visible !important;
-            text-overflow: clip !important;
           }
           .pet-action-button-group { gap: 6px !important; }
           .pet-details-urgency-badge { font-size: 10px !important; padding: 4px 8px !important; }
@@ -690,8 +692,9 @@ const PetCard = ({ pet, context = 'catalog', onRequestClick }) => {
           </div>
         </div>
 
-        {pet.behavior_tags && pet.behavior_tags.length > 0 && (
+        {behaviorTags.length > 0 && (
           <div
+            title={behaviorTags.join(', ')}
             style={{
               display: 'flex',
               gap: '4px',
@@ -700,7 +703,7 @@ const PetCard = ({ pet, context = 'catalog', onRequestClick }) => {
               marginBottom: '16px',
             }}
           >
-            {pet.behavior_tags.slice(0, 2).map((tag, i) => (
+            {visibleBehaviorTags.map((tag, i) => (
               <span
                 key={i}
                 title={tag}
@@ -712,16 +715,37 @@ const PetCard = ({ pet, context = 'catalog', onRequestClick }) => {
                   padding: '2px 8px',
                   borderRadius: '4px',
                   whiteSpace: 'normal',
-                  overflow: 'visible',
+                  overflow: 'hidden',
                   textOverflow: 'clip',
                   maxWidth: '100%',
                   overflowWrap: 'anywhere',
                   lineHeight: 1.25,
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical',
                 }}
               >
                 {tag}
               </span>
             ))}
+            {hiddenBehaviorTagCount > 0 && (
+              <span
+                title={behaviorTags.slice(2).join(', ')}
+                style={{
+                  fontSize: '11px',
+                  fontWeight: '800',
+                  color: tokens.brandPrimary,
+                  background: tokens.brandPrimaryLight,
+                  border: `1px solid ${tokens.brandPrimaryBorder}`,
+                  padding: '2px 8px',
+                  borderRadius: '4px',
+                  lineHeight: 1.25,
+                  flexShrink: 0,
+                }}
+              >
+                +{hiddenBehaviorTagCount}
+              </span>
+            )}
           </div>
         )}
 
@@ -750,10 +774,13 @@ const PetCard = ({ pet, context = 'catalog', onRequestClick }) => {
             title={`${displayCity} • ${ownerLabel}`}
             style={{
               whiteSpace: 'normal',
-              overflow: 'visible',
-              textOverflow: 'clip',
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
               overflowWrap: 'anywhere',
               lineHeight: 1.35,
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
               flex: 1,
             }}
           >
