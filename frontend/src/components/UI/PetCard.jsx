@@ -320,11 +320,9 @@ const PetCard = ({ pet, context = 'catalog', onRequestClick }) => {
           .pet-fluid-location {
             font-size: 12px !important;
             line-height: 1.4 !important;
-            display: -webkit-box !important;
-            -webkit-line-clamp: 2 !important;
-            -webkit-box-orient: vertical !important;
-            overflow: hidden !important;
-            text-overflow: ellipsis !important;
+            display: inline !important;
+            overflow: visible !important;
+            text-overflow: clip !important;
           }
           .pet-action-button-group { gap: 6px !important; }
           .pet-details-urgency-badge { font-size: 10px !important; padding: 4px 8px !important; }
@@ -481,10 +479,14 @@ const PetCard = ({ pet, context = 'catalog', onRequestClick }) => {
               margin: 0,
               fontWeight: '800',
               color: tokens.textPrimary,
-              letterSpacing: '-0.02em',
-              whiteSpace: 'nowrap',
+              letterSpacing: 0,
+              whiteSpace: 'normal',
               overflow: 'hidden',
-              textOverflow: 'ellipsis',
+              textOverflow: 'clip',
+              display: '-webkit-box',
+              WebkitLineClamp: 2,
+              WebkitBoxOrient: 'vertical',
+              overflowWrap: 'anywhere',
               flex: 1,
             }}
           >
@@ -694,12 +696,14 @@ const PetCard = ({ pet, context = 'catalog', onRequestClick }) => {
               display: 'flex',
               gap: '4px',
               flexWrap: 'wrap',
+              alignItems: 'flex-start',
               marginBottom: '16px',
             }}
           >
             {pet.behavior_tags.slice(0, 2).map((tag, i) => (
               <span
                 key={i}
+                title={tag}
                 style={{
                   fontSize: '11px',
                   fontWeight: '700',
@@ -707,10 +711,12 @@ const PetCard = ({ pet, context = 'catalog', onRequestClick }) => {
                   background: '#F1F5F9',
                   padding: '2px 8px',
                   borderRadius: '4px',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  maxWidth: '110px',
+                  whiteSpace: 'normal',
+                  overflow: 'visible',
+                  textOverflow: 'clip',
+                  maxWidth: '100%',
+                  overflowWrap: 'anywhere',
+                  lineHeight: 1.25,
                 }}
               >
                 {tag}
@@ -728,7 +734,7 @@ const PetCard = ({ pet, context = 'catalog', onRequestClick }) => {
             alignItems: 'center',
             gap: '6px',
             width: '100%',
-            overflow: 'hidden',
+            overflow: 'visible',
           }}
         >
           <MapPin
@@ -743,9 +749,11 @@ const PetCard = ({ pet, context = 'catalog', onRequestClick }) => {
             className="pet-fluid-location"
             title={`${displayCity} • ${ownerLabel}`}
             style={{
-              whiteSpace: 'nowrap',
-              overflow: 'hidden',
-              textOverflow: 'ellipsis',
+              whiteSpace: 'normal',
+              overflow: 'visible',
+              textOverflow: 'clip',
+              overflowWrap: 'anywhere',
+              lineHeight: 1.35,
               flex: 1,
             }}
           >

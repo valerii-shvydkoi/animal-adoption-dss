@@ -417,18 +417,20 @@ const Navbar = () => {
                   <div
                     className="adoptify-nav-dropdown"
                     style={{
-                      position: isMobile ? 'fixed' : 'absolute',
-                      top: isMobile ? '72px' : 'calc(100% + 12px)',
-                      right: isMobile ? '12px' : 0,
-                      width: isMobile ? 'calc(100vw - 24px)' : '260px',
+                      position: 'fixed',
+                      top: '72px',
+                      right: isMobile ? '12px' : 'max(24px, calc((100vw - 1280px) / 2 + 40px))',
+                      width: isMobile ? 'calc(100vw - 24px)' : 'min(300px, calc(100vw - 24px))',
                       background: '#1E293B',
                       borderRadius: '16px',
                       border: '1px solid rgba(255, 255, 255, 0.1)',
                       boxShadow: '0 20px 40px rgba(0,0,0,0.6)',
-                      padding: '8px 0',
-                      maxHeight: 'calc(100dvh - 88px)',
+                      padding: '8px 0 12px',
+                      maxHeight: 'calc(100dvh - 96px)',
                       overflowY: 'auto',
                       overflowX: 'hidden',
+                      overscrollBehavior: 'contain',
+                      WebkitOverflowScrolling: 'touch',
                       animation: 'fadeIn 0.15s ease-out',
                       zIndex: 10000,
                     }}
@@ -897,17 +899,19 @@ const Navbar = () => {
                       </button>
                     )}
 
-                    <button
-                      onClick={logout}
-                      className="adoptify-dropdown-item logout-item"
-                      style={{
-                        ...dropdownItemStyle,
-                        color: '#F87171',
-                      }}
-                    >
-                      <SignOut size={18} color="#F87171" weight="duotone" />
-                      Вийти з акаунту
-                    </button>
+                    <div className="adoptify-dropdown-footer">
+                      <button
+                        onClick={logout}
+                        className="adoptify-dropdown-item logout-item"
+                        style={{
+                          ...dropdownItemStyle,
+                          color: '#F87171',
+                        }}
+                      >
+                        <SignOut size={18} color="#F87171" weight="duotone" />
+                        Вийти з акаунту
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
@@ -1286,9 +1290,24 @@ const Navbar = () => {
 
         .adoptify-nav-dropdown {
           max-width: calc(100vw - 24px) !important;
-          max-height: calc(100vh - 85px) !important;
+          max-height: calc(100dvh - 96px) !important;
           overflow-y: auto !important;
+          overscroll-behavior: contain;
           -webkit-tap-highlight-color: transparent;
+        }
+
+        .adoptify-dropdown-footer {
+          position: sticky;
+          bottom: 0;
+          z-index: 2;
+          padding: 8px 0 2px;
+          margin-top: 4px;
+          background: linear-gradient(180deg, rgba(30, 41, 59, 0.88), #1E293B 42%);
+          box-shadow: 0 -10px 18px rgba(15, 23, 42, 0.22);
+        }
+
+        .adoptify-dropdown-footer .logout-item {
+          margin-bottom: 0 !important;
         }
 
         .nav-btn-heart, .user-menu-btn, .nav-logo, .auth-modal-btn-group button {

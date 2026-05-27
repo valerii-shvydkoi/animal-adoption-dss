@@ -38,6 +38,15 @@ api.interceptors.request.use(
   (config) => {
     config.headers = config.headers || {};
 
+    if (typeof FormData !== 'undefined' && config.data instanceof FormData) {
+      if (typeof config.headers.delete === 'function') {
+        config.headers.delete('Content-Type');
+      } else {
+        delete config.headers['Content-Type'];
+        delete config.headers['content-type'];
+      }
+    }
+
     if (config.skipAuth) {
       delete config.headers.Authorization;
       delete config.headers.authorization;

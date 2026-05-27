@@ -256,13 +256,6 @@ export default function ShelterPetManager() {
       sociability: Number(petSociability),
       stress_resistance: Number(petStressResistance),
     };
-    const requestConfig = petPhotoFile
-      ? {
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
-        }
-      : undefined;
     const requestPayload = petPhotoFile ? new FormData() : payload;
     if (petPhotoFile) {
       Object.entries(payload).forEach(([key, value]) => {
@@ -282,9 +275,9 @@ export default function ShelterPetManager() {
     setIsSaving(true);
     try {
       if (editingPetId) {
-        await api.patch(`/pets/${editingPetId}/`, requestPayload, requestConfig);
+        await api.patch(`/pets/${editingPetId}/`, requestPayload);
       } else {
-        await api.post('/pets/', requestPayload, requestConfig);
+        await api.post('/pets/', requestPayload);
       }
       notify({
         type: 'success',

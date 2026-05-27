@@ -1576,10 +1576,13 @@ const Catalog = () => {
                   }}
                 >
                   <span
+                    title={badge.label}
                     style={{
-                      whiteSpace: 'nowrap',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
+                      whiteSpace: 'normal',
+                      overflow: 'visible',
+                      textOverflow: 'clip',
+                      overflowWrap: 'anywhere',
+                      lineHeight: 1.25,
                     }}
                   >
                     {badge.label}

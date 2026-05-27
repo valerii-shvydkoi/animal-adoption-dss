@@ -103,15 +103,10 @@ const PetForm = ({ pet, onSuccess }) => {
       if (photoFile) {
         submitData.append('photo', photoFile);
       }
-      const config = {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-        },
-      };
       if (pet?.id) {
-        await api.put(`/pets/${pet.id}/`, submitData, config);
+        await api.put(`/pets/${pet.id}/`, submitData);
       } else {
-        await api.post('/pets/', submitData, config);
+        await api.post('/pets/', submitData);
       }
       if (!pet) {
         setFormData(DEFAULT_FORM_VALUES);
