@@ -52,6 +52,10 @@ const Navbar = () => {
   }, [user]);
   useEffect(() => {
     const handleScroll = () => {
+      if (isMenuOpen) {
+        setIsVisible(true);
+        return;
+      }
       const currentScrollY = window.scrollY;
       if (currentScrollY > lastScrollYRef.current && currentScrollY > 80) {
         setIsVisible(false);
@@ -64,7 +68,7 @@ const Navbar = () => {
       passive: true,
     });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isMenuOpen]);
   useEffect(() => {
     const handleResize = () => {
       setWindowWidth(window.innerWidth);
@@ -152,7 +156,8 @@ const Navbar = () => {
           borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
           padding: navPadding,
           height: '64px',
-          transform: isVisible ? 'translateY(0)' : 'translateY(-100%)',
+          overflow: 'visible',
+          transform: isMenuOpen || isVisible ? 'none' : 'translateY(-100%)',
           transition: 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1), padding 0.3s ease',
           boxShadow: lastScrollYRef.current > 20 ? '0 8px 25px rgba(0, 0, 0, 0.15)' : 'none',
         }}
@@ -1240,6 +1245,7 @@ const Navbar = () => {
           will-change: transform;
           -webkit-font-smoothing: antialiased;
           -moz-osx-font-smoothing: grayscale;
+          overflow: visible !important;
         }
 
         .adoptify-dropdown-item {

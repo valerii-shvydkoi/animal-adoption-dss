@@ -1,6 +1,8 @@
 import axios from 'axios';
 export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1/';
 export const API_ORIGIN = new URL(API_BASE_URL, window.location.origin).origin;
+const API_BASE_ABSOLUTE_URL = new URL(API_BASE_URL, window.location.origin);
+const resolveApiUrl = (path) => new URL(path, API_BASE_ABSOLUTE_URL).toString();
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 10000,
@@ -78,7 +80,7 @@ api.interceptors.response.use(
           }
           return Promise.reject(error);
         }
-        const refreshUrl = new URL('auth/token/refresh/', API_BASE_URL).toString();
+        const refreshUrl = resolveApiUrl('auth/token/refresh/');
         const res = await axios.post(refreshUrl, {
           refresh: refreshToken,
         });

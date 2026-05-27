@@ -158,11 +158,11 @@ const StaticStyles = () => (
       border-width: 6px; border-style: solid; border-color: #0F172A transparent transparent transparent;
     }
     .consistency-badge {
-      position: fixed !important;
-      top: 84px !important;
-      right: 20px !important;
-      z-index: 1200 !important;
-      box-shadow: 0 12px 28px rgba(15, 23, 42, 0.14);
+      position: static !important;
+      width: fit-content !important;
+      max-width: 100% !important;
+      margin-left: auto !important;
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.08);
     }
     .pointer-anim { display: inline-flex; align-items: center; justify-content: center; animation: bounceSideways 1s infinite; margin-right: 8px; }
     @keyframes bounceSideways { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-5px); } }
@@ -173,10 +173,10 @@ const StaticStyles = () => (
       .step-header-text { font-size: 24px !important; line-height: 1.2 !important; }
       .step-desc-text { font-size: 14px !important; padding: 0 4px !important; }
       .consistency-badge {
-        top: auto !important;
-        right: 12px !important;
-        bottom: 16px !important;
-        max-width: calc(100vw - 24px) !important;
+        width: 100% !important;
+        margin-left: 0 !important;
+        justify-content: center !important;
+        box-shadow: none !important;
       }
 
       .checkbox-label {
