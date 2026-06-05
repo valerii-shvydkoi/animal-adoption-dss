@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import api from '../services/api';
 import LoadingSpinner from '../components/UI/LoadingSpinner';
 import ErrorMessage from '../components/UI/ErrorMessage';
@@ -16,18 +16,21 @@ import {
 const CreateRequest = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
   const [pet, setPet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [firstName, setFirstName] = useState('');
+  const [lastName, setLastName] = useState('');
   const [phone, setPhone] = useState('+380');
   const [message, setMessage] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [success, setSuccess] = useState(false);
   const [submitError, setSubmitError] = useState(null);
-  const [latestResultId, setLatestResultId] = useState(null);
+  const [latestResultId, setLatestResultId] = useState(location.state?.questionnaireResultId || null);
   const textareaRef = useRef(null);
   const phoneInputRef = useRef(null);
+  const returnPath = location.state?.from || `/pet/${id}`;
   useEffect(() => {
     let isMounted = true;
     const fetchData = async () => {
@@ -42,6 +45,7 @@ const CreateRequest = () => {
             const profile = profileResponse.data?.profile || profileResponse.data;
             if (profile) {
               if (profile.first_name) setFirstName(profile.first_name);
+              if (profile.last_name) setLastName(profile.last_name);
               if (profile.phone) {
                 setPhone(
                   profile.phone.startsWith('+380')
@@ -62,7 +66,7 @@ const CreateRequest = () => {
           const resultsData = resultsResponse.data?.results || resultsResponse.data;
           if (isMounted && Array.isArray(resultsData) && resultsData.length > 0) {
             const latestResult = resultsData[0];
-            setLatestResultId(latestResult.id);
+            setLatestResultId(location.state?.questionnaireResultId || latestResult.id);
           }
         } catch {
           setLatestResultId(null);
@@ -79,7 +83,7 @@ const CreateRequest = () => {
     return () => {
       isMounted = false;
     };
-  }, [id]);
+  }, [id, location.state?.questionnaireResultId]);
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -90,6 +94,11 @@ const CreateRequest = () => {
     let val = e.target.value;
     val = val.replace(/[^a-zA-Zа-яА-ЯёЁіІїЇєЄґҐ\s-]/g, '');
     setFirstName(val);
+  };
+  const handleLastNameChange = (e) => {
+    let val = e.target.value;
+    val = val.replace(/[^a-zA-Zа-яА-ЯёЁіІїЇєЄґҐ\s-]/g, '');
+    setLastName(val);
   };
   const handlePhoneChange = (e) => {
     let val = e.target.value;
@@ -119,6 +128,7 @@ const CreateRequest = () => {
       await api.patch('/auth/profile/', {
         profile: {
           first_name: firstName.trim(),
+          last_name: lastName.trim(),
           phone: phone,
         },
       });
@@ -167,7 +177,7 @@ const CreateRequest = () => {
       }}
     >
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => navigate(returnPath)}
         style={{
           background: 'none',
           border: 'none',
@@ -415,6 +425,87 @@ const CreateRequest = () => {
                       value={firstName}
                       onChange={handleNameChange}
                       placeholder="Лише літери (напр. Марія)"
+                      style={{
+                        width: '100%',
+                        padding: '14px 16px 14px 44px',
+                        borderRadius: '12px',
+                        border: '1px solid #E2E8F0',
+                        outline: 'none',
+                        fontSize: '15px',
+                        color: '#0F172A',
+                        boxSizing: 'border-box',
+                        transition: 'all 0.2s',
+                        background: '#F8FAFC',
+                        fontWeight: '500',
+                      }}
+                      onFocus={(e) => {
+                        e.currentTarget.style.borderColor = '#EA580C';
+                        e.currentTarget.style.background = '#FFF';
+                        e.currentTarget.style.boxShadow = '0 0 0 3px rgba(234, 88, 12, 0.1)';
+                      }}
+                      onBlur={(e) => {
+                        e.currentTarget.style.borderColor = '#E2E8F0';
+                        e.currentTarget.style.background = '#F8FAFC';
+                        e.currentTarget.style.boxShadow = 'none';
+                      }}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <div
+                    style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '8px',
+                    }}
+                  >
+                    <label
+                      htmlFor="lastName"
+                      style={{
+                        color: '#4A5568',
+                        fontWeight: '700',
+                        fontSize: '14px',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      Ваше прізвище
+                    </label>
+                    <span
+                      style={{
+                        fontSize: '11px',
+                        color: '#A0AEC0',
+                        fontWeight: '600',
+                      }}
+                    >
+                      {lastName.length}/30
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      position: 'relative',
+                    }}
+                  >
+                    <User
+                      size={18}
+                      color="#A0AEC0"
+                      weight="bold"
+                      style={{
+                        position: 'absolute',
+                        left: '16px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        pointerEvents: 'none',
+                      }}
+                    />
+                    <input
+                      id="lastName"
+                      type="text"
+                      maxLength={30}
+                      value={lastName}
+                      onChange={handleLastNameChange}
+                      placeholder="За бажанням"
                       style={{
                         width: '100%',
                         padding: '14px 16px 14px 44px',

@@ -58,6 +58,7 @@ export const AHPProvider = ({ children }) => {
   });
   const [userProfile, setUserProfile] = useState({
     name: '',
+    last_name: '',
     phone: '',
     has_car: false,
     has_shelter: false,
@@ -80,6 +81,7 @@ export const AHPProvider = ({ children }) => {
   });
   const [loading, setLoading] = useState(false);
   const [isProfileLoading, setIsProfileLoading] = useState(true);
+  const [profileReloadKey, setProfileReloadKey] = useState(0);
   const [error, setError] = useState(null);
   const clearError = () => setError(null);
   const getCleanUrl = (endpoint) => {
@@ -110,10 +112,12 @@ export const AHPProvider = ({ children }) => {
         const fetchedName = normalizeProfileName(
           data.name || data.first_name || data.profile?.first_name || data.profile?.name || ''
         );
+        const fetchedLastName = normalizeProfileName(data.last_name || data.profile?.last_name || '');
         const fetchedPhone = data.phone || data.profile?.phone || '';
         const pref = data.profile || data;
         setUserProfile({
           name: fetchedName,
+          last_name: fetchedLastName,
           phone: fetchedPhone,
           has_car: !!pref.has_car,
           has_shelter: !!pref.has_shelter,
@@ -173,10 +177,12 @@ export const AHPProvider = ({ children }) => {
             const fallbackName = normalizeProfileName(
               d.name || d.first_name || d.profile?.first_name || ''
             );
+            const fallbackLastName = normalizeProfileName(d.last_name || d.profile?.last_name || '');
             const pref = d.profile || d;
             setUserProfile((prev) => ({
               ...prev,
               name: fallbackName,
+              last_name: fallbackLastName,
               phone: pref.phone || '',
               has_car: !!pref.has_car,
               has_shelter: !!pref.has_shelter,
@@ -204,7 +210,7 @@ export const AHPProvider = ({ children }) => {
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, [profileReloadKey]);
   const reorderItems = (category, startIndex, endIndex) => {
     setCategories((prev) => {
       const currentItems = prev[category];
@@ -270,6 +276,7 @@ export const AHPProvider = ({ children }) => {
     const payload = {
       name: cleanName,
       first_name: cleanName,
+      last_name: normalizeProfileName(profileToSend.last_name),
       phone: profileToSend.phone ? profileToSend.phone.trim() : '',
       has_car: Boolean(profileToSend.has_car),
       has_shelter: Boolean(profileToSend.has_shelter),
@@ -368,8 +375,10 @@ export const AHPProvider = ({ children }) => {
         const parsed = JSON.parse(storedUser);
         parsed.name = profileToSend.name;
         parsed.first_name = profileToSend.name;
+        parsed.last_name = profileToSend.last_name || '';
         if (parsed.profile) {
           parsed.profile.first_name = profileToSend.name;
+          parsed.profile.last_name = profileToSend.last_name || '';
         }
         localStorage.setItem('user', JSON.stringify(parsed));
       } catch (e) {
@@ -382,6 +391,7 @@ export const AHPProvider = ({ children }) => {
           ...profileToSend,
           name: normalizeProfileName(profileToSend.name),
           first_name: normalizeProfileName(profileToSend.name),
+          last_name: normalizeProfileName(profileToSend.last_name),
         },
       })
     );
@@ -402,6 +412,7 @@ export const AHPProvider = ({ children }) => {
     const payload = {
       name: cleanName,
       first_name: cleanName,
+      last_name: normalizeProfileName(userProfile.last_name),
       phone: userProfile.phone,
       has_car: userProfile.has_car,
       has_shelter: userProfile.has_shelter,
@@ -532,6 +543,7 @@ export const AHPProvider = ({ children }) => {
         error,
         clearError,
         isProfileLoading,
+        refreshProfile: () => setProfileReloadKey((key) => key + 1),
       }}
     >
       {children}

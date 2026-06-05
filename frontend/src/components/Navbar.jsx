@@ -34,6 +34,8 @@ const Navbar = () => {
   const isAdmin = roleUpper === 'ADMIN';
   const isVolunteer = roleUpper === 'VOLUNTEER';
   const isShelterManager = roleUpper === 'SHELTER_MANAGER';
+  const isUserFlowAllowed =
+    !user?.isAuthenticated || (!isAdmin && !isVolunteer && !isShelterManager);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
@@ -134,7 +136,7 @@ const Navbar = () => {
   }, [location.pathname, role, user?.email]);
   const getActiveIndex = () => {
     if (location.pathname === '/' || location.pathname === '/catalog') return 0;
-    if (location.pathname.startsWith('/questionnaire')) return 1;
+    if (isUserFlowAllowed && location.pathname.startsWith('/questionnaire')) return 1;
     return -1;
   };
   const activeIndex = getActiveIndex();
@@ -253,7 +255,7 @@ const Navbar = () => {
                 border: '1px solid rgba(255, 255, 255, 0.05)',
                 padding: '4px',
                 borderRadius: '14px',
-                width: '280px',
+                width: isUserFlowAllowed ? '280px' : '150px',
                 margin: '0 20px',
               }}
             >
@@ -264,7 +266,7 @@ const Navbar = () => {
                     top: '4px',
                     bottom: '4px',
                     left: '4px',
-                    width: 'calc(50% - 4px)',
+                    width: isUserFlowAllowed ? 'calc(50% - 4px)' : 'calc(100% - 8px)',
                     background: tokens.brandPrimary,
                     borderRadius: '10px',
                     boxShadow: '0 4px 12px rgba(234, 88, 12, 0.4)',
@@ -278,7 +280,7 @@ const Navbar = () => {
                 style={{
                   position: 'relative',
                   zIndex: 1,
-                  width: '50%',
+                  width: isUserFlowAllowed ? '50%' : '100%',
                   textAlign: 'center',
                   padding: '8px 0',
                   fontSize: '13px',
@@ -291,29 +293,31 @@ const Navbar = () => {
                 Каталог
               </Link>
 
-              <Link
-                to="/questionnaire"
-                onClick={(e) => {
-                  if (!user?.isAuthenticated) {
-                    e.preventDefault();
-                    setIsAuthModalOpen(true);
-                  }
-                }}
-                style={{
-                  position: 'relative',
-                  zIndex: 1,
-                  width: '50%',
-                  textAlign: 'center',
-                  padding: '8px 0',
-                  fontSize: '13px',
-                  fontWeight: '700',
-                  textDecoration: 'none',
-                  color: activeIndex === 1 ? tokens.bgWhite : '#F1F5F9',
-                  transition: 'color 0.3s',
-                }}
-              >
-                Анкета
-              </Link>
+              {isUserFlowAllowed && (
+                <Link
+                  to="/questionnaire"
+                  onClick={(e) => {
+                    if (!user?.isAuthenticated) {
+                      e.preventDefault();
+                      setIsAuthModalOpen(true);
+                    }
+                  }}
+                  style={{
+                    position: 'relative',
+                    zIndex: 1,
+                    width: '50%',
+                    textAlign: 'center',
+                    padding: '8px 0',
+                    fontSize: '13px',
+                    fontWeight: '700',
+                    textDecoration: 'none',
+                    color: activeIndex === 1 ? tokens.bgWhite : '#F1F5F9',
+                    transition: 'color 0.3s',
+                  }}
+                >
+                  Анкета
+                </Link>
+              )}
             </div>
           )}
 
@@ -516,26 +520,30 @@ const Navbar = () => {
                               />
                               Каталог тварин
                             </Link>
-                            <Link
-                              to="/questionnaire"
-                              className={dropdownItemClassName}
-                              style={{
-                                ...dropdownItemStyle,
-                                color: isLinkActive('/questionnaire')
-                                  ? tokens.brandPrimary
-                                  : '#F8FAFC',
-                              }}
-                              onClick={() => setIsMenuOpen(false)}
-                            >
-                              <ClipboardText
-                                size={18}
-                                color={
-                                  isLinkActive('/questionnaire') ? tokens.brandPrimary : '#94A3B8'
-                                }
-                                weight={isLinkActive('/questionnaire') ? 'fill' : 'duotone'}
-                              />
-                              Анкета підбору
-                            </Link>
+                            {isUserFlowAllowed && (
+                              <Link
+                                to="/questionnaire"
+                                className={dropdownItemClassName}
+                                style={{
+                                  ...dropdownItemStyle,
+                                  color: isLinkActive('/questionnaire')
+                                    ? tokens.brandPrimary
+                                    : '#F8FAFC',
+                                }}
+                                onClick={() => setIsMenuOpen(false)}
+                              >
+                                <ClipboardText
+                                  size={18}
+                                  color={
+                                    isLinkActive('/questionnaire')
+                                      ? tokens.brandPrimary
+                                      : '#94A3B8'
+                                  }
+                                  weight={isLinkActive('/questionnaire') ? 'fill' : 'duotone'}
+                                />
+                                Анкета підбору
+                              </Link>
+                            )}
                             <div
                               style={{
                                 height: '1px',

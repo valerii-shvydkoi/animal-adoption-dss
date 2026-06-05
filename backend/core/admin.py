@@ -907,7 +907,11 @@ class VolunteerAdmin(GlobalAdminPermissionMixin, admin.ModelAdmin):
 @admin.register(Questionnaire)
 class QuestionnaireAdmin(GlobalAdminPermissionMixin, admin.ModelAdmin):
     list_display = ("user", "get_user_role", "get_created_at")
-    search_fields = ("user__email", "user__first_name", "user__last_name")
+    search_fields = (
+        "user__email",
+        "user__profile__first_name",
+        "user__profile__last_name",
+    )
     list_filter = ("created_at", "user__role")
     readonly_fields = ("created_at", "updated_at")
     ordering = ("-created_at",)

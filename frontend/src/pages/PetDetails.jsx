@@ -189,7 +189,11 @@ const PetDetails = () => {
   const [pet, setPet] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { user } = useAuth();
+  const { user, role } = useAuth();
+  const currentRole = (role || user?.role || 'USER').toUpperCase();
+  const isRegularUser = currentRole === 'USER';
+  const canUseAdoptionFlow = !user?.isAuthenticated || isRegularUser;
+  const hasQuestionnaireResult = isRegularUser && !!user?.has_questionnaire_result;
   const [isFavorite, setIsFavorite] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth < 992);
   const [isDescExpanded, setIsDescExpanded] = useState(false);
@@ -232,7 +236,7 @@ const PetDetails = () => {
   const analysis = useMemo(() => {
     if (
       user?.isAuthenticated &&
-      user?.has_questionnaire_result &&
+      hasQuestionnaireResult &&
       pet?.compatibility_score !== undefined &&
       pet?.compatibility_score !== null &&
       pet?.dss_analytics
@@ -244,7 +248,7 @@ const PetDetails = () => {
       };
     }
     return null;
-  }, [pet, user]);
+  }, [pet, user, hasQuestionnaireResult]);
   const toggleFavorite = async () => {
     const previousFavorites = getStoredFavoriteIds(user);
     const nextFavorites = toggleStoredFavoriteId(id, user);
@@ -353,7 +357,6 @@ const PetDetails = () => {
     pet.compatibility_score !== undefined && pet.compatibility_score !== null
       ? getCompStyles(pet.compatibility_score)
       : null;
-  const hasQuestionnaireResult = !!user?.has_questionnaire_result;
   const getUrgencyColor = (status) => {
     const s = String(status).toUpperCase();
     if (s.includes('ЕВАК') || s === 'EVACUATION')
@@ -384,6 +387,8 @@ const PetDetails = () => {
       ? `${descriptionText.substring(0, MAX_DESC_LENGTH)}...`
       : descriptionText;
   const petImageSrc = pet.photo || pet.photo_url || placeholderImage;
+  const catalogReturnPath =
+    location.state?.from || sessionStorage.getItem('adoptifyCatalogReturnPath') || '/';
   return (
     <div
       style={{
@@ -439,7 +444,7 @@ const PetDetails = () => {
       `}</style>
 
       <button
-        onClick={() => navigate(-1)}
+        onClick={() => navigate(catalogReturnPath)}
         style={{
           background: 'none',
           border: 'none',
@@ -517,7 +522,7 @@ const PetDetails = () => {
               </div>
             )}
 
-            {user?.isAuthenticated && compStyles && (
+            {user?.isAuthenticated && isRegularUser && compStyles && (
               <div
                 className="pet-details-comp-badge"
                 style={{
@@ -911,7 +916,7 @@ const PetDetails = () => {
           </div>
         </div>
 
-        {user?.isAuthenticated && (
+        {user?.isAuthenticated && isRegularUser && (
           <div className="analysis-card">
             <div
               style={{
@@ -975,6 +980,18 @@ const PetDetails = () => {
                       borderRadius: '16px',
                     }}
                   >
+                    <h4
+                      style={{
+                        margin: '0 0 12px 0',
+                        color: '#166534',
+                        fontSize: '13px',
+                        fontWeight: '800',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
+                      }}
+                    >
+                      Сильні сторони збігу
+                    </h4>
                     <ul
                       style={{
                         margin: 0,
@@ -1022,6 +1039,18 @@ const PetDetails = () => {
                       borderRadius: '16px',
                     }}
                   >
+                    <h4
+                      style={{
+                        margin: '0 0 12px 0',
+                        color: '#9A3412',
+                        fontSize: '13px',
+                        fontWeight: '800',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.04em',
+                      }}
+                    >
+                      Умови, які треба перевірити
+                    </h4>
                     <ul
                       style={{
                         margin: 0,
@@ -1166,17 +1195,8 @@ const PetDetails = () => {
             }}
           >
             {(() => {
-              const formatPrivateName = (fullName) => {
-                if (!fullName) return '';
-                if (fullName === 'Команда притулку') return fullName;
-                const parts = fullName.trim().split(/\s+/);
-                if (parts.length > 1) {
-                  return `${parts[0]} ${parts[1][0]}.`;
-                }
-                return parts[0];
-              };
               const rawName = pet.volunteer_name || 'Команда притулку';
-              const safeCuratorName = formatPrivateName(rawName);
+              const safeCuratorName = rawName;
               const isShelter =
                 pet.care_type === 'SHELTER' || String(pet.care_type).toUpperCase() === 'SHELTER';
               const careTypeDisplay = isShelter
@@ -1364,7 +1384,7 @@ const PetDetails = () => {
               </button>
             )}
 
-            {pet.is_available && (
+            {pet.is_available && canUseAdoptionFlow && (
               <button
                 onClick={() => {
                   if (!user?.isAuthenticated) {
@@ -1374,7 +1394,11 @@ const PetDetails = () => {
                       },
                     });
                   } else {
-                    navigate(`/create-request/${pet.id}`);
+                    navigate(`/create-request/${pet.id}`, {
+                      state: {
+                        from: location.pathname,
+                      },
+                    });
                   }
                 }}
                 style={{

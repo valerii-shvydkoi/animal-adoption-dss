@@ -2,6 +2,7 @@ import React, { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AHPProvider } from './context/AHPContext';
 import { PrivateRoute } from './routes/PrivateRoute';
+import { UserRoute } from './routes/UserRoute';
 import { VolunteerRoute } from './routes/VolunteerRoute';
 import { ShelterRoute } from './routes/ShelterRoute';
 import { AdminRoute } from './routes/AdminRoute';
@@ -87,11 +88,14 @@ function App() {
               <Route path="/verify-email/:uid/:token" element={<VerifyEmail />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password/:uid/:token" element={<ResetPassword />} />
-              <Route path="/questionnaire" element={<Questionnaire />} />
               <Route path="/analytics" element={<Navigate to="/admin/dashboard" replace />} />
 
               <Route element={<PrivateRoute />}>
                 <Route path="/profile" element={<ProfilePage />} />
+              </Route>
+
+              <Route element={<UserRoute />}>
+                <Route path="/questionnaire" element={<Questionnaire />} />
                 <Route path="/my-results" element={<MyResults />} />
                 <Route path="/my-requests" element={<MyRequests />} />
                 <Route path="/create-request/:id" element={<CreateRequest />} />

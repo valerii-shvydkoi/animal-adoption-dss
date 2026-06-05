@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { usePets, useAvailableLocations } from '../hooks/usePets';
 import { useAuth } from '../context/AuthContext';
 import { usePWA } from '../hooks/usePWA';
@@ -38,6 +38,31 @@ const tokens = {
   radiusMd: '14px',
   radiusLg: '20px',
   radiusXl: '24px',
+};
+const CATALOG_STATE_KEY = 'adoptifyCatalogState';
+const CATALOG_RETURN_KEY = 'adoptifyCatalogReturnPath';
+const getDefaultCatalogFilters = (ordering) => ({
+  species: '',
+  gender: '',
+  search: '',
+  ordering,
+  age_category: '',
+  oblast: '',
+  city: '',
+  energy_level: '',
+  good_with_children: '',
+  good_with_cats: '',
+  good_with_dogs: '',
+  urgency_status: '',
+  is_sterilized: '',
+});
+const readCatalogState = () => {
+  try {
+    const rawState = sessionStorage.getItem(CATALOG_STATE_KEY);
+    return rawState ? JSON.parse(rawState) : null;
+  } catch {
+    return null;
+  }
 };
 const CustomDropdown = ({ value, onChange, options, label, disabled, allowClear, noScroll }) => {
   const dropdownRef = useRef(null);
@@ -252,42 +277,50 @@ const CustomDropdown = ({ value, onChange, options, label, disabled, allowClear,
   );
 };
 const Catalog = () => {
-  const { user } = useAuth();
+  const location = useLocation();
+  const { user, role } = useAuth();
   const { isInstallable, isDismissed, promptInstall, dismissPrompt } = usePWA();
   const [isPwaCardClosing, setIsPwaCardClosing] = useState(false);
   const [isHidingProcess, setIsHidingProcess] = useState(false);
-  const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(12);
+  const savedCatalogStateRef = useRef(readCatalogState());
+  const [page, setPage] = useState(() => Number(savedCatalogStateRef.current?.page) || 1);
+  const [pageSize, setPageSize] = useState(
+    () => Number(savedCatalogStateRef.current?.pageSize) || 12
+  );
   const [isMobile, setIsMobile] = useState(window.innerWidth < 992);
   const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
   const [isNavbarVisible, setIsNavbarVisible] = useState(true);
   const lastScrollYRef = useRef(0);
   const sidebarRef = useRef(null);
   const searchInputRef = useRef(null);
-  const hasQuestionnaireResult = !!user?.has_questionnaire_result;
+  const currentRole = (role || user?.role || 'USER').toUpperCase();
+  const hasQuestionnaireResult = currentRole === 'USER' && !!user?.has_questionnaire_result;
   const defaultOrdering = hasQuestionnaireResult ? '-compatibility_score' : '-created_at';
-  const [filters, setFilters] = useState({
-    species: '',
-    gender: '',
-    search: '',
-    ordering: defaultOrdering,
-    age_category: '',
-    oblast: '',
-    city: '',
-    energy_level: '',
-    good_with_children: '',
-    good_with_cats: '',
-    good_with_dogs: '',
-    urgency_status: '',
-    is_sterilized: '',
-  });
-  const [searchTerm, setSearchTerm] = useState(filters.search);
+  const [filters, setFilters] = useState(() => ({
+    ...getDefaultCatalogFilters(defaultOrdering),
+    ...(savedCatalogStateRef.current?.filters || {}),
+  }));
+  const [searchTerm, setSearchTerm] = useState(
+    () => savedCatalogStateRef.current?.searchTerm ?? savedCatalogStateRef.current?.filters?.search ?? ''
+  );
   const isPwaCardActive = isInstallable && !isDismissed && !isHidingProcess;
   const computedPageSize = isPwaCardActive ? pageSize - 1 : pageSize;
   const { pets, loading, error, hasNext, hasPrev } = usePets(page, filters, computedPageSize, {
     skipAuth: !user?.isAuthenticated,
   });
   const { locations } = useAvailableLocations();
+  useEffect(() => {
+    sessionStorage.setItem(
+      CATALOG_STATE_KEY,
+      JSON.stringify({
+        page,
+        pageSize,
+        searchTerm,
+        filters,
+      })
+    );
+    sessionStorage.setItem(CATALOG_RETURN_KEY, `${location.pathname}${location.search}`);
+  }, [page, pageSize, searchTerm, filters, location.pathname, location.search]);
   const handleInstallAppClick = async () => {
     await promptInstall();
   };
@@ -369,21 +402,7 @@ const Catalog = () => {
   };
   const handleResetFilters = () => {
     setSearchTerm('');
-    setFilters({
-      search: '',
-      ordering: hasQuestionnaireResult ? '-compatibility_score' : '-created_at',
-      age_category: '',
-      species: '',
-      gender: '',
-      oblast: '',
-      city: '',
-      energy_level: '',
-      good_with_children: '',
-      good_with_cats: '',
-      good_with_dogs: '',
-      urgency_status: '',
-      is_sterilized: '',
-    });
+    setFilters(getDefaultCatalogFilters(hasQuestionnaireResult ? '-compatibility_score' : '-created_at'));
     setPage(1);
     if (sidebarRef.current) {
       sidebarRef.current.scrollTo({
@@ -1666,6 +1685,9 @@ const Catalog = () => {
                       <React.Fragment key={pet.id}>
                         <Link
                           to={`/pet/${pet.id}`}
+                          state={{
+                            from: `${location.pathname}${location.search}`,
+                          }}
                           style={{
                             textDecoration: 'none',
                             color: 'inherit',

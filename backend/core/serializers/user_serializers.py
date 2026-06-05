@@ -125,6 +125,7 @@ class UserProfileSerializer(serializers.ModelSerializer):
         model = UserProfile
         fields = (
             "first_name",
+            "last_name",
             "phone",
             "has_car",
             "has_shelter",
@@ -224,6 +225,8 @@ class UserSerializer(serializers.ModelSerializer):
             for attr, value in profile_data.items():
                 if attr == "first_name" and str(value).strip() == "Користувач":
                     value = ""
+                if attr == "last_name" and str(value).strip() == "Користувач":
+                    value = ""
                 setattr(profile, attr, value)
             profile.save()
 
@@ -293,5 +296,6 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
         profile = getattr(self.user, "profile", None)
         data["first_name"] = profile.first_name if profile else ""
+        data["last_name"] = profile.last_name if profile else ""
 
         return data

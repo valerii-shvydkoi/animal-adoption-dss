@@ -220,7 +220,7 @@ export default function VolunteerAdoptions() {
             const userObj = req.user_details || req.user || {};
             const profileObj = userObj.profile || {};
             const petObj = req.pet_details || {};
-            const analytics = req.ai_analysis || {};
+            const analytics = req.dss_analysis || {};
             let applicantName = '';
             if (profileObj.first_name || userObj.first_name) {
               applicantName =
@@ -328,24 +328,24 @@ export default function VolunteerAdoptions() {
                 </div>
 
                 {hasAnalytics && (
-                  <div className="ai-analytics-box">
-                    <div className="ai-header">
-                      <Sparkle size={18} weight="fill" className="ai-sparkle-icon" />
+                  <div className="dss-analytics-box">
+                    <div className="dss-header">
+                      <Sparkle size={18} weight="fill" className="dss-sparkle-icon" />
                       <h4>Аналітика відповідності умов</h4>
                     </div>
 
-                    <div className="ai-recommendation-text">
+                    <div className="dss-recommendation-text">
                       <strong>Рекомендація системи:</strong> {recommendationText}
                     </div>
 
                     {(positivesList.length > 0 || risksList.length > 0) && (
-                      <div className="ai-grid">
+                      <div className="dss-grid">
                         {positivesList.length > 0 && (
-                          <div className="ai-column">
-                            <span className="ai-sub-title title-positive">
+                          <div className="dss-column">
+                            <span className="dss-sub-title title-positive">
                               <CheckSquare size={16} weight="bold" /> Переваги (Метч)
                             </span>
-                            <ul className="ai-list positives">
+                            <ul className="dss-list positives">
                               {positivesList.map((pos, idx) => (
                                 <li key={idx}>{pos}</li>
                               ))}
@@ -354,11 +354,11 @@ export default function VolunteerAdoptions() {
                         )}
 
                         {risksList.length > 0 && (
-                          <div className="ai-column">
-                            <span className="ai-sub-title title-risk">
+                          <div className="dss-column">
+                            <span className="dss-sub-title title-risk">
                               <ShieldWarning size={16} weight="bold" /> Застереження та ризики
                             </span>
-                            <ul className="ai-list risks">
+                            <ul className="dss-list risks">
                               {risksList.map((risk, idx) => (
                                 <li key={idx}>{risk}</li>
                               ))}
@@ -592,29 +592,29 @@ const pageStyles = `
     border-bottom: 1px solid #FEEDEB;
     font-style: italic;
   }
-  .ai-analytics-box {
+  .dss-analytics-box {
     background: linear-gradient(180deg, #FFFDFB 0%, #FFF8F5 100%);
     border: 1px solid #FEEDEB;
     border-radius: 20px;
     padding: 24px;
     box-shadow: inset 0 1px 2px rgba(255,255,255,0.8);
   }
-  .ai-header {
+  .dss-header {
     display: flex;
     align-items: center;
     gap: 8px;
     margin-bottom: 14px;
   }
-  .ai-header h4 {
+  .dss-header h4 {
     margin: 0;
     font-size: 15px;
     font-weight: 700;
     color: ${brandPrimary};
   }
-  .ai-sparkle-icon {
+  .dss-sparkle-icon {
     color: ${brandPrimary};
   }
-  .ai-recommendation-text {
+  .dss-recommendation-text {
     font-size: 15px;
     line-height: 1.5;
     color: ${textMain};
@@ -623,13 +623,13 @@ const pageStyles = `
     border-radius: 14px;
     border: 1px solid #FEEDEB;
   }
-  .ai-grid {
+  .dss-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 20px;
     margin-top: 18px;
   }
-  .ai-sub-title {
+  .dss-sub-title {
     font-size: 13px;
     font-weight: 700;
     display: flex;
@@ -639,27 +639,27 @@ const pageStyles = `
   }
   .title-positive { color: #16A34A; }
   .title-risk { color: #DC2626; }
-  .ai-list {
+  .dss-list {
     margin: 0;
     padding: 0;
     list-style: none;
     font-size: 14px;
     line-height: 1.55;
   }
-  .ai-list li {
+  .dss-list li {
     margin-bottom: 8px;
     position: relative;
     padding-left: 14px;
   }
-  .ai-list li::before {
+  .dss-list li::before {
     content: "•";
     position: absolute;
     left: 0;
     font-weight: bold;
   }
-  .ai-list.positives li { color: #15803D; }
-  .ai-list.risks li { color: #B91C1C; }
-  .ai-list li:last-child { margin-bottom: 0; }
+  .dss-list.positives li { color: #15803D; }
+  .dss-list.risks li { color: #B91C1C; }
+  .dss-list li:last-child { margin-bottom: 0; }
   .status-badge {
     padding: 8px 16px;
     border-radius: 99px;
@@ -748,7 +748,7 @@ const pageStyles = `
     .main-title { font-size: 28px; }
     .request-card { padding: 24px; gap: 24px; }
     .card-top { flex-direction: column; align-items: flex-start; gap: 14px; }
-    .card-details-grid, .ai-grid { grid-template-columns: 1fr; gap: 24px; }
+    .card-details-grid, .dss-grid { grid-template-columns: 1fr; gap: 24px; }
     .match-tag { margin-left: 0; margin-top: 8px; }
     .btn-group { flex-direction: column; width: 100%; gap: 12px; }
     .btn-action { width: 100%; padding: 14px; }

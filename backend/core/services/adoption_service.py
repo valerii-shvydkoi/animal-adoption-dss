@@ -1,7 +1,7 @@
 from django.db import transaction
 from rest_framework.exceptions import ValidationError, NotFound
 from core.models import Pet, AdoptionRequest, User, QuestionnaireResult
-from core.models.enums import AdoptionStatus
+from core.models.enums import AdoptionStatus, UserRole
 from core.exceptions import PetNotAvailableError
 
 
@@ -10,6 +10,11 @@ class AdoptionService:
     def create_request(
         user: User, pet_id: int, result_id: int = None, message: str = None
     ) -> AdoptionRequest:
+        if str(getattr(user, "role", "")).upper() != UserRole.USER:
+            raise ValidationError(
+                {"detail": "Заявки на адаптацію можуть створювати лише користувачі."}
+            )
+
         with transaction.atomic():
             try:
                 pet = Pet.objects.select_for_update().get(id=pet_id)

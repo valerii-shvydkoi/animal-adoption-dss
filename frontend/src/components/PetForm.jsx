@@ -33,6 +33,7 @@ const DEFAULT_FORM_VALUES = {
   is_sterilized: 'UNKNOWN',
   behavior_tags: '',
 };
+const MAX_PHOTO_FILE_SIZE = 10 * 1024 * 1024;
 const PetForm = ({ pet, onSuccess }) => {
   const { notify } = useFeedback();
   const getInitialValues = (petData) => {
@@ -67,6 +68,24 @@ const PetForm = ({ pet, onSuccess }) => {
   const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (file) {
+      if (!file.type.startsWith('image/')) {
+        notify({
+          type: 'warning',
+          title: 'Неправильний формат',
+          message: 'Оберіть зображення у форматі JPG, PNG або WebP.',
+        });
+        e.target.value = '';
+        return;
+      }
+      if (file.size > MAX_PHOTO_FILE_SIZE) {
+        notify({
+          type: 'warning',
+          title: 'Фото завелике',
+          message: 'Максимальний розмір фото для картки - 10 МБ.',
+        });
+        e.target.value = '';
+        return;
+      }
       setPhotoFile(file);
       const reader = new FileReader();
       reader.onloadend = () => setPhotoPreview(reader.result);

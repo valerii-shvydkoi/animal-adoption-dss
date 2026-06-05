@@ -14,6 +14,7 @@ import {
   UploadSimple,
   User,
 } from '@phosphor-icons/react';
+const MAX_PHOTO_FILE_SIZE = 10 * 1024 * 1024;
 export default function ShelterPetManager() {
   const { confirm, notify } = useFeedback();
   const [pets, setPets] = useState([]);
@@ -107,11 +108,11 @@ export default function ShelterPetManager() {
       });
       return;
     }
-    if (file.size > 5 * 1024 * 1024) {
+    if (file.size > MAX_PHOTO_FILE_SIZE) {
       notify({
         type: 'warning',
         title: 'Фото завелике',
-        message: 'Максимальний розмір файлу - 5 МБ.',
+        message: 'Максимальний розмір фото для картки - 10 МБ.',
       });
       return;
     }

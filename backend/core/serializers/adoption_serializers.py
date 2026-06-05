@@ -35,6 +35,8 @@ class AdoptionRequestSerializer(serializers.ModelSerializer):
                 if request
                 else obj.pet.photo.url
             )
+        elif obj.pet and getattr(obj.pet, "photo_url", None):
+            photo_url = obj.pet.photo_url
 
         return {
             "id": obj.pet.id if obj.pet else None,
@@ -52,7 +54,7 @@ class AdoptionRequestSerializer(serializers.ModelSerializer):
 class VolunteerAdoptionSerializer(serializers.ModelSerializer):
     pet_details = serializers.SerializerMethodField(read_only=True)
     user_details = serializers.SerializerMethodField(read_only=True)
-    ai_analysis = serializers.SerializerMethodField(read_only=True)
+    dss_analysis = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = AdoptionRequest
@@ -60,7 +62,7 @@ class VolunteerAdoptionSerializer(serializers.ModelSerializer):
             "id",
             "pet_details",
             "user_details",
-            "ai_analysis",
+            "dss_analysis",
             "message",
             "status",
             "created_at",
@@ -81,9 +83,16 @@ class VolunteerAdoptionSerializer(serializers.ModelSerializer):
     @extend_schema_field(OpenApiTypes.OBJECT)
     def get_user_details(self, obj):
         profile = getattr(obj.user, "profile", None)
+        full_name = "Не вказано"
+        if profile:
+            full_name = " ".join(
+                part for part in [profile.first_name, profile.last_name] if part
+            ) or "Не вказано"
         return {
             "email": obj.user.email,
-            "name": profile.first_name if profile else "Не вказано",
+            "name": full_name,
+            "first_name": profile.first_name if profile else "",
+            "last_name": profile.last_name if profile else "",
             "phone": profile.phone if profile else "Не вказано",
             "floor": profile.floor if profile else 1,
             "has_car": profile.has_car if profile else False,
@@ -91,7 +100,7 @@ class VolunteerAdoptionSerializer(serializers.ModelSerializer):
         }
 
     @extend_schema_field(OpenApiTypes.OBJECT)
-    def get_ai_analysis(self, obj):
+    def get_dss_analysis(self, obj):
         if not obj.questionnaire_result or not obj.questionnaire_result.snapshot_data:
             return {
                 "match_percent": None,

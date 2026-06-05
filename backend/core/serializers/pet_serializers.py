@@ -196,6 +196,17 @@ class PetSerializer(serializers.ModelSerializer):
             validated_data["shelter"] = instance.shelter
         return super().update(instance, validated_data)
 
+    def _format_curator_name(self, user, role_label):
+        profile = getattr(user, "profile", None)
+        first_name = (getattr(profile, "first_name", "") or "").strip()
+        last_name = (getattr(profile, "last_name", "") or "").strip()
+
+        if first_name and last_name:
+            return f"{role_label} ({first_name} {last_name[0]}.)"
+        if first_name:
+            return f"{role_label} ({first_name})"
+        return f"{role_label} притулку"
+
     @extend_schema_field(OpenApiTypes.URI)
     def get_photo(self, obj):
         if obj.photo:
@@ -225,6 +236,8 @@ class PetSerializer(serializers.ModelSerializer):
             return None
 
         if not request or not request.user.is_authenticated:
+            return None
+        if str(getattr(request.user, "role", "USER")).upper() != "USER":
             return None
 
         try:
@@ -260,6 +273,8 @@ class PetSerializer(serializers.ModelSerializer):
     def get_dss_analytics(self, obj):
         request = self.context.get("request")
         if not request or not request.user.is_authenticated:
+            return None
+        if str(getattr(request.user, "role", "USER")).upper() != "USER":
             return None
 
         try:
@@ -302,14 +317,9 @@ class PetSerializer(serializers.ModelSerializer):
                     if hasattr(author, "role")
                     else ""
                 )
-
-                profile = getattr(author, "profile", None)
-                display_name = getattr(profile, "first_name", "") or author.email
-
                 if user_role == "VOLUNTEER":
-                    return f"Волонтер ({display_name})"
-                else:
-                    return f"Менеджер ({display_name})"
+                    return self._format_curator_name(author, "Волонтер")
+                return self._format_curator_name(author, "Менеджер")
 
             if getattr(obj, "care_type", "") in ["VOLUNTEER", "VOLUNTEER_FOSTER"]:
                 from core.models import Volunteer
@@ -320,11 +330,7 @@ class PetSerializer(serializers.ModelSerializer):
                     .first()
                 )
                 if volunteer and volunteer.user:
-                    profile = getattr(volunteer.user, "profile", None)
-                    display_name = (
-                        getattr(profile, "first_name", "") or volunteer.user.email
-                    )
-                    return f"Волонтер ({display_name})"
+                    return self._format_curator_name(volunteer.user, "Волонтер")
 
             if getattr(obj, "care_type", "") == "SHELTER":
                 return "Команда притулку"

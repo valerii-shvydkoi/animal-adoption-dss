@@ -119,21 +119,21 @@ class VolunteerAdoptionViewSet(viewsets.ReadOnlyModelViewSet):
         page = self.paginate_queryset(queryset)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
-            data = self._inject_ai_analytics(serializer.data, page)
+            data = self._inject_dss_analysis(serializer.data, page)
             return self.get_paginated_response(data)
 
         serializer = self.get_serializer(queryset, many=True)
-        data = self._inject_ai_analytics(serializer.data, queryset)
+        data = self._inject_dss_analysis(serializer.data, queryset)
         return Response(data)
 
     def retrieve(self, request, *args, **kwargs):
         instance = self.get_object()
         serializer = self.get_serializer(instance)
         data = serializer.data
-        data = self._inject_ai_analytics([data], [instance])[0]
+        data = self._inject_dss_analysis([data], [instance])[0]
         return Response(data)
 
-    def _inject_ai_analytics(self, serialized_data, instances):
+    def _inject_dss_analysis(self, serialized_data, instances):
         instance_map = {inst.id: inst for inst in instances}
         for item in serialized_data:
             inst = instance_map.get(item.get("id"))
@@ -158,7 +158,7 @@ class VolunteerAdoptionViewSet(viewsets.ReadOnlyModelViewSet):
 
                 if match_res:
                     explanation = snapshot.get("explanation", {})
-                    item["ai_analysis"] = {
+                    item["dss_analysis"] = {
                         "match_percent": match_res["match_percent"],
                         "positives": match_res["positives"],
                         "risks": match_res["risks"],
@@ -167,8 +167,8 @@ class VolunteerAdoptionViewSet(viewsets.ReadOnlyModelViewSet):
                         "top_priority_text": explanation.get("text"),
                     }
 
-            if "ai_analysis" not in item or not item["ai_analysis"]:
-                item["ai_analysis"] = {
+            if "dss_analysis" not in item or not item["dss_analysis"]:
+                item["dss_analysis"] = {
                     "match_percent": None,
                     "positives": [],
                     "risks": [

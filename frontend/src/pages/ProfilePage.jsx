@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAHP } from '../hooks/useAHP';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -80,6 +80,7 @@ const UserProfile = () => {
     error: ahpError,
     saveProfile,
     isProfileLoading,
+    refreshProfile,
   } = useAHP();
   const { refreshUser } = useAuth();
   const navigate = useNavigate();
@@ -87,11 +88,23 @@ const UserProfile = () => {
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [localError, setLocalError] = useState(null);
   const nameLength = (userProfile.name || '').length;
+  const lastNameLength = (userProfile.last_name || '').length;
+  useEffect(() => {
+    refreshProfile?.();
+    refreshUser();
+  }, []);
   const handleNameChange = (e) => {
     const rawVal = e.target.value;
     const cleanVal = rawVal.replace(/[^a-zA-Zа-яА-ЯіІїЇєЄґҐ\s-]/g, '');
     if (cleanVal.length <= 30) {
       updateUserProfile('name', cleanVal);
+    }
+  };
+  const handleLastNameChange = (e) => {
+    const rawVal = e.target.value;
+    const cleanVal = rawVal.replace(/[^a-zA-Zа-яА-ЯіІїЇєЄґҐ\s-]/g, '');
+    if (cleanVal.length <= 30) {
+      updateUserProfile('last_name', cleanVal);
     }
   };
   const formatPhone = (value) => {
@@ -425,6 +438,63 @@ const UserProfile = () => {
                     value={userProfile.name || ''}
                     onChange={handleNameChange}
                     placeholder="Як до вас звертатися?"
+                    style={inputStyle}
+                  />
+                  <span
+                    style={{
+                      position: 'absolute',
+                      left: '16px',
+                      color: '#94A3B8',
+                      display: 'flex',
+                    }}
+                  >
+                    <User size={18} weight="bold" />
+                  </span>
+                </div>
+              </div>
+
+              <div
+                style={{
+                  flex: 1,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '6px',
+                }}
+              >
+                <div
+                  style={{
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                  }}
+                >
+                  <label
+                    style={{
+                      color: '#475569',
+                      fontWeight: '700',
+                      fontSize: '14px',
+                    }}
+                  >
+                    Ваше прізвище:
+                  </label>
+                  <span
+                    style={{
+                      fontSize: '11px',
+                      fontWeight: '700',
+                      color: lastNameLength >= 25 ? '#EA580C' : '#94A3B8',
+                      transition: 'color 0.2s',
+                    }}
+                  >
+                    {lastNameLength} / 30
+                  </span>
+                </div>
+                <div className="input-wrapper">
+                  <input
+                    type="text"
+                    className="name-input"
+                    value={userProfile.last_name || ''}
+                    onChange={handleLastNameChange}
+                    placeholder="Необов'язково"
                     style={inputStyle}
                   />
                   <span

@@ -8,7 +8,7 @@ import { tokens } from '../styles/tokens';
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, user } = useAuth();
+  const { login, user, role } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -22,14 +22,38 @@ const Login = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   const isSmallMobile = windowWidth <= 350;
+  const getRoleHome = (roleValue) => {
+    const roleUpper = String(roleValue || 'USER').toUpperCase();
+    if (roleUpper === 'VOLUNTEER') return '/volunteer/pets';
+    if (roleUpper === 'SHELTER_MANAGER') return '/shelter/dashboard';
+    if (roleUpper === 'ADMIN') return '/admin/dashboard';
+    return '/';
+  };
+  const getSafeRedirect = (roleValue) => {
+    const from = location.state?.from?.pathname || location.state?.from || '/';
+    const roleUpper = String(roleValue || 'USER').toUpperCase();
+    const userOnlyPrefixes = [
+      '/questionnaire',
+      '/my-results',
+      '/my-requests',
+      '/create-request',
+      '/become-volunteer',
+      '/register-shelter',
+    ];
+
+    if (roleUpper !== 'USER' && userOnlyPrefixes.some((path) => from.startsWith(path))) {
+      return getRoleHome(roleUpper);
+    }
+
+    return from;
+  };
   useEffect(() => {
     if (user?.isAuthenticated) {
-      const from = location.state?.from?.pathname || location.state?.from || '/';
-      navigate(from, {
+      navigate(getSafeRedirect(role || user.role), {
         replace: true,
       });
     }
-  }, [user, navigate, location]);
+  }, [user, role, navigate, location]);
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -45,10 +69,11 @@ const Login = () => {
     }
     setLoading(true);
     try {
-      await login(formData.email.trim(), formData.password);
+      const loginData = await login(formData.email.trim(), formData.password);
       setTimeout(() => {
-        const from = location.state?.from?.pathname || location.state?.from || '/';
-        navigate(from, {
+        const nextRole =
+          loginData?.role || loginData?.user?.role || localStorage.getItem('userRole') || 'USER';
+        navigate(getSafeRedirect(nextRole), {
           replace: true,
         });
       }, 100);

@@ -15,10 +15,15 @@ export const AuthProvider = ({ children }) => {
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
   const formatUserData = (data) => {
+    const profile = data.profile || {};
+    const firstName = data.first_name || profile.first_name || data.user?.first_name || '';
+    const lastName = data.last_name || profile.last_name || data.user?.last_name || '';
     return {
       ...data,
       email: data.email || data.user?.email || '',
-      name: data.first_name || data.profile?.first_name || data.user?.first_name || '',
+      first_name: firstName,
+      last_name: lastName,
+      name: firstName,
       isAuthenticated: true,
     };
   };
@@ -26,14 +31,18 @@ export const AuthProvider = ({ children }) => {
     setUser((currentUser) => {
       if (!currentUser) return currentUser;
       const nextName = profileData.name ?? profileData.first_name ?? currentUser.name ?? '';
+      const nextLastName =
+        profileData.last_name ?? profileData.profile?.last_name ?? currentUser.last_name ?? '';
       return {
         ...currentUser,
         name: nextName,
         first_name: nextName,
+        last_name: nextLastName,
         profile: {
           ...(currentUser.profile || {}),
           ...(profileData.profile || {}),
           first_name: nextName,
+          last_name: nextLastName,
           phone:
             profileData.phone ?? profileData.profile?.phone ?? currentUser.profile?.phone ?? '',
         },

@@ -217,7 +217,7 @@ export default function AdminUsers() {
     setTimeout(() => setSuccessMessage(null), 4000);
   };
   const filteredUsers = users.filter((u) => {
-    const fullName = `${u.profile?.first_name || ''}`.toLowerCase();
+    const fullName = `${u.profile?.first_name || ''} ${u.profile?.last_name || ''}`.toLowerCase();
     const email = (u.email || '').toLowerCase();
     const matchSearch =
       fullName.includes(searchTerm.toLowerCase()) || email.includes(searchTerm.toLowerCase());
@@ -716,7 +716,8 @@ export default function AdminUsers() {
                           wordBreak: 'break-word',
                         }}
                       >
-                        {u.profile?.first_name ? u.profile.first_name : 'Без імені'}
+                        {[u.profile?.first_name, u.profile?.last_name].filter(Boolean).join(' ') ||
+                          'Без імені'}
                         {currentUser?.id === u.id && (
                           <span
                             style={{
@@ -917,7 +918,8 @@ export default function AdminUsers() {
                         wordBreak: 'break-word',
                       }}
                     >
-                      {u.profile?.first_name ? u.profile.first_name : 'Без імені'}
+                      {[u.profile?.first_name, u.profile?.last_name].filter(Boolean).join(' ') ||
+                        'Без імені'}
                       {currentUser?.id === u.id && (
                         <span
                           style={{

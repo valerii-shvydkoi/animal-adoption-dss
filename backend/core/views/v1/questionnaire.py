@@ -13,6 +13,7 @@ logger = logging.getLogger(__name__)
 class UserProfileInputSerializer(serializers.Serializer):
     name = serializers.CharField(required=False, allow_blank=True)
     first_name = serializers.CharField(required=False, allow_blank=True)
+    last_name = serializers.CharField(required=False, allow_blank=True)
     phone = serializers.CharField(required=False, allow_blank=True)
     has_car = serializers.BooleanField(default=False)
     has_shelter = serializers.BooleanField(default=False)
@@ -131,10 +132,14 @@ class QuestionnaireViewSet(viewsets.ViewSet):
             ).strip()
             if first_name == "Користувач":
                 first_name = ""
+            last_name = (user_profile_data.get("last_name") or "").strip()
+            if last_name == "Користувач":
+                last_name = ""
             UserProfile.objects.update_or_create(
                 user=user,
                 defaults={
                     "first_name": first_name,
+                    "last_name": last_name,
                     "phone": user_profile_data.get("phone", ""),
                     "has_car": user_profile_data.get("has_car", False),
                     "has_shelter": user_profile_data.get("has_shelter", False),

@@ -40,15 +40,15 @@ origin  https://github.com/valerii-shvydkoi/animal-adoption-dss.git
 Формат:
 
 ```text
-type(scope): короткий опис українською або англійською
+type(scope): короткий опис українською
 ```
 
 Приклади:
 
-- `feat(ahp): normalize questionnaire weights and expose result id`
-- `fix(favorites): transfer guest favorites after login`
-- `docs(requirements): update requirements matrix and wireframes`
-- `test(dss): cover profile-aware matching risks`
+- `feat(ahp): додано розрахунок ваг анкети`
+- `fix(favorites): перенесено гостьове обране після входу`
+- `docs(requirements): оновлено матрицю вимог і wireframes`
+- `test(dss): покрито ризики підбору з урахуванням профілю`
 
 ## Перед комітом
 

@@ -134,6 +134,14 @@ class PetViewSet(viewsets.ModelViewSet):
     ordering_fields = ["created_at", "age_months", "weight"]
     ordering = ["-created_at"]
 
+    def _can_use_matching(self):
+        user = self.request.user
+        return bool(
+            user
+            and user.is_authenticated
+            and str(getattr(user, "role", "USER")).upper() == "USER"
+        )
+
     def get_permissions(self):
         if self.action in ["list", "retrieve", "batch", "locations"]:
             return [permissions.AllowAny()]
@@ -291,7 +299,7 @@ class PetViewSet(viewsets.ModelViewSet):
         queryset = super().filter_queryset(queryset)
         ordering = self.request.query_params.get("ordering", "")
 
-        if self.request.user.is_authenticated:
+        if self._can_use_matching():
             q_result = (
                 QuestionnaireResult.objects.filter(
                     questionnaire__user=self.request.user
@@ -338,7 +346,7 @@ class PetViewSet(viewsets.ModelViewSet):
 
     def get_object(self):
         obj = super().get_object()
-        if self.request.user.is_authenticated:
+        if self._can_use_matching():
             q_result = (
                 QuestionnaireResult.objects.filter(
                     questionnaire__user=self.request.user

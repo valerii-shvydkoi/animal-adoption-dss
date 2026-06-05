@@ -39,6 +39,8 @@ class PetMatchSerializer(serializers.ModelSerializer):
         request = self.context.get("request")
         if obj.photo and request:
             return request.build_absolute_uri(obj.photo.url)
+        if obj.photo_url:
+            return obj.photo_url
         return None
 
 

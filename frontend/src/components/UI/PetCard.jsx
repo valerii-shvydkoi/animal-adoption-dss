@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import PropTypes from 'prop-types';
 import PetStatusBadge from './PetStatusBadge';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import api, { API_ORIGIN } from '../../services/api';
 import { tokens as globalTokens } from '../../styles/tokens';
@@ -64,7 +64,10 @@ const getCompStyles = (score) => {
 };
 const PetCard = ({ pet, context = 'catalog', onRequestClick }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
+  const currentRole = (user?.role || 'USER').toUpperCase();
+  const canShowCompatibility = user?.isAuthenticated && currentRole === 'USER';
   const placeholderImage = 'https://placehold.co/400x300?text=Adoptify';
   const [isFavorite, setIsFavorite] = useState(false);
   useEffect(() => {
@@ -188,7 +191,11 @@ const PetCard = ({ pet, context = 'catalog', onRequestClick }) => {
       action: (e) => {
         e.preventDefault();
         e.stopPropagation();
-        navigate(`/pet/${pet.id}`);
+        navigate(`/pet/${pet.id}`, {
+          state: {
+            from: `${location.pathname}${location.search}`,
+          },
+        });
       },
     };
   };
@@ -240,7 +247,8 @@ const PetCard = ({ pet, context = 'catalog', onRequestClick }) => {
     }
     return `${API_ORIGIN}${rawPhoto.startsWith('/') ? '' : '/'}${rawPhoto}`;
   };
-  const compStyles = pet.compatibility_score ? getCompStyles(pet.compatibility_score) : null;
+  const compStyles =
+    canShowCompatibility && pet.compatibility_score ? getCompStyles(pet.compatibility_score) : null;
   const renderSizeAndWeight = () => {
     const hasCategory = !!pet.size_category;
     const hasWeight = !!formattedWeight;
@@ -365,7 +373,7 @@ const PetCard = ({ pet, context = 'catalog', onRequestClick }) => {
           }}
         />
 
-        {pet.compatibility_score && compStyles && (
+        {canShowCompatibility && pet.compatibility_score && compStyles && (
           <div
             className="pet-comp-target-score"
             style={{

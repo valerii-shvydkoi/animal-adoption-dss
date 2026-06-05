@@ -123,11 +123,12 @@ const MyResults = () => {
   }, [adoptionMessage]);
   const handleRequestClick = (petOrResult) => {
     const cleanPetData = petOrResult.pet || petOrResult;
-    setSelectedPet(cleanPetData);
-    setIsModalOpen(true);
-    setRequestSuccess(false);
-    setSubmitError(null);
-    setAdoptionMessage(`Доброго дня! Хочу познайомитися з хвостиком на ім'я ${cleanPetData.name}.`);
+    navigate(`/create-request/${cleanPetData.id}`, {
+      state: {
+        from: '/my-results',
+        questionnaireResultId: data?.id,
+      },
+    });
   };
   const closeAndResetModal = () => {
     setIsModalOpen(false);

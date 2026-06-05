@@ -86,6 +86,7 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
 class UserProfile(TimeStampedModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
     first_name = models.CharField(max_length=100, blank=True)
+    last_name = models.CharField(max_length=100, blank=True)
     phone = models.CharField(max_length=20, blank=True)
 
     has_car = models.BooleanField(default=False)

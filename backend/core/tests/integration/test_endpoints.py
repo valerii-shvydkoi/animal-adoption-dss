@@ -133,7 +133,7 @@ class TestIntegrationEndpoints:
         request_item = next(
             item for item in payload if item["id"] == adoption_request.id
         )
-        assert request_item["ai_analysis"]["match_percent"] is None
+        assert request_item["dss_analysis"]["match_percent"] is None
 
     def test_pet_deletion_cascades_to_adoptions(
         self, auth_volunteer_client, pet, adoption_request
