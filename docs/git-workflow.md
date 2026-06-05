@@ -2,32 +2,32 @@
 
 Репозиторій має зберігати історію як інженерний щоденник розроблення СППР, а не як випадковий архів файлів.
 
-## Рекомендований remote
+## Remote
 
-Поточний локальний `origin` вказує на `https://github.com/makcimilianskin55/Adoptify.git`. Для дипломної назви доцільніше використати репозиторій `valerii-shvydkoi/animal-adoption-dss.git`, який відповідає темі роботи.
+Основний `origin` має вказувати на репозиторій `valerii-shvydkoi/animal-adoption-dss.git`, який відповідає назві та предметній області дипломної роботи.
 
-Рекомендований варіант:
+Перевірка remote:
 
 ```bash
-git remote set-url origin https://github.com/valerii-shvydkoi/animal-adoption-dss.git
+git remote -v
 ```
 
-Якщо потрібно зберегти старий remote як резервний:
+Очікуване значення:
 
 ```bash
-git remote rename origin legacy
-git remote add origin https://github.com/valerii-shvydkoi/animal-adoption-dss.git
+origin  https://github.com/valerii-shvydkoi/animal-adoption-dss.git
 ```
 
 ## Гілки
 
 - `main` — стабільна версія для демонстрації та захисту.
-- `develop` — інтеграція поточних фіч перед стабілізацією.
+- `dev` — інтеграція поточних фіч перед стабілізацією.
 - `feature/ahp-dss-matching` — зміни алгоритму AHP/DSS.
 - `feature/adoption-workflow` — заявки, статуси, транзакційність.
 - `feature/role-cabinets` — волонтер, менеджер притулку, адміністратор.
 - `feature/pwa-production` — PWA, Docker, nginx, production-налаштування.
 - `docs/diploma-alignment` — документація, матриця відповідності, wireframes.
+- `release/diploma-ready` — фінальний зріз для демонстрації системи.
 
 ## Коміти
 
