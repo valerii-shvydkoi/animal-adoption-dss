@@ -168,7 +168,7 @@ export default function ShelterTeam() {
         >
           <input
             type="email"
-            placeholder="Введіть email користувача..."
+            placeholder="Введіть email користувача"
             required
             disabled={submitLoading}
             value={emailInput}

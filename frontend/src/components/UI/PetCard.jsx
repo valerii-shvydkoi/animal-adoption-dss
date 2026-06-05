@@ -3,8 +3,9 @@ import PropTypes from 'prop-types';
 import PetStatusBadge from './PetStatusBadge';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import api, { API_ORIGIN } from '../../services/api';
+import api from '../../services/api';
 import { tokens as globalTokens } from '../../styles/tokens';
+import { resolveMediaUrl } from '../../utils/media';
 import {
   emitFavoritesUpdated,
   getStoredFavoriteIds,
@@ -244,11 +245,7 @@ const PetCard = ({ pet, context = 'catalog', onRequestClick }) => {
   const displayCity = pet.city || 'Київ';
   const getPetImageUrl = () => {
     const rawPhoto = pet.photo || pet.photo_url;
-    if (!rawPhoto) return placeholderImage;
-    if (rawPhoto.startsWith('http://') || rawPhoto.startsWith('https://')) {
-      return rawPhoto;
-    }
-    return `${API_ORIGIN}${rawPhoto.startsWith('/') ? '' : '/'}${rawPhoto}`;
+    return resolveMediaUrl(rawPhoto, placeholderImage);
   };
   const compStyles =
     canShowCompatibility && pet.compatibility_score ? getCompStyles(pet.compatibility_score) : null;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { volunteerPetApi, tokens } from '../services/api';
+import { resolveMediaUrl } from '../utils/media';
 import {
   PawPrint,
   Plus,
@@ -409,9 +410,8 @@ export default function VolunteerPets() {
       ) : (
         <div className="pets-grid">
           {pets.map((pet) => {
-            const authorText = pet.volunteer_name || 'Команда притулку';
-            const isManager = authorText.toLowerCase().includes('менеджер');
-            const badgeClass = isManager ? 'dynamic-badge badge-mgr' : 'dynamic-badge badge-vol';
+            const authorText = pet.volunteer_name || pet.created_by_name || 'Мій підопічний';
+            const badgeClass = 'dynamic-badge badge-vol';
             return (
               <div key={pet.id} className="pet-card">
                 <span className={badgeClass}>
@@ -430,7 +430,7 @@ export default function VolunteerPets() {
                 <div className="pet-image-container">
                   {pet.photo || pet.photo_url ? (
                     <img
-                      src={pet.photo || pet.photo_url}
+                      src={resolveMediaUrl(pet.photo || pet.photo_url)}
                       alt={pet.name}
                       style={{
                         width: '100%',

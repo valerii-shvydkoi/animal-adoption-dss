@@ -487,7 +487,7 @@ const Catalog = () => {
     if (filters.age_category === 'BABY')
       badges.push({
         key: 'age_category',
-        label: 'Вік: до 6 мес.',
+        label: 'Вік: до 6 міс.',
         value: '',
       });
     if (filters.age_category === 'ADULT')
@@ -1071,7 +1071,7 @@ const Catalog = () => {
               <input
                 ref={searchInputRef}
                 type="text"
-                placeholder="Введіть ім'я..."
+                placeholder="Введіть ім'я"
                 value={searchTerm}
                 maxLength={50}
                 onChange={(e) => setSearchTerm(e.target.value.replace(/\d/g, ''))}

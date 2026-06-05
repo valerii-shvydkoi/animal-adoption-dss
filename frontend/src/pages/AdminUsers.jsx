@@ -443,7 +443,7 @@ export default function AdminUsers() {
           <input
             type="text"
             className="search-input"
-            placeholder="Пошук за email або ім'ям..."
+            placeholder="Введіть email або ім'я"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             style={{

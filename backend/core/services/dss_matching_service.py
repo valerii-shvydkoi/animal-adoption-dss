@@ -338,7 +338,10 @@ class DSSMatchingService:
         )
 
         if final_percent > DSSMatchingService.HIGH_MATCH_THRESHOLD and len(risks) == 0:
-            recommendation = "Найсильніший збіг: умови користувача добре відповідають потребам тварини, тому можна переходити до знайомства."
+            recommendation = (
+                "Сильний збіг: умови користувача добре відповідають потребам "
+                "тварини, тому можна переходити до знайомства."
+            )
         elif final_percent > DSSMatchingService.MEDIUM_MATCH_THRESHOLD:
             recommendation = "Перспективний варіант. Перед адаптацією варто обговорити з волонтером зазначені застереження."
         else:

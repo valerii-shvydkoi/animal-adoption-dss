@@ -422,7 +422,7 @@ export default function AdminLogs() {
           <input
             type="text"
             className="search-input"
-            placeholder="Фільтрувати за текстом помилки чи модулем..."
+            placeholder="Введіть текст помилки або модуль"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />

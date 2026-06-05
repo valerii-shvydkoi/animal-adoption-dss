@@ -320,7 +320,7 @@ const ShelterDashboard = () => {
                 <input
                   type="tel"
                   className="dashboard-input-field"
-                  placeholder="+380XXXXXXXXX"
+                  placeholder="Введіть номер телефону"
                   value={shelterPhone}
                   onChange={(e) => setShelterPhone(e.target.value)}
                   style={styles.input}

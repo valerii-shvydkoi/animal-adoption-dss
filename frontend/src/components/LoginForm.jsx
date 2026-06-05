@@ -301,7 +301,7 @@ const LoginForm = () => {
                     setEmail(e.target.value);
                     setError('');
                   }}
-                  placeholder="name@example.com"
+                  placeholder="Введіть електронну пошту"
                   maxLength={254}
                   className="adoptify-login-input"
                   style={{

@@ -63,6 +63,7 @@ class AHPService:
     def build_consistent_matrix(v12: float, v23: float) -> List[List[float]]:
         v12 = AHPService._normalize_intensity(v12)
         v23 = AHPService._normalize_intensity(v23)
+        # Третє порівняння виводиться з перших двох, щоб матриця була узгодженою.
         v13 = v12 * v23
         return [
             [1.0, v12, v13],

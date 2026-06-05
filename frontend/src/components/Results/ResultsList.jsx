@@ -64,11 +64,20 @@ const ResultsList = ({ results, onRequestClick, startRank = 1 }) => (
 
     {results.map((res, index) => {
       const petData = res.pet || res;
+      const rank = startRank + index;
       const rawPercent =
         res.match_percent !== undefined && res.match_percent !== null
           ? res.match_percent
           : petData.match_percent || 0;
       const displayPercent = Math.round(parseFloat(rawPercent));
+      const matchLabel =
+        rank === 1
+          ? 'Найсильніший збіг'
+          : displayPercent >= 80
+            ? 'Сильний збіг'
+            : displayPercent >= 60
+              ? 'Перспективний збіг'
+              : 'Потребує додаткової перевірки';
       const fullPetPayload = {
         ...petData,
         compatibility_score:
@@ -132,7 +141,7 @@ const ResultsList = ({ results, onRequestClick, startRank = 1 }) => (
                     whiteSpace: 'nowrap',
                   }}
                 >
-                  #{startRank + index} · Сумісність: {displayPercent}%
+                  #{rank} · Сумісність: {displayPercent}%
                 </div>
                 <div
                   style={{
@@ -204,7 +213,7 @@ const ResultsList = ({ results, onRequestClick, startRank = 1 }) => (
                         color: '#EA580C',
                       }}
                     >
-                      Висновок системи:{' '}
+                      {matchLabel}:{' '}
                     </strong>
                     {res.recommendation || petData.recommendation}
                   </span>

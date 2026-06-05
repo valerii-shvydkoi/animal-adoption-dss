@@ -82,13 +82,22 @@ const UserProfile = () => {
     isProfileLoading,
     refreshProfile,
   } = useAHP();
-  const { refreshUser } = useAuth();
+  const { refreshUser, user, role } = useAuth();
   const navigate = useNavigate();
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [localError, setLocalError] = useState(null);
   const nameLength = (userProfile.name || '').length;
   const lastNameLength = (userProfile.last_name || '').length;
+  const currentRole = String(role || user?.role || 'USER').toUpperCase();
+  const isRegularUser = currentRole === 'USER';
+  const roleLabel =
+    {
+      USER: 'Користувач',
+      VOLUNTEER: 'Волонтер',
+      SHELTER_MANAGER: 'Менеджер притулку',
+      ADMIN: 'Адміністратор',
+    }[currentRole] || 'Користувач';
   useEffect(() => {
     refreshProfile?.();
     refreshUser();
@@ -313,7 +322,9 @@ const UserProfile = () => {
               lineHeight: '1.6',
             }}
           >
-            Дані синхронізуються з анкетною системою підбору AHP.
+            {isRegularUser
+              ? 'Дані синхронізуються з анкетною системою підбору AHP.'
+              : 'Контактні дані використовуються для рольових дій у системі Adoptify.'}
           </p>
         </div>
 
@@ -454,7 +465,7 @@ const UserProfile = () => {
                     className="name-input"
                     value={userProfile.name || ''}
                     onChange={handleNameChange}
-                    placeholder="Як до вас звертатися?"
+                    placeholder="Введіть ім'я"
                     style={inputStyle}
                   />
                   <span
@@ -551,7 +562,7 @@ const UserProfile = () => {
                     value={userProfile.phone || ''}
                     onChange={handlePhoneChange}
                     onKeyDown={handlePhoneKeyDown}
-                    placeholder="+380 (XX) XXX-XX-XX"
+                    placeholder="Введіть номер телефону"
                     style={inputStyle}
                     onFocus={() => {
                       if (!userProfile.phone || userProfile.phone.trim() === '') {
@@ -671,6 +682,7 @@ const UserProfile = () => {
             }}
           />
 
+          {isRegularUser ? (
           <div>
             <div
               style={{
@@ -1215,6 +1227,67 @@ const UserProfile = () => {
               </div>
             </div>
           </div>
+          ) : (
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+            }}
+          >
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '12px',
+                marginBottom: '8px',
+              }}
+            >
+              <span
+                className="icon-bob"
+                style={{
+                  background: '#F8FAFC',
+                  padding: '12px',
+                  borderRadius: '14px',
+                  display: 'flex',
+                  color: '#0F172A',
+                }}
+              >
+                <UserCheck size={24} weight="bold" />
+              </span>
+              <h3
+                style={{
+                  margin: 0,
+                  fontSize: '22px',
+                  fontWeight: '800',
+                  color: '#0F172A',
+                }}
+              >
+                Роль у системі
+              </h3>
+            </div>
+
+            <div
+              style={{
+                background: '#F8FAFC',
+                border: '1px solid #E2E8F0',
+                borderRadius: '16px',
+                padding: '18px 20px',
+                color: '#475569',
+                lineHeight: 1.6,
+                fontWeight: '600',
+              }}
+            >
+              Поточна роль: <strong style={{ color: '#0F172A' }}>{roleLabel}</strong>.
+              {currentRole === 'VOLUNTEER' &&
+                ' Волонтерський профіль використовується для додавання власних підопічних і роботи із заявками на адаптацію.'}
+              {currentRole === 'SHELTER_MANAGER' &&
+                ' Профіль менеджера використовується для керування притулком, командою, картками тварин і заявками.'}
+              {currentRole === 'ADMIN' &&
+                ' Адміністративний профіль використовується для реєстру користувачів, притулків, журналів і системної аналітики.'}
+            </div>
+          </div>
+          )}
 
           <div
             className="action-buttons-container"

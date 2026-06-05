@@ -16,6 +16,10 @@ const adminService = {
     const response = await api.get(url);
     return response.data;
   },
+  getShelters: async () => {
+    const response = await api.get('shelters/');
+    return response.data;
+  },
   approveRequest: async (id) => {
     const response = await api.post(`${ADMIN_PREFIX}/volunteer-requests/${id}/approve/`, {});
     return response.data;

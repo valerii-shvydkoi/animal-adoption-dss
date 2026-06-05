@@ -376,7 +376,7 @@ const RegisterForm = () => {
                     setError('');
                   }}
                   required
-                  placeholder="mail@example.com"
+                  placeholder="Введіть електронну пошту"
                   disabled={loading || !!success}
                   maxLength={254}
                   className="adoptify-reg-input"

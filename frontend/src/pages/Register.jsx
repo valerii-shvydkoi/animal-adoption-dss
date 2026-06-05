@@ -581,7 +581,7 @@ const Register = () => {
                       name="email"
                       value={formData.email}
                       onChange={handleChange}
-                      placeholder="name@example.com"
+                      placeholder="Введіть електронну пошту"
                       maxLength={254}
                       className="adoptify-register-input"
                       style={{

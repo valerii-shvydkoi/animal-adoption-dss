@@ -1,5 +1,4 @@
 import json
-from django.core.exceptions import DisallowedHost
 from rest_framework import serializers
 from drf_spectacular.utils import OpenApiTypes, extend_schema_field
 from core.models import Pet, QuestionnaireResult
@@ -18,6 +17,9 @@ class PetSerializer(serializers.ModelSerializer):
 
     shelter_name = serializers.CharField(source="shelter.name", read_only=True)
     volunteer_name = serializers.SerializerMethodField()
+    created_by_name = serializers.SerializerMethodField()
+    created_by_role = serializers.SerializerMethodField()
+    shelter_details = serializers.SerializerMethodField()
 
     is_sterilized = serializers.ChoiceField(
         choices=Pet.STERILIZED_CHOICES,
@@ -53,8 +55,7 @@ class PetSerializer(serializers.ModelSerializer):
             return val
 
         if "photo" in data and isinstance(get_scalar_value(data["photo"]), str):
-            if str(data["photo"]).startswith("http"):
-                data.pop("photo", None)
+            data.pop("photo", None)
 
         if "care_type" in data:
             raw_care = get_scalar_value(data["care_type"])
@@ -220,12 +221,6 @@ class PetSerializer(serializers.ModelSerializer):
     @extend_schema_field(OpenApiTypes.URI)
     def get_photo(self, obj):
         if obj.photo:
-            request = self.context.get("request")
-            if request:
-                try:
-                    return request.build_absolute_uri(obj.photo.url)
-                except DisallowedHost:
-                    return obj.photo.url
             return obj.photo.url
         if obj.photo_url:
             return obj.photo_url
@@ -349,3 +344,38 @@ class PetSerializer(serializers.ModelSerializer):
         except Exception:
             pass
         return "Притулок"
+
+    @extend_schema_field(serializers.CharField(allow_blank=True))
+    def get_created_by_name(self, obj):
+        if not obj.created_by:
+            return ""
+        return self._format_curator_name(obj.created_by)
+
+    @extend_schema_field(serializers.CharField(allow_blank=True))
+    def get_created_by_role(self, obj):
+        if not obj.created_by:
+            return ""
+        role = str(getattr(obj.created_by, "role", "") or "").upper()
+        role_labels = {
+            "ADMIN": "Адміністратор",
+            "SHELTER_MANAGER": "Менеджер притулку",
+            "VOLUNTEER": "Волонтер",
+            "USER": "Користувач",
+        }
+        return role_labels.get(role, "Команда притулку")
+
+    @extend_schema_field(OpenApiTypes.OBJECT)
+    def get_shelter_details(self, obj):
+        shelter = getattr(obj, "shelter", None)
+        if not shelter:
+            return None
+        return {
+            "id": shelter.id,
+            "name": shelter.name,
+            "region": shelter.region,
+            "city": shelter.city,
+            "address": shelter.address,
+            "phone": shelter.phone,
+            "description": shelter.description,
+            "is_verified": shelter.is_verified,
+        }

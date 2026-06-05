@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import api from '../services/api';
+import { resolveMediaUrl } from '../utils/media';
 import LoadingSpinner from '../components/UI/LoadingSpinner';
 import { useFeedback } from '../context/FeedbackContext';
 import {
@@ -354,7 +355,7 @@ const MyRequests = () => {
                     }}
                   >
                     <img
-                      src={pet.photo_url || 'https://via.placeholder.com/150?text=🐾'}
+                      src={resolveMediaUrl(pet.photo || pet.photo_url, 'https://placehold.co/150?text=Adoptify')}
                       alt={pet.name || 'Тварина'}
                       style={{
                         width: '100%',

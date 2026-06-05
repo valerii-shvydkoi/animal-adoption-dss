@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
+import { useAuth } from '../context/AuthContext';
 import { useFeedback } from '../context/FeedbackContext';
 import { tokens } from '../styles/tokens';
+import { resolveMediaUrl } from '../utils/media';
 import {
   PawPrint,
   MapPin,
@@ -37,10 +39,21 @@ const DEFAULT_FORM_VALUES = {
 const MAX_PHOTO_FILE_SIZE = 20 * 1024 * 1024;
 const PetForm = ({ pet, onSuccess }) => {
   const { notify } = useFeedback();
+  const { user, role } = useAuth();
+  const currentRole = String(role || user?.role || '').toUpperCase();
+  const isVolunteerRole = currentRole === 'VOLUNTEER';
   const getInitialValues = (petData) => {
+    const editableValues = { ...DEFAULT_FORM_VALUES };
+    Object.keys(DEFAULT_FORM_VALUES).forEach((key) => {
+      if (petData?.[key] !== undefined && petData?.[key] !== null) {
+        editableValues[key] = petData[key];
+      }
+    });
     return {
-      ...DEFAULT_FORM_VALUES,
-      ...petData,
+      ...editableValues,
+      care_type: isVolunteerRole
+        ? 'VOLUNTEER_FOSTER'
+        : petData?.care_type || DEFAULT_FORM_VALUES.care_type,
       urgency_status:
         petData?.urgency_status || petData?.urgencyStatus || DEFAULT_FORM_VALUES.urgency_status,
       behavior_tags:
@@ -51,15 +64,15 @@ const PetForm = ({ pet, onSuccess }) => {
   };
   const [formData, setFormData] = useState(() => getInitialValues(pet));
   const [photoFile, setPhotoFile] = useState(null);
-  const [photoPreview, setPhotoPreview] = useState(pet?.photo_url || pet?.photo || null);
+  const [photoPreview, setPhotoPreview] = useState(resolveMediaUrl(pet?.photo || pet?.photo_url));
   const fileInputRef = useRef(null);
   const [loading, setLoading] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
   useEffect(() => {
     setFormData(getInitialValues(pet));
-    setPhotoPreview(pet?.photo_url || pet?.photo || null);
+    setPhotoPreview(resolveMediaUrl(pet?.photo || pet?.photo_url));
     setPhotoFile(null);
-  }, [pet]);
+  }, [pet, isVolunteerRole]);
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
@@ -82,7 +95,7 @@ const PetForm = ({ pet, onSuccess }) => {
         notify({
           type: 'warning',
           title: 'Фото завелике',
-          message: 'Максимальний розмір фото для картки - 10 МБ.',
+          message: 'Максимальний розмір фото для картки - 20 МБ.',
         });
         e.target.value = '';
         return;
@@ -129,7 +142,10 @@ const PetForm = ({ pet, onSuccess }) => {
         await api.post('/pets/', submitData);
       }
       if (!pet) {
-        setFormData(DEFAULT_FORM_VALUES);
+        setFormData({
+          ...DEFAULT_FORM_VALUES,
+          care_type: isVolunteerRole ? 'VOLUNTEER_FOSTER' : DEFAULT_FORM_VALUES.care_type,
+        });
         setPhotoFile(null);
         setPhotoPreview(null);
       }
@@ -341,7 +357,7 @@ const PetForm = ({ pet, onSuccess }) => {
             <label className="adoptify-input-label">Ім'я тварини</label>
             <input
               required
-              placeholder="Наприклад: Барсік"
+              placeholder="Введіть кличку"
               value={formData.name}
               onChange={(e) =>
                 setFormData({
@@ -358,7 +374,7 @@ const PetForm = ({ pet, onSuccess }) => {
               required
               type="number"
               min="0"
-              placeholder="Вік"
+              placeholder="Вік у місяцях"
               value={formData.age_months}
               onChange={(e) =>
                 setFormData({
@@ -376,7 +392,7 @@ const PetForm = ({ pet, onSuccess }) => {
               type="number"
               step="0.1"
               min="0.1"
-              placeholder="Вага"
+              placeholder="Вага у кг"
               value={formData.weight}
               onChange={(e) =>
                 setFormData({
@@ -422,18 +438,32 @@ const PetForm = ({ pet, onSuccess }) => {
           <div>
             <label className="adoptify-input-label">Тип опіки</label>
             <select
-              value={formData.care_type}
+              value={isVolunteerRole ? 'VOLUNTEER_FOSTER' : formData.care_type}
               onChange={(e) =>
                 setFormData({
                   ...formData,
                   care_type: e.target.value,
                 })
               }
+              disabled={isVolunteerRole}
               className="adoptify-pet-input"
             >
-              <option value="SHELTER">У притулку</option>
+              {!isVolunteerRole && <option value="SHELTER">У притулку</option>}
               <option value="VOLUNTEER_FOSTER">На перетримці</option>
             </select>
+            {isVolunteerRole && (
+              <p
+                style={{
+                  margin: '6px 0 0',
+                  color: tokens.textSecondary || '#64748B',
+                  fontSize: '12px',
+                  lineHeight: 1.4,
+                  fontWeight: 600,
+                }}
+              >
+                Волонтер додає тварин як власних підопічних на перетримці.
+              </p>
+            )}
           </div>
         </div>
 
@@ -456,7 +486,7 @@ const PetForm = ({ pet, onSuccess }) => {
               <MapPin size={16} weight="bold" /> Область перебування
             </label>
             <input
-              placeholder="Наприклад: Київська"
+              placeholder="Введіть область"
               value={formData.oblast}
               onChange={(e) =>
                 setFormData({
@@ -480,7 +510,7 @@ const PetForm = ({ pet, onSuccess }) => {
             </label>
             <input
               required
-              placeholder="Наприклад: Київ"
+              placeholder="Введіть місто"
               value={formData.city}
               onChange={(e) =>
                 setFormData({
@@ -504,7 +534,7 @@ const PetForm = ({ pet, onSuccess }) => {
             </label>
             <input
               type="url"
-              placeholder="YouTube або TikTok URL"
+              placeholder="Вставте посилання на відео"
               value={formData.video_url}
               onChange={(e) =>
                 setFormData({
@@ -570,7 +600,7 @@ const PetForm = ({ pet, onSuccess }) => {
               Теги характеру (через кому)
             </label>
             <input
-              placeholder="Грайливий, Любить спати, Охоронець..."
+              placeholder="Введіть теги через кому"
               value={formData.behavior_tags}
               onChange={(e) =>
                 setFormData({
@@ -692,7 +722,7 @@ const PetForm = ({ pet, onSuccess }) => {
           <label className="adoptify-input-label">Детальний опис</label>
           <textarea
             required
-            placeholder="Розкажіть історію тварини..."
+            placeholder="Опишіть характер, звички та історію тварини"
             value={formData.description}
             onChange={(e) =>
               setFormData({

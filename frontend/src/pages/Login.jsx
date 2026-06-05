@@ -8,7 +8,7 @@ import { tokens } from '../styles/tokens';
 const Login = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login, user, role } = useAuth();
+  const { login, user } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -23,38 +23,24 @@ const Login = () => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
   const isSmallMobile = windowWidth <= 350;
-  const getRoleHome = (roleValue) => {
-    const roleUpper = String(roleValue || 'USER').toUpperCase();
-    if (roleUpper === 'VOLUNTEER') return '/volunteer/pets';
-    if (roleUpper === 'SHELTER_MANAGER') return '/shelter/dashboard';
-    if (roleUpper === 'ADMIN') return '/admin/dashboard';
+  const getSafeRedirect = () => {
+    const rawFrom = location.state?.from?.pathname || location.state?.from || '/';
+    const from = typeof rawFrom === 'string' ? rawFrom : '/';
+    const publicReturnPrefixes = ['/catalog', '/favorites', '/pet/', '/virtual-adopt/'];
+    const blockedAuthPages = ['/login', '/register', '/forgot-password', '/reset-password'];
+
+    if (blockedAuthPages.some((path) => from.startsWith(path))) return '/';
+    if (from === '/') return '/';
+    if (publicReturnPrefixes.some((path) => from === path || from.startsWith(path))) return from;
     return '/';
-  };
-  const getSafeRedirect = (roleValue) => {
-    const from = location.state?.from?.pathname || location.state?.from || '/';
-    const roleUpper = String(roleValue || 'USER').toUpperCase();
-    const userOnlyPrefixes = [
-      '/questionnaire',
-      '/my-results',
-      '/my-requests',
-      '/create-request',
-      '/become-volunteer',
-      '/register-shelter',
-    ];
-
-    if (roleUpper !== 'USER' && userOnlyPrefixes.some((path) => from.startsWith(path))) {
-      return getRoleHome(roleUpper);
-    }
-
-    return from;
   };
   useEffect(() => {
     if (user?.isAuthenticated) {
-      navigate(getSafeRedirect(role || user.role), {
+      navigate(getSafeRedirect(), {
         replace: true,
       });
     }
-  }, [user, role, navigate, location]);
+  }, [user, navigate, location]);
   const handleChange = (e) => {
     setFormData({
       ...formData,
@@ -70,11 +56,9 @@ const Login = () => {
     }
     setLoading(true);
     try {
-      const loginData = await login(formData.email.trim(), formData.password);
+      await login(formData.email.trim(), formData.password);
       setTimeout(() => {
-        const nextRole =
-          loginData?.role || loginData?.user?.role || localStorage.getItem('userRole') || 'USER';
-        navigate(getSafeRedirect(nextRole), {
+        navigate(getSafeRedirect(), {
           replace: true,
         });
       }, 100);
@@ -417,7 +401,7 @@ const Login = () => {
                   className="adoptify-login-input"
                   value={formData.email}
                   onChange={handleChange}
-                  placeholder="name@example.com"
+                  placeholder="Введіть електронну пошту"
                   maxLength={254}
                 />
               </div>

@@ -22,7 +22,6 @@ class AdoptionRequestSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(OpenApiTypes.OBJECT)
     def get_pet_details(self, obj):
-        request = self.context.get("request")
         photo_url = None
 
         if (
@@ -30,11 +29,7 @@ class AdoptionRequestSerializer(serializers.ModelSerializer):
             and getattr(obj.pet, "photo", None)
             and hasattr(obj.pet.photo, "url")
         ):
-            photo_url = (
-                request.build_absolute_uri(obj.pet.photo.url)
-                if request
-                else obj.pet.photo.url
-            )
+            photo_url = obj.pet.photo.url
         elif obj.pet and getattr(obj.pet, "photo_url", None):
             photo_url = obj.pet.photo_url
 

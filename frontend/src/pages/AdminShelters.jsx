@@ -109,6 +109,7 @@ const LIGHT_THEME_CSS = `
 export default function AdminShelters() {
   const { confirm } = useFeedback();
   const [requests, setRequests] = useState([]);
+  const [shelters, setShelters] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
@@ -137,10 +138,14 @@ export default function AdminShelters() {
   const fetchRequests = async () => {
     setLoading(true);
     try {
-      const data = await adminService.getVolunteerRequests(debouncedSearch);
+      const [data, sheltersData] = await Promise.all([
+        adminService.getVolunteerRequests(debouncedSearch),
+        adminService.getShelters(),
+      ]);
       const isShelterMode = activeType === 'shelters';
       const filterPending = (req) =>
         req.is_new_shelter === isShelterMode && req.status === 'PENDING';
+      setShelters(Array.isArray(sheltersData) ? sheltersData : sheltersData?.results || []);
       if (Array.isArray(data)) {
         setRequests(data.filter(filterPending));
       } else if (data && Array.isArray(data.results)) {
@@ -262,12 +267,10 @@ export default function AdminShelters() {
 
       <div style={styles.container}>
         <div style={styles.header}>
-          <h1 style={styles.title}>
-            {isShelterMode ? 'Верифікація притулків' : 'Заявки на волонтерство'}
-          </h1>
+          <h1 style={styles.title}>Реєстр притулків</h1>
           <p style={styles.subtitle}>
             {isShelterMode
-              ? 'Розгляд запитів на реєстрацію нових організацій та підключення менеджерів платформи.'
+              ? 'Перегляд зареєстрованих організацій і розгляд нових запитів на верифікацію.'
               : 'Контроль заявок кандидатів, які хочуть приєднатися до верифікованих притулків.'}
           </p>
         </div>
@@ -281,7 +284,7 @@ export default function AdminShelters() {
               ...(isShelterMode ? styles.tabButtonActive : {}),
             }}
           >
-            Нові притулки
+            Верифікація притулків
           </button>
           <button
             type="button"
@@ -294,6 +297,47 @@ export default function AdminShelters() {
             Волонтери
           </button>
         </div>
+
+        {isShelterMode && (
+          <div style={styles.registryPanel}>
+            <div style={styles.registryPanelHeader}>
+              <div>
+                <h2 style={styles.registryTitle}>Зареєстровані притулки</h2>
+                <p style={styles.registrySubtitle}>
+                  Активний реєстр організацій, які доступні у системі Adoptify.
+                </p>
+              </div>
+              <span style={styles.registryCounter}>{shelters.length}</span>
+            </div>
+            {shelters.length === 0 ? (
+              <p style={styles.registryEmpty}>У реєстрі поки немає притулків.</p>
+            ) : (
+              <div style={styles.registryList}>
+                {shelters.map((shelter) => (
+                  <div key={shelter.id} style={styles.registryItem}>
+                    <div>
+                      <strong style={styles.registryName}>{shelter.name}</strong>
+                      <span style={styles.registryLocation}>
+                        {[shelter.city, shelter.region ? `${shelter.region} обл.` : '']
+                          .filter(Boolean)
+                          .join(', ') || 'Локацію не вказано'}
+                      </span>
+                    </div>
+                    <span
+                      style={{
+                        ...styles.registryStatus,
+                        background: shelter.is_verified ? '#DCFCE7' : '#FEF3C7',
+                        color: shelter.is_verified ? '#166534' : '#92400E',
+                      }}
+                    >
+                      {shelter.is_verified ? 'Верифіковано' : 'Очікує'}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
         {alert.message && (
           <div
@@ -658,6 +702,91 @@ const styles = {
     borderColor: '#EA580C',
     backgroundColor: '#FFF7ED',
     color: '#EA580C',
+  },
+  registryPanel: {
+    background: '#FFFFFF',
+    border: '1px solid #E2E8F0',
+    borderRadius: '20px',
+    padding: '20px',
+    marginBottom: '24px',
+    boxShadow: '0 1px 3px rgba(15, 23, 42, 0.05)',
+  },
+  registryPanelHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    gap: '16px',
+    marginBottom: '14px',
+  },
+  registryTitle: {
+    margin: 0,
+    fontSize: '18px',
+    fontWeight: '900',
+    color: '#0F172A',
+  },
+  registrySubtitle: {
+    margin: '4px 0 0 0',
+    color: '#64748B',
+    fontSize: '14px',
+    fontWeight: '600',
+    lineHeight: 1.5,
+  },
+  registryCounter: {
+    minWidth: '42px',
+    height: '34px',
+    padding: '0 12px',
+    borderRadius: '999px',
+    background: '#FFF7ED',
+    color: '#EA580C',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    fontWeight: '900',
+  },
+  registryEmpty: {
+    margin: 0,
+    padding: '16px',
+    borderRadius: '14px',
+    background: '#F8FAFC',
+    color: '#64748B',
+    fontWeight: '700',
+  },
+  registryList: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+    gap: '12px',
+  },
+  registryItem: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: '12px',
+    padding: '14px 16px',
+    borderRadius: '14px',
+    background: '#F8FAFC',
+    border: '1px solid #E2E8F0',
+  },
+  registryName: {
+    display: 'block',
+    color: '#0F172A',
+    fontSize: '14px',
+    fontWeight: '900',
+    lineHeight: 1.35,
+    overflowWrap: 'anywhere',
+  },
+  registryLocation: {
+    display: 'block',
+    color: '#64748B',
+    fontSize: '13px',
+    fontWeight: '700',
+    marginTop: '3px',
+  },
+  registryStatus: {
+    flexShrink: 0,
+    padding: '6px 10px',
+    borderRadius: '999px',
+    fontSize: '12px',
+    fontWeight: '900',
   },
   searchWrapper: {
     position: 'relative',

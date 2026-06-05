@@ -51,6 +51,7 @@ export default function ShelterApplications() {
     }
   };
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
     fetchVolunteerRequests();
   }, []);
   const handleOpenEditModal = (app) => {

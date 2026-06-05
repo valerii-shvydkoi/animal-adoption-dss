@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, Link, useLocation } from 'react-router-dom';
 import api from '../services/api';
+import { resolveMediaUrl } from '../utils/media';
 import LoadingSpinner from '../components/UI/LoadingSpinner';
 import ErrorMessage from '../components/UI/ErrorMessage';
 import {
@@ -293,7 +294,7 @@ const CreateRequest = () => {
                 }}
               >
                 <img
-                  src={pet.photo_url || pet.photo || placeholderImage}
+                  src={resolveMediaUrl(pet.photo || pet.photo_url, placeholderImage)}
                   alt={pet.name}
                   style={{
                     width: '100%',
@@ -424,7 +425,7 @@ const CreateRequest = () => {
                       maxLength={30}
                       value={firstName}
                       onChange={handleNameChange}
-                      placeholder="Лише літери (напр. Марія)"
+                      placeholder="Введіть ім'я"
                       style={{
                         width: '100%',
                         padding: '14px 16px 14px 44px',
@@ -505,7 +506,7 @@ const CreateRequest = () => {
                       maxLength={30}
                       value={lastName}
                       onChange={handleLastNameChange}
-                      placeholder="За бажанням"
+                      placeholder="Введіть прізвище"
                       style={{
                         width: '100%',
                         padding: '14px 16px 14px 44px',
@@ -598,7 +599,7 @@ const CreateRequest = () => {
                       onSelect={enforceCursorPosition}
                       onClick={enforceCursorPosition}
                       onKeyUp={enforceCursorPosition}
-                      placeholder="+380XXXXXXXXX"
+                      placeholder="Введіть номер телефону"
                       style={{
                         width: '100%',
                         padding: '14px 16px 14px 44px',
@@ -671,7 +672,7 @@ const CreateRequest = () => {
                   onChange={(e) => setMessage(e.target.value)}
                   maxLength={500}
                   rows="2"
-                  placeholder="Розкажіть трохи про свій досвід або чому ви хочете прихистити цю тваринку..."
+                  placeholder="Опишіть ваш досвід і умови для адаптації тварини"
                   style={{
                     width: '100%',
                     padding: '16px',

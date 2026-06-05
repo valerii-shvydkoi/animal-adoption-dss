@@ -9,6 +9,12 @@ from core.services.constraint_service import ConstraintService
 
 MAX_MATCH_RESULTS = 9
 
+URGENCY_ORDER = {
+    "EVACUATION": 0,
+    "MEDICAL": 1,
+    "REGULAR": 2,
+}
+
 
 class ResultsViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
@@ -94,18 +100,27 @@ class ResultsViewSet(viewsets.ReadOnlyModelViewSet):
                     "good_with_cats": getattr(pet, "good_with_cats", "UNKNOWN"),
                     "good_with_dogs": getattr(pet, "good_with_dogs", "UNKNOWN"),
                     "photo_url": (
-                        request.build_absolute_uri(pet.photo.url)
+                        pet.photo.url
                         if getattr(pet, "photo", None)
                         else None
                     ),
                     "match_percent": match_info["match_percent"],
+                    "urgency_status": getattr(pet, "urgency_status", "REGULAR"),
+                    "created_at": pet.created_at,
                     "positives": match_info["positives"],
                     "risks": match_info["risks"],
                     "recommendation": match_info["recommendation"],
                 }
             )
 
-        matched_pets.sort(key=lambda x: x["match_percent"], reverse=True)
+        matched_pets.sort(
+            key=lambda x: (
+                -x["match_percent"],
+                URGENCY_ORDER.get(str(x.get("urgency_status", "REGULAR")), 9),
+                -x["created_at"].timestamp(),
+                x["id"],
+            )
+        )
 
         return Response(
             {

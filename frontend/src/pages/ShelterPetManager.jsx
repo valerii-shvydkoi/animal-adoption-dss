@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import api from '../services/api';
 import { useFeedback } from '../context/FeedbackContext';
 import { tokens } from '../styles/tokens';
+import { resolveMediaUrl } from '../utils/media';
 import {
   Plus,
   Pencil,
@@ -85,8 +86,7 @@ export default function ShelterPetManager() {
     fetchShelterPets();
   }, []);
   const getPetImage = (pet) => {
-    if (pet.photo) return pet.photo;
-    if (pet.photo_url) return pet.photo_url;
+    if (pet.photo || pet.photo_url) return resolveMediaUrl(pet.photo || pet.photo_url);
     return 'https://placehold.co/400?text=Немає+фото';
   };
   const handlePasteFromClipboard = async () => {
@@ -96,7 +96,7 @@ export default function ShelterPetManager() {
         if (text) {
           setPetPhotoUrl(text.trim());
           setPetPhotoFile(null);
-          setPetPhotoPreview(text.trim());
+          setPetPhotoPreview(resolveMediaUrl(text.trim()));
           return;
         }
       }
@@ -125,7 +125,7 @@ export default function ShelterPetManager() {
       notify({
         type: 'warning',
         title: 'Фото завелике',
-        message: 'Максимальний розмір фото для картки - 10 МБ.',
+        message: 'Максимальний розмір фото для картки - 20 МБ.',
       });
       return;
     }
@@ -178,7 +178,7 @@ export default function ShelterPetManager() {
     setPetAllowVirtual(pet.allow_virtual_adoption || false);
     setPetPhotoUrl(pet.photo_url || '');
     setPetPhotoFile(null);
-    setPetPhotoPreview(pet.photo || pet.photo_url || '');
+    setPetPhotoPreview(resolveMediaUrl(pet.photo || pet.photo_url));
     setPetVideoUrl(pet.video_url || '');
     setPetDescription(pet.description || '');
     const sterilizedVal = String(pet.is_sterilized).toLowerCase();
@@ -411,6 +411,8 @@ export default function ShelterPetManager() {
   };
   const renderCuratorBadge = (pet) => {
     const isShelterCare = String(pet.care_type || 'SHELTER').toUpperCase() === 'SHELTER';
+    const authorRole = pet.created_by_role || 'Команда притулку';
+    const authorName = pet.created_by_name ? ` ${pet.created_by_name}` : '';
     if (isShelterCare) {
       return (
         <span
@@ -422,12 +424,13 @@ export default function ShelterPetManager() {
           }}
         >
           <ShieldCheck size={14} weight="bold" />
-          {pet.shelter_name || 'Притулок'}
+          Притулок · додав {authorRole.toLowerCase()}
+          {authorName}
         </span>
       );
     }
 
-    const curatorName = pet.volunteer_name || 'опікун притулку';
+    const curatorName = pet.volunteer_name || (authorName ? `${authorRole}${authorName}` : 'опікун притулку');
     return (
       <span
         className="status-badge badge-volunteer"
@@ -438,7 +441,7 @@ export default function ShelterPetManager() {
         }}
       >
         <User size={14} weight="bold" />
-        Опікун: {curatorName}
+        Перетримка: {curatorName}
       </span>
     );
   };
@@ -446,7 +449,16 @@ export default function ShelterPetManager() {
     const query = searchTerm.trim().toLowerCase();
     const matchesSearch =
       !query ||
-      [pet.name, pet.breed, pet.city, pet.oblast, pet.shelter_name, pet.volunteer_name]
+      [
+        pet.name,
+        pet.breed,
+        pet.city,
+        pet.oblast,
+        pet.shelter_name,
+        pet.volunteer_name,
+        pet.created_by_name,
+        pet.created_by_role,
+      ]
         .filter(Boolean)
         .some((value) => String(value).toLowerCase().includes(query));
     const matchesSpecies = !speciesFilter || pet.species === speciesFilter;
@@ -552,11 +564,11 @@ export default function ShelterPetManager() {
         .badge-volunteer { background-color: rgba(6, 182, 212, 0.1); color: #0891B2; }
         .badge-shelter { background-color: rgba(168, 85, 247, 0.1); color: #9333EA; }
 
-        .form-input-custom { width: 100%; padding: 14px 16px; border-radius: 12px; border: 1px solid ${borderColor}; background-color: ${bgCard}; color: ${textMain}; outline: none; box-sizing: border-box; font-family: inherit; font-size: 15px; transition: all 0.2s ease; }
+        .form-input-custom { width: 100%; min-height: 48px; padding: 14px 16px; border-radius: 12px; border: 1px solid ${borderColor}; background-color: ${bgCard}; color: ${textMain}; outline: none; box-sizing: border-box; font-family: inherit; font-size: 15px; transition: all 0.2s ease; }
         .form-input-custom:focus { border-color: ${brandPrimary}; box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.1); }
         .form-input-custom:disabled { background-color: ${bgInput}; cursor: not-allowed; }
 
-        .form-select-custom { appearance: none; width: 100%; padding: 14px 40px 14px 16px; border-radius: 12px; border: 1px solid ${borderColor}; background-color: ${bgCard}; color: ${textMain}; outline: none; box-sizing: border-box; font-family: inherit; font-size: 15px; transition: all 0.2s ease; cursor: pointer; }
+        .form-select-custom { appearance: none; width: 100%; min-height: 48px; padding: 14px 40px 14px 16px; border-radius: 12px; border: 1px solid ${borderColor}; background-color: ${bgCard}; color: ${textMain}; outline: none; box-sizing: border-box; font-family: inherit; font-size: 15px; line-height: 1.25; transition: all 0.2s ease; cursor: pointer; }
         .form-select-custom:focus { border-color: ${brandPrimary}; box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.1); }
         .form-select-custom:disabled { background-color: ${bgInput}; cursor: not-allowed; }
 
@@ -767,7 +779,7 @@ export default function ShelterPetManager() {
                 className="form-input-custom"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Кличка, порода, місто, опікун"
+                placeholder="Введіть кличку, породу, місто або опікуна"
                 style={{
                   paddingLeft: '42px',
                 }}
@@ -1127,7 +1139,7 @@ export default function ShelterPetManager() {
                     className="form-input-custom"
                     value={petName}
                     onChange={(e) => setPetName(e.target.value)}
-                    placeholder="Залиште пустим для 'Без імені'"
+                    placeholder="Введіть кличку"
                   />
                 </div>
                 <div>
@@ -1149,7 +1161,7 @@ export default function ShelterPetManager() {
                     className="form-input-custom"
                     value={petBreed}
                     onChange={(e) => setPetBreed(e.target.value)}
-                    placeholder="Наприклад, Метис або Безпородна"
+                    placeholder="Введіть породу"
                   />
                 </div>
               </div>
@@ -1181,7 +1193,7 @@ export default function ShelterPetManager() {
                     className="form-input-custom"
                     value={petOblast}
                     onChange={(e) => setPetOblast(e.target.value)}
-                    placeholder="Наприклад, Київська"
+                    placeholder="Введіть область"
                   />
                 </div>
                 <div>
@@ -1203,7 +1215,7 @@ export default function ShelterPetManager() {
                     className="form-input-custom"
                     value={petCity}
                     onChange={(e) => setPetCity(e.target.value)}
-                    placeholder="Наприклад, Київ"
+                    placeholder="Введіть місто"
                   />
                 </div>
               </div>
@@ -1296,7 +1308,7 @@ export default function ShelterPetManager() {
                     value={petAgeMonths}
                     onChange={(e) => setPetAgeMonths(e.target.value)}
                     required
-                    placeholder="Наприклад, 12"
+                    placeholder="Вік у місяцях"
                   />
                 </div>
                 <div>
@@ -1321,7 +1333,7 @@ export default function ShelterPetManager() {
                     value={petWeight}
                     onChange={(e) => setPetWeight(e.target.value)}
                     required
-                    placeholder="Наприклад, 14.5"
+                    placeholder="Вага у кг"
                   />
                 </div>
               </div>
@@ -1391,7 +1403,7 @@ export default function ShelterPetManager() {
                   disabled={isSaving}
                   value={petDescription}
                   onChange={(e) => setPetDescription(e.target.value)}
-                  placeholder="Характер, звички та особливості тварини..."
+                  placeholder="Опишіть характер, звички та особливості тварини"
                   style={{
                     resize: 'vertical',
                   }}
@@ -1443,9 +1455,9 @@ export default function ShelterPetManager() {
                     onChange={(e) => {
                       setPetPhotoUrl(e.target.value);
                       setPetPhotoFile(null);
-                      setPetPhotoPreview(e.target.value);
+                      setPetPhotoPreview(resolveMediaUrl(e.target.value));
                     }}
-                    placeholder="Посилання на фото або оберіть файл"
+                    placeholder="Вставте посилання на фото або оберіть файл"
                     style={{
                       flex: 1,
                     }}
@@ -1551,7 +1563,7 @@ export default function ShelterPetManager() {
                   disabled={isSaving}
                   value={petVideoUrl}
                   onChange={(e) => setPetVideoUrl(e.target.value)}
-                  placeholder="https://www.youtube.com/watch?v=..."
+                  placeholder="Вставте посилання на відео"
                 />
               </div>
 
@@ -1596,7 +1608,7 @@ export default function ShelterPetManager() {
                   disabled={isSaving}
                   value={petBehaviorTags}
                   onChange={(e) => setPetBehaviorTags(e.target.value)}
-                  placeholder="лагідна, активна, любить прогулянки"
+                  placeholder="Введіть теги через кому"
                 />
               </div>
 

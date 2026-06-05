@@ -7,6 +7,7 @@ import ErrorMessage from '../components/UI/ErrorMessage';
 import PetStatusBadge from '../components/UI/PetStatusBadge';
 import { useAuth } from '../context/AuthContext';
 import { tokens as globalTokens } from '../styles/tokens';
+import { resolveMediaUrl } from '../utils/media';
 import {
   emitFavoritesUpdated,
   getStoredFavoriteIds,
@@ -23,6 +24,7 @@ import {
   MapPin,
   Heart,
   SignIn,
+  Phone,
   VideoCamera,
   Coins,
   User,
@@ -378,6 +380,7 @@ const PetDetails = () => {
     };
   };
   const shelterName = pet.shel_name || pet.shelter_name || pet.shelter?.name;
+  const shelterDetails = pet.shelter_details || {};
   const descriptionText =
     pet.description ||
     'Цей малюк ще не має детального опису, але він точно чекає на свою нову родину!';
@@ -386,7 +389,7 @@ const PetDetails = () => {
     isLongDesc && !isDescExpanded
       ? `${descriptionText.substring(0, MAX_DESC_LENGTH)}...`
       : descriptionText;
-  const petImageSrc = pet.photo || pet.photo_url || placeholderImage;
+  const petImageSrc = resolveMediaUrl(pet.photo || pet.photo_url, placeholderImage);
   const catalogReturnPath =
     location.state?.from || sessionStorage.getItem('adoptifyCatalogReturnPath') || '/';
   const handleBackToSource = () => {
@@ -1206,13 +1209,42 @@ const PetDetails = () => {
             {(() => {
               const isShelter =
                 pet.care_type === 'SHELTER' || String(pet.care_type).toUpperCase() === 'SHELTER';
-              const rawName = pet.volunteer_name || shelterName || 'Притулок';
-              const safeCuratorName = rawName;
-              const careTypeDisplay = isShelter
-                ? shelterName
-                  ? `Притулок "${shelterName}"`
-                  : 'Притулок'
-                : 'Перетримка';
+              const cleanShelterName = shelterDetails.name || shelterName || 'Центр адаптації Adoptify';
+              const organizationLabel = cleanShelterName.startsWith('Притулок')
+                ? cleanShelterName
+                : `Притулок "${cleanShelterName}"`;
+              const safeCuratorName =
+                pet.volunteer_name && pet.volunteer_name !== cleanShelterName
+                  ? pet.volunteer_name
+                  : pet.created_by_name || 'Опікун притулку';
+              const locationValue = [
+                pet.city,
+                pet.oblast ? `${pet.oblast.replace(/ область/i, '')} обл.` : null,
+              ]
+                .filter(Boolean)
+                .join(', ');
+              const careRows = [
+                {
+                  icon: PawPrint,
+                  label: 'Тип опіки',
+                  value: isShelter ? 'Притулок' : 'Перетримка',
+                },
+                {
+                  icon: ShieldCheck,
+                  label: 'Організація',
+                  value: organizationLabel,
+                },
+                !isShelter && {
+                  icon: User,
+                  label: 'Опікун',
+                  value: safeCuratorName,
+                },
+                locationValue && {
+                  icon: MapPin,
+                  label: 'Локація',
+                  value: locationValue,
+                },
+              ].filter(Boolean);
               return (
                 <div
                   style={{
@@ -1223,44 +1255,18 @@ const PetDetails = () => {
                     boxSizing: 'border-box',
                   }}
                 >
-                  {isShelter ? (
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                      }}
-                    >
-                      <ShieldCheck
-                        size={18}
-                        weight="bold"
-                        color={tokens.brandPrimary}
-                        style={{
-                          flexShrink: 0,
-                        }}
-                      />
-                      <span>
-                        Відповідальний:{' '}
-                        <strong
-                          style={{
-                            color: tokens.textPrimary,
-                            fontWeight: '700',
-                          }}
-                        >
-                          {shelterName ? `Притулок "${shelterName}"` : 'Притулок'}
-                        </strong>
-                      </span>
-                    </div>
-                  ) : (
-                    <>
+                  {careRows.map((row) => {
+                    const RowIcon = row.icon;
+                    return (
                       <div
+                        key={row.label}
                         style={{
                           display: 'flex',
                           alignItems: 'center',
                           gap: '10px',
                         }}
                       >
-                        <PawPrint
+                        <RowIcon
                           size={18}
                           weight="bold"
                           color={tokens.brandPrimary}
@@ -1269,110 +1275,63 @@ const PetDetails = () => {
                           }}
                         />
                         <span>
-                          Тип опіки:{' '}
+                          {row.label}:{' '}
                           <strong
                             style={{
                               color: tokens.textPrimary,
                               fontWeight: '700',
                             }}
                           >
-                            {careTypeDisplay}
+                            {row.value}
                           </strong>
                         </span>
                       </div>
+                    );
+                  })}
 
-                      {shelterName && (
-                        <div
+                  {(shelterDetails.address || shelterDetails.phone || shelterDetails.description) && (
+                    <div
+                      style={{
+                        display: 'grid',
+                        gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))',
+                        gap: '10px',
+                        marginTop: '4px',
+                        padding: '14px 16px',
+                        borderRadius: '14px',
+                        background: tokens.bgSurface,
+                        border: `1px solid ${tokens.borderDefault}`,
+                      }}
+                    >
+                      {shelterDetails.address && (
+                        <span style={{ display: 'flex', gap: '8px', lineHeight: 1.5 }}>
+                          <MapPin size={17} weight="bold" color={tokens.brandPrimary} />
+                          <strong style={{ color: tokens.textPrimary }}>Адреса:</strong>{' '}
+                          {shelterDetails.address}
+                        </span>
+                      )}
+                      {shelterDetails.phone && (
+                        <span style={{ display: 'flex', gap: '8px', lineHeight: 1.5 }}>
+                          <Phone size={17} weight="bold" color={tokens.brandPrimary} />
+                          <strong style={{ color: tokens.textPrimary }}>Телефон:</strong>{' '}
+                          {shelterDetails.phone}
+                        </span>
+                      )}
+                      {shelterDetails.description && (
+                        <span
                           style={{
                             display: 'flex',
-                            alignItems: 'center',
-                            gap: '10px',
+                            gap: '8px',
+                            lineHeight: 1.5,
+                            gridColumn: '1 / -1',
                           }}
                         >
-                          <ShieldCheck
-                            size={18}
-                            weight="bold"
-                            color={tokens.brandPrimary}
-                            style={{
-                              flexShrink: 0,
-                            }}
-                          />
+                          <Info size={17} weight="bold" color={tokens.brandPrimary} />
                           <span>
-                            Організація:{' '}
-                            <strong
-                              style={{
-                                color: tokens.textPrimary,
-                                fontWeight: '700',
-                              }}
-                            >
-                              Притулок "{shelterName}"
-                            </strong>
+                            <strong style={{ color: tokens.textPrimary }}>Про притулок:</strong>{' '}
+                            {shelterDetails.description}
                           </span>
-                        </div>
-                      )}
-
-                      <div
-                        style={{
-                          display: 'flex',
-                          alignItems: 'center',
-                          gap: '10px',
-                        }}
-                      >
-                        <User
-                          size={18}
-                          weight="bold"
-                          color={tokens.brandPrimary}
-                          style={{
-                            flexShrink: 0,
-                          }}
-                        />
-                        <span>
-                          Опікун:{' '}
-                          <strong
-                            style={{
-                              color: tokens.textPrimary,
-                              fontWeight: '700',
-                            }}
-                          >
-                            {safeCuratorName}
-                          </strong>
                         </span>
-                      </div>
-                    </>
-                  )}
-
-                  {(pet.city || pet.oblast) && (
-                    <div
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '10px',
-                      }}
-                    >
-                      <MapPin
-                        size={18}
-                        weight="bold"
-                        color={tokens.brandPrimary}
-                        style={{
-                          flexShrink: 0,
-                        }}
-                      />
-                      <span>
-                        Локація:{' '}
-                        <strong
-                          style={{
-                            color: tokens.textPrimary,
-                            fontWeight: '700',
-                          }}
-                        >
-                          {[
-                            pet.city,
-                            pet.oblast ? `${pet.oblast.replace(/ область/i, '')} обл.` : null,
-                          ]
-                            .filter(Boolean)
-                            .join(', ')}
-                        </strong>
-                      </span>
+                      )}
                     </div>
                   )}
                 </div>

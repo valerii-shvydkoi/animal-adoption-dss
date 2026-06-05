@@ -9,6 +9,12 @@ from core.serializers.pet_serializers import PetSerializer
 from core.services.dss_matching_service import DSSMatchingService
 from django.apps import apps
 
+URGENCY_ORDER = {
+    "EVACUATION": 0,
+    "MEDICAL": 1,
+    "REGULAR": 2,
+}
+
 
 class PetPagination(PageNumberPagination):
     page_size = 12
@@ -42,7 +48,7 @@ class PetPagination(PageNumberPagination):
             ),
             OpenApiParameter(
                 name="ordering",
-                description="Сортування (наприклад: -created_at, age_months, -weight, -compatibility_score)",
+                description="Сортування: -created_at, age_months, -weight, -compatibility_score",
                 required=False,
                 type=str,
             ),
@@ -176,8 +182,13 @@ class PetViewSet(viewsets.ModelViewSet):
             shelter = self._get_user_shelter(user)
 
             if shelter:
+                role = str(getattr(user, "role", "USER") or "USER").upper()
+                filters_for_role = {"shelter": shelter}
+                if role == "VOLUNTEER" and self.action == "list":
+                    filters_for_role["created_by"] = user
+
                 queryset = (
-                    Pet.objects.filter(shelter=shelter)
+                    Pet.objects.filter(**filters_for_role)
                     .select_related("shelter", "created_by")
                     .order_by("-created_at")
                 )
@@ -290,7 +301,11 @@ class PetViewSet(viewsets.ModelViewSet):
             raise PermissionDenied(
                 "Ви повинні бути власником або волонтером притулку, щоб додавати тварин."
             )
-        serializer.save(shelter=shelter, created_by=self.request.user)
+        extra_data = {}
+        role = str(getattr(self.request.user, "role", "USER") or "USER").upper()
+        if role == "VOLUNTEER":
+            extra_data["care_type"] = Pet.CareType.VOLUNTEER_FOSTER
+        serializer.save(shelter=shelter, created_by=self.request.user, **extra_data)
 
     def filter_queryset(self, queryset):
         if self.action not in ["list", "batch"]:
@@ -338,7 +353,14 @@ class PetViewSet(viewsets.ModelViewSet):
                     p.compatibility_score = score
 
                 if ordering == "-compatibility_score":
-                    pets_list.sort(key=lambda x: x.temp_score, reverse=True)
+                    pets_list.sort(
+                        key=lambda pet: (
+                            -pet.temp_score,
+                            URGENCY_ORDER.get(str(pet.urgency_status), 9),
+                            -pet.created_at.timestamp(),
+                            pet.id,
+                        )
+                    )
 
                 return pets_list
 

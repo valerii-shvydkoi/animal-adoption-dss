@@ -3,6 +3,12 @@ from drf_spectacular.utils import extend_schema_field
 from core.models import QuestionnaireResult, Pet
 from core.services.dss_matching_service import DSSMatchingService
 
+URGENCY_ORDER = {
+    "EVACUATION": 0,
+    "MEDICAL": 1,
+    "REGULAR": 2,
+}
+
 
 class PetMatchSerializer(serializers.ModelSerializer):
     match_percent = serializers.IntegerField(read_only=True)
@@ -36,9 +42,8 @@ class PetMatchSerializer(serializers.ModelSerializer):
 
     @extend_schema_field(serializers.URLField(allow_null=True))
     def get_photo_url(self, obj):
-        request = self.context.get("request")
-        if obj.photo and request:
-            return request.build_absolute_uri(obj.photo.url)
+        if obj.photo:
+            return obj.photo.url
         if obj.photo_url:
             return obj.photo_url
         return None
@@ -88,7 +93,14 @@ class ResultSerializer(serializers.ModelSerializer):
             pet.recommendation = match_data["recommendation"]
             results.append(pet)
 
-        results.sort(key=lambda x: x.match_percent, reverse=True)
+        results.sort(
+            key=lambda pet: (
+                -pet.match_percent,
+                URGENCY_ORDER.get(str(getattr(pet, "urgency_status", "REGULAR")), 9),
+                -pet.created_at.timestamp(),
+                pet.id,
+            )
+        )
 
         serializer = PetMatchSerializer(results[:3], many=True, context=self.context)
         return serializer.data

@@ -784,7 +784,7 @@ function BecomeVolunteer() {
                   onChange={handleChange}
                   required
                   className="form-native-input"
-                  placeholder="Наприклад: Сіріус"
+                  placeholder="Введіть назву притулку"
                 />
                 <div
                   className="form-input-icon"
@@ -845,7 +845,7 @@ function BecomeVolunteer() {
                   onChange={handleChange}
                   required
                   className="form-native-input"
-                  placeholder="Наприклад: Київ"
+                  placeholder="Введіть місто"
                 />
                 <div
                   className="form-input-icon"
@@ -868,7 +868,7 @@ function BecomeVolunteer() {
                   onChange={handleChange}
                   required
                   className="form-native-textarea"
-                  placeholder="Вулиця, номер будинку, офіс чи корпус..."
+                  placeholder="Введіть адресу"
                 />
                 <div
                   className="form-input-icon"
@@ -889,7 +889,7 @@ function BecomeVolunteer() {
                   value={formData.new_shelter_website}
                   onChange={handleChange}
                   className="form-native-input"
-                  placeholder="https://example.com"
+                  placeholder="Вставте посилання на сайт"
                 />
                 <div
                   className="form-input-icon"
@@ -923,7 +923,7 @@ function BecomeVolunteer() {
                 onChange={handleChange}
                 required
                 className="form-native-input"
-                placeholder="Наприклад: Ірина"
+                placeholder="Введіть ім'я"
                 maxLength={30}
               />
               <div
@@ -949,7 +949,7 @@ function BecomeVolunteer() {
                 onChange={handleChange}
                 required
                 className="form-native-input"
-                placeholder="Наприклад: Демо"
+                placeholder="Введіть прізвище"
                 maxLength={30}
               />
               <div
@@ -1041,7 +1041,7 @@ function BecomeVolunteer() {
                 onChange={handleChange}
                 required
                 className="form-native-textarea"
-                placeholder="Детально опишіть ваш попередній досвід..."
+                placeholder="Опишіть ваш попередній досвід"
               />
               <div
                 className="form-input-icon"
@@ -1065,7 +1065,7 @@ function BecomeVolunteer() {
                 onChange={handleChange}
                 required
                 className="form-native-textarea"
-                placeholder="Вкажіть дні тижня та години, в які ви готові допомагати..."
+                placeholder="Вкажіть дні та години, коли ви готові допомагати"
               />
               <div
                 className="form-input-icon"
@@ -1086,7 +1086,7 @@ function BecomeVolunteer() {
                 value={formData.message}
                 onChange={handleChange}
                 className="form-native-textarea"
-                placeholder="Будь-яка додаткова інформація або запитання до адміністратора..."
+                placeholder="Додайте важливу інформацію для адміністратора"
               />
               <div
                 className="form-input-icon"

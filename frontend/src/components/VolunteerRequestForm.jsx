@@ -250,7 +250,7 @@ const VolunteerRequestForm = ({ onSubmit, loading, requestStatus }) => {
           >
             <label className="adoptify-input-label">Юридична адреса</label>
             <input
-              placeholder="Область, місто, вулиця, будинок"
+              placeholder="Введіть повну адресу"
               required
               maxLength={255}
               value={formData.address}
@@ -274,7 +274,7 @@ const VolunteerRequestForm = ({ onSubmit, loading, requestStatus }) => {
             <label className="adoptify-input-label">Контактний телефон</label>
             <input
               type="tel"
-              placeholder="+380"
+              placeholder="Введіть номер телефону"
               required
               maxLength={20}
               value={formData.phone}
