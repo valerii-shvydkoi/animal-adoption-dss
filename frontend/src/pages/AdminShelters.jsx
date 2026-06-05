@@ -372,6 +372,9 @@ export default function AdminShelters() {
               const cardTitle = isShelterRequest
                 ? req.new_shelter_name
                 : req.shelter_name || 'Заявка до притулку';
+              const applicantName =
+                req.user_full_name ||
+                [req.user_first_name, req.user_last_name].filter(Boolean).join(' ');
               const locationText = isShelterRequest
                 ? [
                     req.new_shelter_city,
@@ -476,8 +479,14 @@ export default function AdminShelters() {
                         <User size={14} />{' '}
                         {isShelterRequest ? 'КОНТАКТИ ПРЕДСТАВНИКА' : 'КОНТАКТИ КАНДИДАТА'}
                       </span>
+                      {applicantName && (
+                        <div style={styles.applicantName}>
+                          Заявник:{' '}
+                          <span style={styles.applicantEmail}>{applicantName}</span>
+                        </div>
+                      )}
                       <div style={styles.applicantName}>
-                        Аккаунт заявника:{' '}
+                        Акаунт:{' '}
                         <span style={styles.applicantEmail}>{req.user_email || 'Не вказано'}</span>
                       </div>
                       <div style={styles.applicantPhone}>

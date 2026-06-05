@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import loginBg from '../assets/login-bg.jpg';
-import { PawPrint, CircleNotch, WarningCircle } from '@phosphor-icons/react';
+import { PawPrint, CircleNotch, WarningCircle, Eye, EyeSlash } from '@phosphor-icons/react';
 import { tokens } from '../styles/tokens';
 const Login = () => {
   const navigate = useNavigate();
@@ -16,6 +16,7 @@ const Login = () => {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [showPassword, setShowPassword] = useState(false);
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
@@ -459,15 +460,47 @@ const Login = () => {
                     Забули пароль?
                   </Link>
                 </div>
-                <input
-                  type="password"
-                  name="password"
-                  className="adoptify-login-input"
-                  value={formData.password}
-                  onChange={handleChange}
-                  placeholder="Ваш пароль"
-                  maxLength={128}
-                />
+                <div
+                  style={{
+                    position: 'relative',
+                  }}
+                >
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    name="password"
+                    className="adoptify-login-input"
+                    value={formData.password}
+                    onChange={handleChange}
+                    placeholder="Ваш пароль"
+                    maxLength={128}
+                    style={{
+                      paddingRight: '44px',
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((value) => !value)}
+                    title={showPassword ? 'Сховати пароль' : 'Показати пароль'}
+                    aria-label={showPassword ? 'Сховати пароль' : 'Показати пароль'}
+                    style={{
+                      position: 'absolute',
+                      right: '10px',
+                      top: '50%',
+                      transform: 'translateY(-50%)',
+                      border: 'none',
+                      background: 'transparent',
+                      color: tokens.textSecondary,
+                      cursor: 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      padding: '6px',
+                      borderRadius: '8px',
+                    }}
+                  >
+                    {showPassword ? <EyeSlash size={20} weight="bold" /> : <Eye size={20} weight="bold" />}
+                  </button>
+                </div>
               </div>
 
               <button type="submit" disabled={loading} className="adoptify-login-btn">

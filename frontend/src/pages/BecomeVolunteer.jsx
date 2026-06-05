@@ -18,6 +18,7 @@ import {
   CaretDown,
   SignIn,
   Info,
+  User as UserIcon,
 } from '@phosphor-icons/react';
 const tokens = {
   ...globalTokens,
@@ -57,12 +58,19 @@ const UKRAINIAN_REGIONS = [
 function BecomeVolunteer() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const isShelterMode = location.pathname === '/register-shelter';
+  const normalizePhoneForVolunteerForm = (value) => {
+    const digits = String(value || '').replace(/\D/g, '');
+    const localDigits = digits.startsWith('380') ? digits.slice(3, 12) : digits.slice(0, 9);
+    return localDigits ? `+380 ${localDigits}` : '+380 ';
+  };
   const [sheltersList, setSheltersList] = useState([]);
   const [selectedShelterId, setSelectedShelterId] = useState('');
   const [formData, setFormData] = useState({
-    phone: '+380 ',
+    first_name: user?.first_name || user?.profile?.first_name || '',
+    last_name: user?.last_name || user?.profile?.last_name || '',
+    phone: normalizePhoneForVolunteerForm(user?.profile?.phone || user?.phone),
     experience: '',
     availability: '',
     message: '',
@@ -127,7 +135,9 @@ function BecomeVolunteer() {
   }, [isShelterMode]);
   useEffect(() => {
     setFormData({
-      phone: '+380 ',
+      first_name: user?.first_name || user?.profile?.first_name || '',
+      last_name: user?.last_name || user?.profile?.last_name || '',
+      phone: normalizePhoneForVolunteerForm(user?.profile?.phone || user?.phone),
       experience: '',
       availability: '',
       message: '',
@@ -141,7 +151,7 @@ function BecomeVolunteer() {
     setError(null);
     setIsTokenError(false);
     setSuccess(false);
-  }, [location.pathname, location.state?.shelterId]);
+  }, [location.pathname, location.state?.shelterId, user]);
   const handlePhoneChange = (e) => {
     const input = e.target.value;
     if (!input.startsWith('+380')) {
@@ -166,6 +176,14 @@ function BecomeVolunteer() {
     }));
   };
   const validateForm = () => {
+    if (!formData.first_name.trim() || !formData.last_name.trim()) {
+      setError('Заповніть ім’я та прізвище представника або кандидата.');
+      window.scrollTo({
+        top: 0,
+        behavior: 'smooth',
+      });
+      return false;
+    }
     const purePhone = formData.phone.replace(/\s/g, '');
     if (purePhone.length < 13) {
       setError('Заповніть поле "Номер телефону". Введіть 9 цифр після префіксу +380.');
@@ -248,7 +266,24 @@ function BecomeVolunteer() {
         });
         return;
       }
+      const profilePayload = {
+        first_name: formData.first_name.trim(),
+        last_name: formData.last_name.trim(),
+        phone: formData.phone.replace(/\s/g, ''),
+      };
+      await api.patch('/auth/profile/', {
+        profile: profilePayload,
+      });
+      window.dispatchEvent(
+        new CustomEvent('userUpdated', {
+          detail: {
+            ...profilePayload,
+            name: profilePayload.first_name,
+          },
+        })
+      );
       await api.post('/volunteer-requests/', payload);
+      refreshUser?.();
       setSuccess(true);
       setHasPendingRequest(true);
       window.scrollTo({
@@ -876,6 +911,58 @@ function BecomeVolunteer() {
             </FormSectionHeader>
           </div>
 
+          <div>
+            <label className="form-label-tag">
+              Ім'я<span className="required-star">*</span>
+            </label>
+            <div className="form-input-wrapper">
+              <input
+                type="text"
+                name="first_name"
+                value={formData.first_name}
+                onChange={handleChange}
+                required
+                className="form-native-input"
+                placeholder="Наприклад: Ірина"
+                maxLength={30}
+              />
+              <div
+                className="form-input-icon"
+                style={{
+                  height: '44px',
+                }}
+              >
+                <UserIcon size={16} weight="bold" />
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <label className="form-label-tag">
+              Прізвище<span className="required-star">*</span>
+            </label>
+            <div className="form-input-wrapper">
+              <input
+                type="text"
+                name="last_name"
+                value={formData.last_name}
+                onChange={handleChange}
+                required
+                className="form-native-input"
+                placeholder="Наприклад: Демо"
+                maxLength={30}
+              />
+              <div
+                className="form-input-icon"
+                style={{
+                  height: '44px',
+                }}
+              >
+                <UserIcon size={16} weight="bold" />
+              </div>
+            </div>
+          </div>
+
           {!isShelterMode && (
             <div className="form-full-width">
               <label className="form-label-tag">
@@ -978,7 +1065,7 @@ function BecomeVolunteer() {
                 onChange={handleChange}
                 required
                 className="form-native-textarea"
-                placeholder="Вкажіть дні тижня та години, в які вы готові допомагати..."
+                placeholder="Вкажіть дні тижня та години, в які ви готові допомагати..."
               />
               <div
                 className="form-input-icon"

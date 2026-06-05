@@ -49,14 +49,14 @@ DEMO_ACCOUNTS = [
     {
         "email": "volunteer@adoptify.demo",
         "role": UserRole.VOLUNTEER,
-        "name": "Волонтер",
+        "name": "Ірина",
         "last_name": "Демо",
         "is_staff": True,
     },
     {
         "email": "manager@adoptify.demo",
         "role": UserRole.SHELTER_MANAGER,
-        "name": "Менеджер притулку",
+        "name": "Марко",
         "last_name": "Демо",
         "is_staff": True,
     },
@@ -620,14 +620,13 @@ class Command(BaseCommand):
             author = (
                 accounts["volunteer@adoptify.demo"] if index % 3 == 0 else shelter.owner
             )
+            care_type = "VOLUNTEER_FOSTER" if author.role == UserRole.VOLUNTEER else "SHELTER"
             pet, _ = Pet.objects.update_or_create(
                 name=name,
                 shelter=shelter,
                 defaults={
                     "created_by": author,
-                    "care_type": (
-                        "VOLUNTEER" if author.role == UserRole.VOLUNTEER else "SHELTER"
-                    ),
+                    "care_type": care_type,
                     "species": species,
                     "gender": gender,
                     "breed": breed,

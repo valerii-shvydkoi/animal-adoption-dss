@@ -40,6 +40,7 @@ const tokens = {
   durationBase: '200ms',
   easeDefault: 'cubic-bezier(0.4, 0, 0.2, 1)',
 };
+const CATALOG_RESTORE_PENDING_KEY = 'adoptifyCatalogRestorePending';
 const getCompStyles = (score) => {
   if (score >= 85)
     return {
@@ -191,9 +192,11 @@ const PetCard = ({ pet, context = 'catalog', onRequestClick }) => {
       action: (e) => {
         e.preventDefault();
         e.stopPropagation();
+        sessionStorage.setItem(CATALOG_RESTORE_PENDING_KEY, 'true');
         navigate(`/pet/${pet.id}`, {
           state: {
             from: `${location.pathname}${location.search}`,
+            restoreCatalog: true,
           },
         });
       },

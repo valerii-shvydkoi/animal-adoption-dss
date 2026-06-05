@@ -126,6 +126,7 @@ export const volunteerPetApi = {
     api.get('/pets/', {
       params: {
         managed: 'true',
+        page_size: 100,
       },
     }),
   createPet: (data) => api.post('/pets/', data),

@@ -13,8 +13,11 @@ import {
   ClipboardText,
   UploadSimple,
   User,
+  ShieldCheck,
+  MagnifyingGlass,
+  Funnel,
 } from '@phosphor-icons/react';
-const MAX_PHOTO_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_PHOTO_FILE_SIZE = 20 * 1024 * 1024;
 export default function ShelterPetManager() {
   const { confirm, notify } = useFeedback();
   const [pets, setPets] = useState([]);
@@ -25,6 +28,7 @@ export default function ShelterPetManager() {
   const [petName, setPetName] = useState('');
   const [petSpecies, setPetSpecies] = useState('DOG');
   const [petGender, setPetGender] = useState('MALE');
+  const [petCareType, setPetCareType] = useState('SHELTER');
   const [petBreed, setPetBreed] = useState('');
   const [petOblast, setPetOblast] = useState('');
   const [petCity, setPetCity] = useState('');
@@ -46,6 +50,10 @@ export default function ShelterPetManager() {
   const [petActivityLevel, setPetActivityLevel] = useState(3);
   const [petSociability, setPetSociability] = useState(3);
   const [petStressResistance, setPetStressResistance] = useState(3);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [speciesFilter, setSpeciesFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+  const [careTypeFilter, setCareTypeFilter] = useState('');
   const bgMain = tokens.bgMain || '#F8FAFC';
   const bgCard = tokens.bgCard || '#FFFFFF';
   const textMain = tokens.textMain || '#0F172A';
@@ -57,7 +65,12 @@ export default function ShelterPetManager() {
   const fetchShelterPets = async () => {
     setIsLoading(true);
     try {
-      const response = await api.get('/pets/?managed=true');
+      const response = await api.get('/pets/', {
+        params: {
+          managed: 'true',
+          page_size: 100,
+        },
+      });
       if (response.data) {
         const data = response.data.results ? response.data.results : response.data;
         setPets(data);
@@ -125,6 +138,7 @@ export default function ShelterPetManager() {
     setPetName('');
     setPetSpecies('DOG');
     setPetGender('MALE');
+    setPetCareType('SHELTER');
     setPetBreed('');
     setPetOblast('');
     setPetCity('');
@@ -153,6 +167,7 @@ export default function ShelterPetManager() {
     setPetName(pet.name === 'Без імені' ? '' : pet.name || '');
     setPetSpecies(pet.species || 'DOG');
     setPetGender(pet.gender || 'MALE');
+    setPetCareType(pet.care_type || 'SHELTER');
     setPetBreed(pet.breed || '');
     setPetOblast(pet.oblast || '');
     setPetCity(pet.city || '');
@@ -234,6 +249,7 @@ export default function ShelterPetManager() {
       name: petName.trim() || 'Без імені',
       species: petSpecies,
       gender: petGender,
+      care_type: petCareType,
       breed: petBreed.trim(),
       oblast: petOblast.trim(),
       city: petCity.trim(),
@@ -394,10 +410,8 @@ export default function ShelterPetManager() {
     }
   };
   const renderCuratorBadge = (pet) => {
-    const authorText = pet.volunteer_name || 'Команда притулку';
-    const isManager = authorText.toLowerCase().includes('менеджер');
-    const isVolunteer = authorText.toLowerCase().includes('волонтер');
-    if (isManager) {
+    const isShelterCare = String(pet.care_type || 'SHELTER').toUpperCase() === 'SHELTER';
+    if (isShelterCare) {
       return (
         <span
           className="status-badge badge-shelter"
@@ -407,28 +421,16 @@ export default function ShelterPetManager() {
             gap: '4px',
           }}
         >
-          <User size={14} weight="bold" />
-          {authorText}
-        </span>
-      );
-    } else if (isVolunteer) {
-      return (
-        <span
-          className="status-badge badge-volunteer"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '4px',
-          }}
-        >
-          <User size={14} weight="bold" />
-          {authorText}
+          <ShieldCheck size={14} weight="bold" />
+          {pet.shelter_name || 'Притулок'}
         </span>
       );
     }
+
+    const curatorName = pet.volunteer_name || 'опікун притулку';
     return (
       <span
-        className="status-badge badge-gray"
+        className="status-badge badge-volunteer"
         style={{
           display: 'flex',
           alignItems: 'center',
@@ -436,10 +438,28 @@ export default function ShelterPetManager() {
         }}
       >
         <User size={14} weight="bold" />
-        Куратор: Притулок
+        Опікун: {curatorName}
       </span>
     );
   };
+  const filteredPets = pets.filter((pet) => {
+    const query = searchTerm.trim().toLowerCase();
+    const matchesSearch =
+      !query ||
+      [pet.name, pet.breed, pet.city, pet.oblast, pet.shelter_name, pet.volunteer_name]
+        .filter(Boolean)
+        .some((value) => String(value).toLowerCase().includes(query));
+    const matchesSpecies = !speciesFilter || pet.species === speciesFilter;
+    const matchesStatus =
+      !statusFilter ||
+      (statusFilter === 'AVAILABLE' ? pet.is_available : !pet.is_available);
+    const matchesCareType = !careTypeFilter || pet.care_type === careTypeFilter;
+    return matchesSearch && matchesSpecies && matchesStatus && matchesCareType;
+  });
+  const availableCount = pets.filter((pet) => pet.is_available).length;
+  const adoptedCount = pets.length - availableCount;
+  const hasActiveManagerFilters =
+    !!searchTerm.trim() || !!speciesFilter || !!statusFilter || !!careTypeFilter;
   const CustomSelect = ({
     label,
     value,
@@ -564,7 +584,9 @@ export default function ShelterPetManager() {
           .pet-badges { justify-content: center !important; flex-wrap: wrap; }
 
           .pet-actions-wrapper { width: 100% !important; justify-content: center !important; border-top: 1px solid ${borderColor}; padding-top: 20px; display: flex !important; gap: 12px !important; }
-          .pet-actions-wrapper button { flex: 1 !important; justify-content: center !important; padding: 14px !important; }
+        .pet-actions-wrapper button { flex: 1 !important; justify-content: center !important; padding: 14px !important; }
+          .manager-summary-grid { grid-template-columns: 1fr 1fr !important; }
+          .manager-filter-row { grid-template-columns: 1fr !important; }
 
           .pet-modal-box { padding: 24px 16px !important; width: calc(100% - 32px) !important; margin: 16px !important; }
           .form-grid-2, .form-grid-3 { grid-template-columns: 1fr !important; gap: 20px !important; }
@@ -580,6 +602,10 @@ export default function ShelterPetManager() {
 
           .modal-footer-btns { flex-direction: column-reverse; gap: 12px !important; }
           .modal-footer-btns button { width: 100%; padding: 16px !important; font-size: 16px !important; }
+        }
+
+        @media (max-width: 520px) {
+          .manager-summary-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
 
@@ -636,6 +662,181 @@ export default function ShelterPetManager() {
         </button>
       </div>
 
+      <div
+        className="manager-summary-grid"
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+          gap: '12px',
+          marginBottom: '18px',
+        }}
+      >
+        {[
+          { label: 'Усього', value: pets.length },
+          { label: 'Шукають дім', value: availableCount },
+          { label: "Вже в сім'ї", value: adoptedCount },
+          { label: 'Показано', value: filteredPets.length },
+        ].map((item) => (
+          <div
+            key={item.label}
+            style={{
+              backgroundColor: bgCard,
+              border: `1px solid ${borderColor}`,
+              borderRadius: '16px',
+              padding: '14px 16px',
+              boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)',
+            }}
+          >
+            <div
+              style={{
+                color: textMuted,
+                fontSize: '12px',
+                fontWeight: '800',
+                textTransform: 'uppercase',
+                marginBottom: '4px',
+              }}
+            >
+              {item.label}
+            </div>
+            <div
+              style={{
+                color: textMain,
+                fontSize: '24px',
+                fontWeight: '900',
+              }}
+            >
+              {item.value}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div
+        style={{
+          backgroundColor: bgCard,
+          border: `1px solid ${borderColor}`,
+          borderRadius: '18px',
+          padding: '16px',
+          marginBottom: '24px',
+        }}
+      >
+        <div
+          className="manager-filter-row"
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'minmax(220px, 1.4fr) repeat(3, minmax(150px, 1fr)) auto',
+            gap: '12px',
+            alignItems: 'end',
+          }}
+        >
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+            }}
+          >
+            <label
+              style={{
+                fontSize: '12px',
+                fontWeight: '700',
+                color: textMuted,
+                textTransform: 'uppercase',
+                marginBottom: '8px',
+                letterSpacing: '0.5px',
+              }}
+            >
+              Пошук
+            </label>
+            <div
+              style={{
+                position: 'relative',
+              }}
+            >
+              <MagnifyingGlass
+                size={18}
+                weight="bold"
+                style={{
+                  position: 'absolute',
+                  left: '14px',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  color: textMuted,
+                }}
+              />
+              <input
+                className="form-input-custom"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder="Кличка, порода, місто, опікун"
+                style={{
+                  paddingLeft: '42px',
+                }}
+              />
+            </div>
+          </div>
+
+          <CustomSelect
+            label="Вид"
+            value={speciesFilter}
+            onChange={(e) => setSpeciesFilter(e.target.value)}
+            options={[
+              { value: '', label: 'Усі види' },
+              { value: 'DOG', label: 'Собаки' },
+              { value: 'CAT', label: 'Коти' },
+            ]}
+          />
+          <CustomSelect
+            label="Статус"
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value)}
+            options={[
+              { value: '', label: 'Усі статуси' },
+              { value: 'AVAILABLE', label: 'Шукає дім' },
+              { value: 'ADOPTED', label: "Вже в сім'ї" },
+            ]}
+          />
+          <CustomSelect
+            label="Тип опіки"
+            value={careTypeFilter}
+            onChange={(e) => setCareTypeFilter(e.target.value)}
+            options={[
+              { value: '', label: 'Усі типи' },
+              { value: 'SHELTER', label: 'У притулку' },
+              { value: 'VOLUNTEER_FOSTER', label: 'На перетримці' },
+            ]}
+          />
+
+          <button
+            type="button"
+            disabled={!hasActiveManagerFilters}
+            onClick={() => {
+              setSearchTerm('');
+              setSpeciesFilter('');
+              setStatusFilter('');
+              setCareTypeFilter('');
+            }}
+            style={{
+              height: '48px',
+              borderRadius: '12px',
+              border: `1px solid ${hasActiveManagerFilters ? brandPrimary : borderColor}`,
+              backgroundColor: hasActiveManagerFilters ? '#FFF7ED' : bgInput,
+              color: hasActiveManagerFilters ? brandPrimary : textMuted,
+              padding: '0 16px',
+              fontWeight: '800',
+              cursor: hasActiveManagerFilters ? 'pointer' : 'not-allowed',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '8px',
+              whiteSpace: 'nowrap',
+            }}
+          >
+            <Funnel size={18} weight="bold" />
+            Очистити
+          </button>
+        </div>
+      </div>
+
       {isLoading ? (
         <div
           style={{
@@ -659,6 +860,19 @@ export default function ShelterPetManager() {
         >
           База даних притулку порожня. Додайте першу картку.
         </div>
+      ) : filteredPets.length === 0 ? (
+        <div
+          style={{
+            border: `2px dashed ${borderColor}`,
+            padding: '60px 20px',
+            borderRadius: '20px',
+            textAlign: 'center',
+            color: textMuted,
+            backgroundColor: bgCard,
+          }}
+        >
+          За обраними параметрами тваринок не знайдено.
+        </div>
       ) : (
         <div
           style={{
@@ -667,7 +881,7 @@ export default function ShelterPetManager() {
             gap: '16px',
           }}
         >
-          {pets.map((pet) => (
+          {filteredPets.map((pet) => (
             <div
               key={pet.id}
               className="pet-row-card"
@@ -1035,6 +1249,23 @@ export default function ShelterPetManager() {
                   ]}
                 />
               </div>
+
+              <CustomSelect
+                label="Тип опіки"
+                value={petCareType}
+                onChange={(e) => setPetCareType(e.target.value)}
+                disabled={isSaving}
+                options={[
+                  {
+                    value: 'SHELTER',
+                    label: 'У притулку',
+                  },
+                  {
+                    value: 'VOLUNTEER_FOSTER',
+                    label: 'На перетримці',
+                  },
+                ]}
+              />
 
               <div
                 className="form-grid-2"

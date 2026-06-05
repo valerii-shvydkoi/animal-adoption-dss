@@ -458,7 +458,8 @@ export default function ShelterApplications() {
                       prefix=""
                     />
                     <span>
-                      Анкета №{app.id} — <span>{app.user_email || `ID: ${app.user}`}</span>
+                      Анкета №{app.id} —{' '}
+                      <span>{app.user_full_name || app.user_email || `ID: ${app.user}`}</span>
                     </span>
                   </h4>
                   {renderStatusBadge(app.status)}
@@ -491,6 +492,22 @@ export default function ShelterApplications() {
                       </strong>
                     </span>
                   </div>
+
+                  {app.user_email && (
+                    <div className="info-block">
+                      <User
+                        size={15}
+                        weight="bold"
+                        style={{
+                          color: brandPrimary,
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span>
+                        Акаунт: <strong>{app.user_email}</strong>
+                      </span>
+                    </div>
+                  )}
 
                   {app.phone && (
                     <div className="info-block">

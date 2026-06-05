@@ -1,7 +1,14 @@
 import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import api from '../services/api';
-import { LockKey, CheckCircle, WarningCircle, CircleNotch } from '@phosphor-icons/react';
+import {
+  LockKey,
+  CheckCircle,
+  WarningCircle,
+  CircleNotch,
+  Eye,
+  EyeSlash,
+} from '@phosphor-icons/react';
 import { tokens } from '../styles/tokens';
 const ResetPasswordWrapper = ({ children, isSmallMobile }) => (
   <div
@@ -168,6 +175,8 @@ const ResetPassword = () => {
   const [isSuccess, setIsSuccess] = useState(false);
   const [tokenStatus, setTokenStatus] = useState('checking');
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
@@ -477,18 +486,48 @@ const ResetPassword = () => {
                   Латиниця та цифри
                 </span>
               </div>
-              <input
-                type="password"
-                name="new_password"
-                value={formData.new_password}
-                onChange={handleChange}
-                placeholder="Введіть новий пароль"
-                maxLength={128}
-                className="adoptify-reset-input"
+              <div
                 style={{
-                  border: `1px solid ${error ? '#DC2626' : tokens.borderDefault}`,
+                  position: 'relative',
                 }}
-              />
+              >
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  name="new_password"
+                  value={formData.new_password}
+                  onChange={handleChange}
+                  placeholder="Введіть новий пароль"
+                  maxLength={128}
+                  className="adoptify-reset-input"
+                  style={{
+                    border: `1px solid ${error ? '#DC2626' : tokens.borderDefault}`,
+                    paddingRight: '44px',
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword((value) => !value)}
+                  title={showPassword ? 'Сховати пароль' : 'Показати пароль'}
+                  aria-label={showPassword ? 'Сховати пароль' : 'Показати пароль'}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    border: 'none',
+                    background: 'transparent',
+                    color: tokens.textSecondary,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '6px',
+                    borderRadius: '8px',
+                  }}
+                >
+                  {showPassword ? <EyeSlash size={20} weight="bold" /> : <Eye size={20} weight="bold" />}
+                </button>
+              </div>
               <span
                 style={{
                   fontSize: '11px',
@@ -520,18 +559,52 @@ const ResetPassword = () => {
               >
                 Підтвердження пароля
               </label>
-              <input
-                type="password"
-                name="new_password_confirm"
-                value={formData.new_password_confirm}
-                onChange={handleChange}
-                placeholder="Повторіть новий пароль"
-                maxLength={128}
-                className="adoptify-reset-input"
+              <div
                 style={{
-                  border: `1px solid ${error ? '#DC2626' : tokens.borderDefault}`,
+                  position: 'relative',
                 }}
-              />
+              >
+                <input
+                  type={showPasswordConfirm ? 'text' : 'password'}
+                  name="new_password_confirm"
+                  value={formData.new_password_confirm}
+                  onChange={handleChange}
+                  placeholder="Повторіть новий пароль"
+                  maxLength={128}
+                  className="adoptify-reset-input"
+                  style={{
+                    border: `1px solid ${error ? '#DC2626' : tokens.borderDefault}`,
+                    paddingRight: '44px',
+                  }}
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPasswordConfirm((value) => !value)}
+                  title={showPasswordConfirm ? 'Сховати пароль' : 'Показати пароль'}
+                  aria-label={showPasswordConfirm ? 'Сховати пароль' : 'Показати пароль'}
+                  style={{
+                    position: 'absolute',
+                    right: '10px',
+                    top: '50%',
+                    transform: 'translateY(-50%)',
+                    border: 'none',
+                    background: 'transparent',
+                    color: tokens.textSecondary,
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    padding: '6px',
+                    borderRadius: '8px',
+                  }}
+                >
+                  {showPasswordConfirm ? (
+                    <EyeSlash size={20} weight="bold" />
+                  ) : (
+                    <Eye size={20} weight="bold" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <button type="submit" disabled={loading} className="adoptify-reset-btn">

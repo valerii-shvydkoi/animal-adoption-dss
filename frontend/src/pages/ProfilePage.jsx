@@ -93,6 +93,23 @@ const UserProfile = () => {
     refreshProfile?.();
     refreshUser();
   }, []);
+  useEffect(() => {
+    const refreshCurrentProfile = () => {
+      refreshProfile?.();
+      refreshUser();
+    };
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        refreshCurrentProfile();
+      }
+    };
+    window.addEventListener('focus', refreshCurrentProfile);
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      window.removeEventListener('focus', refreshCurrentProfile);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, []);
   const handleNameChange = (e) => {
     const rawVal = e.target.value;
     const cleanVal = rawVal.replace(/[^a-zA-Zа-яА-ЯіІїЇєЄґҐ\s-]/g, '');

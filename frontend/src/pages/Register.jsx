@@ -2,7 +2,14 @@ import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import registerBg from '../assets/register-bg.jpg';
-import { PawPrint, CircleNotch, EnvelopeSimple, WarningCircle } from '@phosphor-icons/react';
+import {
+  PawPrint,
+  CircleNotch,
+  EnvelopeSimple,
+  WarningCircle,
+  Eye,
+  EyeSlash,
+} from '@phosphor-icons/react';
 import { tokens } from '../styles/tokens';
 const Register = () => {
   const navigate = useNavigate();
@@ -20,6 +27,8 @@ const Register = () => {
     passwordConfirm: false,
   });
   const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   useEffect(() => {
     const handleResize = () => setWindowWidth(window.innerWidth);
     window.addEventListener('resize', handleResize);
@@ -618,18 +627,52 @@ const Register = () => {
                         Латиниця та цифри
                       </span>
                     </div>
-                    <input
-                      type="password"
-                      name="password"
-                      value={formData.password}
-                      onChange={handleChange}
-                      placeholder="Створіть надійний пароль"
-                      maxLength={128}
-                      className="adoptify-register-input"
+                    <div
                       style={{
-                        border: `1px solid ${invalidFields.password ? '#DC2626' : tokens.borderDefault}`,
+                        position: 'relative',
                       }}
-                    />
+                    >
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        name="password"
+                        value={formData.password}
+                        onChange={handleChange}
+                        placeholder="Створіть надійний пароль"
+                        maxLength={128}
+                        className="adoptify-register-input"
+                        style={{
+                          border: `1px solid ${invalidFields.password ? '#DC2626' : tokens.borderDefault}`,
+                          paddingRight: '44px',
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword((value) => !value)}
+                        title={showPassword ? 'Сховати пароль' : 'Показати пароль'}
+                        aria-label={showPassword ? 'Сховати пароль' : 'Показати пароль'}
+                        style={{
+                          position: 'absolute',
+                          right: '10px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          border: 'none',
+                          background: 'transparent',
+                          color: tokens.textSecondary,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '6px',
+                          borderRadius: '8px',
+                        }}
+                      >
+                        {showPassword ? (
+                          <EyeSlash size={20} weight="bold" />
+                        ) : (
+                          <Eye size={20} weight="bold" />
+                        )}
+                      </button>
+                    </div>
                     <span
                       style={{
                         fontSize: '11px',
@@ -661,18 +704,52 @@ const Register = () => {
                     >
                       Підтвердження пароля
                     </label>
-                    <input
-                      type="password"
-                      name="passwordConfirm"
-                      value={formData.passwordConfirm}
-                      onChange={handleChange}
-                      placeholder="Повторіть створений пароль"
-                      maxLength={128}
-                      className="adoptify-register-input"
+                    <div
                       style={{
-                        border: `1px solid ${invalidFields.passwordConfirm ? '#DC2626' : tokens.borderDefault}`,
+                        position: 'relative',
                       }}
-                    />
+                    >
+                      <input
+                        type={showPasswordConfirm ? 'text' : 'password'}
+                        name="passwordConfirm"
+                        value={formData.passwordConfirm}
+                        onChange={handleChange}
+                        placeholder="Повторіть створений пароль"
+                        maxLength={128}
+                        className="adoptify-register-input"
+                        style={{
+                          border: `1px solid ${invalidFields.passwordConfirm ? '#DC2626' : tokens.borderDefault}`,
+                          paddingRight: '44px',
+                        }}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPasswordConfirm((value) => !value)}
+                        title={showPasswordConfirm ? 'Сховати пароль' : 'Показати пароль'}
+                        aria-label={showPasswordConfirm ? 'Сховати пароль' : 'Показати пароль'}
+                        style={{
+                          position: 'absolute',
+                          right: '10px',
+                          top: '50%',
+                          transform: 'translateY(-50%)',
+                          border: 'none',
+                          background: 'transparent',
+                          color: tokens.textSecondary,
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          padding: '6px',
+                          borderRadius: '8px',
+                        }}
+                      >
+                        {showPasswordConfirm ? (
+                          <EyeSlash size={20} weight="bold" />
+                        ) : (
+                          <Eye size={20} weight="bold" />
+                        )}
+                      </button>
+                    </div>
                   </div>
 
                   <button type="submit" disabled={loading} className="adoptify-register-btn">

@@ -389,6 +389,15 @@ const PetDetails = () => {
   const petImageSrc = pet.photo || pet.photo_url || placeholderImage;
   const catalogReturnPath =
     location.state?.from || sessionStorage.getItem('adoptifyCatalogReturnPath') || '/';
+  const handleBackToSource = () => {
+    const isCatalogReturn =
+      catalogReturnPath === '/' ||
+      catalogReturnPath.startsWith('/catalog') ||
+      catalogReturnPath.startsWith('/?');
+    navigate(catalogReturnPath, {
+      state: isCatalogReturn ? { restoreCatalog: true } : undefined,
+    });
+  };
   return (
     <div
       style={{
@@ -444,7 +453,7 @@ const PetDetails = () => {
       `}</style>
 
       <button
-        onClick={() => navigate(catalogReturnPath)}
+        onClick={handleBackToSource}
         style={{
           background: 'none',
           border: 'none',
@@ -1195,10 +1204,10 @@ const PetDetails = () => {
             }}
           >
             {(() => {
-              const rawName = pet.volunteer_name || 'Команда притулку';
-              const safeCuratorName = rawName;
               const isShelter =
                 pet.care_type === 'SHELTER' || String(pet.care_type).toUpperCase() === 'SHELTER';
+              const rawName = pet.volunteer_name || shelterName || 'Притулок';
+              const safeCuratorName = rawName;
               const careTypeDisplay = isShelter
                 ? shelterName
                   ? `Притулок "${shelterName}"`
@@ -1214,35 +1223,7 @@ const PetDetails = () => {
                     boxSizing: 'border-box',
                   }}
                 >
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                    }}
-                  >
-                    <PawPrint
-                      size={18}
-                      weight="bold"
-                      color={tokens.brandPrimary}
-                      style={{
-                        flexShrink: 0,
-                      }}
-                    />
-                    <span>
-                      Тип опіки:{' '}
-                      <strong
-                        style={{
-                          color: tokens.textPrimary,
-                          fontWeight: '700',
-                        }}
-                      >
-                        {careTypeDisplay}
-                      </strong>
-                    </span>
-                  </div>
-
-                  {!isShelter && shelterName && (
+                  {isShelter ? (
                     <div
                       style={{
                         display: 'flex',
@@ -1259,46 +1240,106 @@ const PetDetails = () => {
                         }}
                       />
                       <span>
-                        Організація:{' '}
+                        Відповідальний:{' '}
                         <strong
                           style={{
                             color: tokens.textPrimary,
                             fontWeight: '700',
                           }}
                         >
-                          Притулок "{shelterName}"
+                          {shelterName ? `Притулок "${shelterName}"` : 'Притулок'}
                         </strong>
                       </span>
                     </div>
-                  )}
-
-                  <div
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '10px',
-                    }}
-                  >
-                    <User
-                      size={18}
-                      weight="bold"
-                      color={tokens.brandPrimary}
-                      style={{
-                        flexShrink: 0,
-                      }}
-                    />
-                    <span>
-                      Опікун:{' '}
-                      <strong
+                  ) : (
+                    <>
+                      <div
                         style={{
-                          color: tokens.textPrimary,
-                          fontWeight: '700',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
                         }}
                       >
-                        {safeCuratorName}
-                      </strong>
-                    </span>
-                  </div>
+                        <PawPrint
+                          size={18}
+                          weight="bold"
+                          color={tokens.brandPrimary}
+                          style={{
+                            flexShrink: 0,
+                          }}
+                        />
+                        <span>
+                          Тип опіки:{' '}
+                          <strong
+                            style={{
+                              color: tokens.textPrimary,
+                              fontWeight: '700',
+                            }}
+                          >
+                            {careTypeDisplay}
+                          </strong>
+                        </span>
+                      </div>
+
+                      {shelterName && (
+                        <div
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '10px',
+                          }}
+                        >
+                          <ShieldCheck
+                            size={18}
+                            weight="bold"
+                            color={tokens.brandPrimary}
+                            style={{
+                              flexShrink: 0,
+                            }}
+                          />
+                          <span>
+                            Організація:{' '}
+                            <strong
+                              style={{
+                                color: tokens.textPrimary,
+                                fontWeight: '700',
+                              }}
+                            >
+                              Притулок "{shelterName}"
+                            </strong>
+                          </span>
+                        </div>
+                      )}
+
+                      <div
+                        style={{
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '10px',
+                        }}
+                      >
+                        <User
+                          size={18}
+                          weight="bold"
+                          color={tokens.brandPrimary}
+                          style={{
+                            flexShrink: 0,
+                          }}
+                        />
+                        <span>
+                          Опікун:{' '}
+                          <strong
+                            style={{
+                              color: tokens.textPrimary,
+                              fontWeight: '700',
+                            }}
+                          >
+                            {safeCuratorName}
+                          </strong>
+                        </span>
+                      </div>
+                    </>
+                  )}
 
                   {(pet.city || pet.oblast) && (
                     <div

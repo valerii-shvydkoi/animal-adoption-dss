@@ -1,4 +1,5 @@
 import json
+from django.core.exceptions import DisallowedHost
 from rest_framework import serializers
 from drf_spectacular.utils import OpenApiTypes, extend_schema_field
 from core.models import Pet, QuestionnaireResult
@@ -11,7 +12,7 @@ class PetSerializer(serializers.ModelSerializer):
         source="get_species_display", read_only=True
     )
     gender_display = serializers.CharField(source="get_gender_display", read_only=True)
-    photo = serializers.SerializerMethodField()
+    photo = serializers.ImageField(required=False, allow_null=True, use_url=False)
     compatibility_score = serializers.SerializerMethodField()
     dss_analytics = serializers.SerializerMethodField()
 
@@ -188,32 +189,46 @@ class PetSerializer(serializers.ModelSerializer):
         if shelter:
             validated_data.setdefault("oblast", getattr(shelter, "region", "") or "")
             validated_data.setdefault("city", getattr(shelter, "city", "") or "")
+        if validated_data.get("photo"):
+            validated_data["photo_url"] = None
 
         return super().create(validated_data)
 
     def update(self, instance, validated_data):
         if "shelter" not in validated_data:
             validated_data["shelter"] = instance.shelter
+        if validated_data.get("photo"):
+            validated_data["photo_url"] = None
         return super().update(instance, validated_data)
 
-    def _format_curator_name(self, user, role_label):
+    def to_representation(self, instance):
+        data = super().to_representation(instance)
+        data["photo"] = self.get_photo(instance)
+        return data
+
+    def _format_curator_name(self, user):
         profile = getattr(user, "profile", None)
         first_name = (getattr(profile, "first_name", "") or "").strip()
         last_name = (getattr(profile, "last_name", "") or "").strip()
 
         if first_name and last_name:
-            return f"{role_label} ({first_name} {last_name[0]}.)"
+            return f"{first_name} {last_name[0]}."
         if first_name:
-            return f"{role_label} ({first_name})"
-        return f"{role_label} притулку"
+            return first_name
+        return "опікун притулку"
 
     @extend_schema_field(OpenApiTypes.URI)
     def get_photo(self, obj):
         if obj.photo:
             request = self.context.get("request")
             if request:
-                return request.build_absolute_uri(obj.photo.url)
+                try:
+                    return request.build_absolute_uri(obj.photo.url)
+                except DisallowedHost:
+                    return obj.photo.url
             return obj.photo.url
+        if obj.photo_url:
+            return obj.photo_url
         return None
 
     def validate_weight(self, value):
@@ -310,18 +325,15 @@ class PetSerializer(serializers.ModelSerializer):
     @extend_schema_field(serializers.CharField())
     def get_volunteer_name(self, obj):
         try:
-            if obj.created_by:
-                author = obj.created_by
-                user_role = (
-                    getattr(author, "role", "").upper()
-                    if hasattr(author, "role")
-                    else ""
-                )
-                if user_role == "VOLUNTEER":
-                    return self._format_curator_name(author, "Волонтер")
-                return self._format_curator_name(author, "Менеджер")
+            care_type = str(getattr(obj, "care_type", "") or "").upper()
+            if care_type == "SHELTER":
+                return obj.shelter.name if obj.shelter else "Притулок"
 
-            if getattr(obj, "care_type", "") in ["VOLUNTEER", "VOLUNTEER_FOSTER"]:
+            curator = None
+            if obj.created_by:
+                curator = obj.created_by
+
+            if not curator and care_type in ["VOLUNTEER", "VOLUNTEER_FOSTER"]:
                 from core.models import Volunteer
 
                 volunteer = (
@@ -330,10 +342,10 @@ class PetSerializer(serializers.ModelSerializer):
                     .first()
                 )
                 if volunteer and volunteer.user:
-                    return self._format_curator_name(volunteer.user, "Волонтер")
+                    curator = volunteer.user
 
-            if getattr(obj, "care_type", "") == "SHELTER":
-                return "Команда притулку"
+            if curator:
+                return self._format_curator_name(curator)
         except Exception:
             pass
-        return "Команда притулку"
+        return "Притулок"

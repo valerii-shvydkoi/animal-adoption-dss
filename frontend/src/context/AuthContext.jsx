@@ -10,6 +10,11 @@ import {
   setStoredFavoriteIds,
 } from '../utils/favoritesStorage';
 const AuthContext = createContext(null);
+const clearCatalogSession = () => {
+  sessionStorage.removeItem('adoptifyCatalogState');
+  sessionStorage.removeItem('adoptifyCatalogReturnPath');
+  sessionStorage.removeItem('adoptifyCatalogRestorePending');
+};
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
@@ -50,6 +55,7 @@ export const AuthProvider = ({ children }) => {
     });
   };
   const logout = () => {
+    clearCatalogSession();
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('userRole');
@@ -78,6 +84,7 @@ export const AuthProvider = ({ children }) => {
       const userData = profileRes.data;
       const userRole = userData.role || 'user';
       const formattedUser = formatUserData(userData);
+      clearCatalogSession();
       localStorage.setItem('userRole', userRole);
       setRole(userRole);
       setUser(formattedUser);
@@ -152,6 +159,7 @@ export const AuthProvider = ({ children }) => {
     };
     initAuth();
     const handleAuthExpired = () => {
+      clearCatalogSession();
       localStorage.removeItem('userRole');
       setUser(null);
       setRole(null);

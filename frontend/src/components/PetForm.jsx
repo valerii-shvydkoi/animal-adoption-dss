@@ -15,6 +15,7 @@ const DEFAULT_FORM_VALUES = {
   name: '',
   species: 'DOG',
   gender: 'MALE',
+  care_type: 'SHELTER',
   age_months: '',
   weight: '',
   activity_level: 3,
@@ -33,7 +34,7 @@ const DEFAULT_FORM_VALUES = {
   is_sterilized: 'UNKNOWN',
   behavior_tags: '',
 };
-const MAX_PHOTO_FILE_SIZE = 10 * 1024 * 1024;
+const MAX_PHOTO_FILE_SIZE = 20 * 1024 * 1024;
 const PetForm = ({ pet, onSuccess }) => {
   const { notify } = useFeedback();
   const getInitialValues = (petData) => {
@@ -416,6 +417,22 @@ const PetForm = ({ pet, onSuccess }) => {
             >
               <option value="MALE">Хлопчик</option>
               <option value="FEMALE">Дівчинка</option>
+            </select>
+          </div>
+          <div>
+            <label className="adoptify-input-label">Тип опіки</label>
+            <select
+              value={formData.care_type}
+              onChange={(e) =>
+                setFormData({
+                  ...formData,
+                  care_type: e.target.value,
+                })
+              }
+              className="adoptify-pet-input"
+            >
+              <option value="SHELTER">У притулку</option>
+              <option value="VOLUNTEER_FOSTER">На перетримці</option>
             </select>
           </div>
         </div>

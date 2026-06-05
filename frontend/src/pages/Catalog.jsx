@@ -41,6 +41,7 @@ const tokens = {
 };
 const CATALOG_STATE_KEY = 'adoptifyCatalogState';
 const CATALOG_RETURN_KEY = 'adoptifyCatalogReturnPath';
+const CATALOG_RESTORE_PENDING_KEY = 'adoptifyCatalogRestorePending';
 const getDefaultCatalogFilters = (ordering) => ({
   species: '',
   gender: '',
@@ -63,6 +64,11 @@ const readCatalogState = () => {
   } catch {
     return null;
   }
+};
+const isBrowserReload = () => {
+  const navigationEntry = performance.getEntriesByType?.('navigation')?.[0];
+  if (navigationEntry?.type) return navigationEntry.type === 'reload';
+  return performance.navigation?.type === 1;
 };
 const CustomDropdown = ({ value, onChange, options, label, disabled, allowClear, noScroll }) => {
   const dropdownRef = useRef(null);
@@ -282,7 +288,11 @@ const Catalog = () => {
   const { isInstallable, isDismissed, promptInstall, dismissPrompt } = usePWA();
   const [isPwaCardClosing, setIsPwaCardClosing] = useState(false);
   const [isHidingProcess, setIsHidingProcess] = useState(false);
-  const savedCatalogStateRef = useRef(readCatalogState());
+  const shouldRestoreCatalog =
+    !isBrowserReload() &&
+    (location.state?.restoreCatalog === true ||
+      sessionStorage.getItem(CATALOG_RESTORE_PENDING_KEY) === 'true');
+  const savedCatalogStateRef = useRef(shouldRestoreCatalog ? readCatalogState() : null);
   const [page, setPage] = useState(() => Number(savedCatalogStateRef.current?.page) || 1);
   const [pageSize, setPageSize] = useState(
     () => Number(savedCatalogStateRef.current?.pageSize) || 12
@@ -296,6 +306,8 @@ const Catalog = () => {
   const currentRole = (role || user?.role || 'USER').toUpperCase();
   const hasQuestionnaireResult = currentRole === 'USER' && !!user?.has_questionnaire_result;
   const defaultOrdering = hasQuestionnaireResult ? '-compatibility_score' : '-created_at';
+  const authScope = user?.isAuthenticated ? `user:${user.id || user.email}` : 'guest';
+  const previousAuthScopeRef = useRef(authScope);
   const [filters, setFilters] = useState(() => ({
     ...getDefaultCatalogFilters(defaultOrdering),
     ...(savedCatalogStateRef.current?.filters || {}),
@@ -309,6 +321,26 @@ const Catalog = () => {
     skipAuth: !user?.isAuthenticated,
   });
   const { locations } = useAvailableLocations();
+  useEffect(() => {
+    if (shouldRestoreCatalog) {
+      sessionStorage.removeItem(CATALOG_RESTORE_PENDING_KEY);
+      return;
+    }
+
+    sessionStorage.removeItem(CATALOG_STATE_KEY);
+    sessionStorage.removeItem(CATALOG_RETURN_KEY);
+    sessionStorage.removeItem(CATALOG_RESTORE_PENDING_KEY);
+  }, [shouldRestoreCatalog]);
+  useEffect(() => {
+    if (previousAuthScopeRef.current === authScope) return;
+    previousAuthScopeRef.current = authScope;
+    setPage(1);
+    setSearchTerm('');
+    setFilters(getDefaultCatalogFilters(defaultOrdering));
+    sessionStorage.removeItem(CATALOG_STATE_KEY);
+    sessionStorage.removeItem(CATALOG_RETURN_KEY);
+    sessionStorage.removeItem(CATALOG_RESTORE_PENDING_KEY);
+  }, [authScope, defaultOrdering]);
   useEffect(() => {
     sessionStorage.setItem(
       CATALOG_STATE_KEY,
@@ -1687,7 +1719,11 @@ const Catalog = () => {
                           to={`/pet/${pet.id}`}
                           state={{
                             from: `${location.pathname}${location.search}`,
+                            restoreCatalog: true,
                           }}
+                          onClick={() =>
+                            sessionStorage.setItem(CATALOG_RESTORE_PENDING_KEY, 'true')
+                          }
                           style={{
                             textDecoration: 'none',
                             color: 'inherit',
