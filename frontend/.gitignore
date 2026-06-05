@@ -1,4 +1,4 @@
-# Logs
+# Журнали виконання та службові файли пакетних менеджерів
 logs
 *.log
 npm-debug.log*
@@ -13,7 +13,7 @@ dist-ssr
 .vite
 *.local
 
-# Editor directories and files
+# Службові каталоги та файли редакторів коду
 .vscode/*
 !.vscode/extensions.json
 .idea
