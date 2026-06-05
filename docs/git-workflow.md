@@ -1,10 +1,10 @@
-# Git workflow для дипломного проєкту
+# Git workflow Adoptify
 
 Репозиторій має зберігати історію як інженерний щоденник розроблення СППР, а не як випадковий архів файлів.
 
 ## Remote
 
-Основний `origin` має вказувати на репозиторій `valerii-shvydkoi/animal-adoption-dss.git`, який відповідає назві та предметній області дипломної роботи.
+Основний `origin` має вказувати на репозиторій `valerii-shvydkoi/animal-adoption-dss.git`, який відповідає назві та предметній області проєкту.
 
 Перевірка remote:
 
@@ -27,15 +27,13 @@ origin  https://github.com/valerii-shvydkoi/animal-adoption-dss.git
 - `feature/*` — тимчасові гілки для окремих функціональних задач: AHP-розрахунку, фільтрації тварин, статусів заявок, API-ендпоінтів, сторінок каталогу або кабінетів ролей.
 - `hotfix/*` — тимчасові гілки для критичних виправлень у стабільній версії з подальшим перенесенням у `main` і `dev`.
 
-Поточний набір демонстраційних гілок:
+Поточний набір публічних гілок:
 
 - `feature/backend-core` — базові моделі, REST API, permissions, адмін-панель і тести серверної частини.
 - `feature/ahp-dss-matching` — AHP/DSS-алгоритм підбору, ваги критеріїв і пояснення результатів.
 - `feature/adoption-workflow` — заявки на адаптацію, статуси, транзакційність і перевірки власності результату анкети.
 - `feature/role-cabinets` — кабінети волонтера, менеджера притулку та адміністратора.
 - `feature/pwa-production` — PWA-ресурси, Docker, nginx і production-збірка frontend.
-- `feature/diploma-alignment` — документація, матриця відповідності, wireframes і синхронізація з додатками.
-- `hotfix/final-demo-polish` — фінальні виправлення демонстраційного сценарію перед захистом.
 
 ## Коміти
 
@@ -49,7 +47,7 @@ type(scope): короткий опис українською або англі�
 
 - `feat(ahp): normalize questionnaire weights and expose result id`
 - `fix(favorites): transfer guest favorites after login`
-- `docs(diploma): update requirements matrix and wireframes`
+- `docs(requirements): update requirements matrix and wireframes`
 - `test(dss): cover profile-aware matching risks`
 
 ## Перед комітом

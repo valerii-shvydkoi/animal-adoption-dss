@@ -394,7 +394,7 @@ PET_BLUEPRINTS = [
 
 
 class Command(BaseCommand):
-    help = "Створює демонстраційну базу Adoptify для захисту дипломного проєкту."
+    help = "Створює демонстраційну базу Adoptify для локального показу."
 
     def add_arguments(self, parser):
         parser.add_argument(
