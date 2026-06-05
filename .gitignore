@@ -21,6 +21,9 @@ frontend/.npm/
 # Згенеровані медіафайли демо-бази
 backend/media/pets/photos/
 
+# Згенерована OpenAPI-схема після локальної CI-перевірки
+backend/schema.yml
+
 # Файли з локальними налаштуваннями середовища
 .env
 .env.local
