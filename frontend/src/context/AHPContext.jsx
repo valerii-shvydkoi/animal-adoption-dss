@@ -1,4 +1,4 @@
-import React, { createContext, useState, useEffect } from 'react';
+import React, { createContext, useState, useEffect, useRef } from 'react';
 import api from '../services/api';
 export const AHPContext = createContext(null);
 const createDefaultUserProfile = () => ({
@@ -84,6 +84,7 @@ export const AHPProvider = ({ children }) => {
   const [isProfileLoading, setIsProfileLoading] = useState(true);
   const [profileReloadKey, setProfileReloadKey] = useState(0);
   const [error, setError] = useState(null);
+  const profileRequestRef = useRef(0);
   const clearError = () => setError(null);
   const getCleanUrl = (endpoint) => {
     const configUrl = api.defaults.baseURL || '';
@@ -99,8 +100,11 @@ export const AHPProvider = ({ children }) => {
   useEffect(() => {
     let isMounted = true;
     const fetchProfile = async () => {
+      const requestId = profileRequestRef.current + 1;
+      profileRequestRef.current = requestId;
       const token = localStorage.getItem('accessToken');
       if (!token) {
+        if (!isMounted || requestId !== profileRequestRef.current) return;
         setUserProfile(createDefaultUserProfile());
         setIsProfileLoading(false);
         return;
@@ -109,7 +113,7 @@ export const AHPProvider = ({ children }) => {
         setIsProfileLoading(true);
         const targetUrl = getCleanUrl('/api/v1/auth/profile/');
         const response = await api.get(targetUrl);
-        if (!isMounted) return;
+        if (!isMounted || requestId !== profileRequestRef.current) return;
         const data = response.data;
         const fetchedName = normalizeProfileName(
           data.name || data.first_name || data.profile?.first_name || data.profile?.name || ''
@@ -171,10 +175,12 @@ export const AHPProvider = ({ children }) => {
           });
         }
       } catch (err) {
+        if (!isMounted || requestId !== profileRequestRef.current) return;
         console.warn('API v1 недоступний, завантажуємо резервний маршрут.');
         if (isMounted) {
           try {
             const fallbackResponse = await api.get('/users/profile/');
+            if (!isMounted || requestId !== profileRequestRef.current) return;
             const d = fallbackResponse.data;
             const fallbackName = normalizeProfileName(
               d.name || d.first_name || d.profile?.first_name || ''
@@ -205,7 +211,9 @@ export const AHPProvider = ({ children }) => {
           }
         }
       } finally {
-        if (isMounted) setIsProfileLoading(false);
+        if (isMounted && requestId === profileRequestRef.current) {
+          setIsProfileLoading(false);
+        }
       }
     };
     fetchProfile();
@@ -383,14 +391,23 @@ export const AHPProvider = ({ children }) => {
     return handleAxiosError(originalError);
   };
   const syncAuthAndState = (profileToSend) => {
-    setUserProfile(profileToSend);
+    profileRequestRef.current += 1;
+    const normalizedProfile = {
+      ...profileToSend,
+      name: normalizeProfileName(profileToSend.name),
+      last_name: normalizeProfileName(profileToSend.last_name),
+    };
+    setUserProfile((prev) => ({
+      ...prev,
+      ...normalizedProfile,
+    }));
+    setIsProfileLoading(false);
     window.dispatchEvent(
       new CustomEvent('userUpdated', {
         detail: {
-          ...profileToSend,
-          name: normalizeProfileName(profileToSend.name),
-          first_name: normalizeProfileName(profileToSend.name),
-          last_name: normalizeProfileName(profileToSend.last_name),
+          ...normalizedProfile,
+          first_name: normalizedProfile.name,
+          last_name: normalizedProfile.last_name,
         },
       })
     );

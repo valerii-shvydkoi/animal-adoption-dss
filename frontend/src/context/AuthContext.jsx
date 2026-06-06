@@ -38,7 +38,12 @@ export const AuthProvider = ({ children }) => {
   const applyUserProfilePatch = (profileData) => {
     setUser((currentUser) => {
       if (!currentUser) return currentUser;
-      const nextName = profileData.name ?? profileData.first_name ?? currentUser.name ?? '';
+      const nextName =
+        profileData.name ??
+        profileData.first_name ??
+        profileData.profile?.first_name ??
+        currentUser.name ??
+        '';
       const nextLastName =
         profileData.last_name ?? profileData.profile?.last_name ?? currentUser.last_name ?? '';
       return {
@@ -174,7 +179,6 @@ export const AuthProvider = ({ children }) => {
     };
     const handleUserUpdated = (event) => {
       applyUserProfilePatch(event.detail || {});
-      refreshUser();
     };
     const syncAuth = (event) => {
       if (

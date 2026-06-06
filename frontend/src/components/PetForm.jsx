@@ -416,6 +416,7 @@ const PetForm = ({ pet, onSuccess }) => {
             >
               <option value="DOG">Собака</option>
               <option value="CAT">Кіт</option>
+              <option value="OTHER">Інше</option>
             </select>
           </div>
           <div>

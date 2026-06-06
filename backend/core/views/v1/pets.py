@@ -48,7 +48,7 @@ class PetPagination(PageNumberPagination):
             ),
             OpenApiParameter(
                 name="species",
-                description="Вид тварини (DOG/CAT)",
+                description="Вид тварини (DOG/CAT/OTHER)",
                 required=False,
                 type=str,
             ),

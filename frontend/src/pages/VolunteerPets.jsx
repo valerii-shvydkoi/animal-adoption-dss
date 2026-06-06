@@ -468,7 +468,7 @@ export default function VolunteerPets() {
                   </div>
 
                   <div className="pet-detail">
-                    <strong>Вид:</strong> {pet.species === 'DOG' ? 'Собака' : 'Кіт'}
+                    <strong>Вид:</strong> {pet.species === 'DOG' ? 'Собака' : pet.species === 'CAT' ? 'Кіт' : 'Інше'}
                     {pet.breed && pet.breed !== 'Без породи' ? ` • ${pet.breed}` : ''}
                   </div>
 

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useAHP } from '../hooks/useAHP';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -87,6 +87,7 @@ const UserProfile = () => {
   const [isSaving, setIsSaving] = useState(false);
   const [saveSuccess, setSaveSuccess] = useState(false);
   const [localError, setLocalError] = useState(null);
+  const profileDirtyRef = useRef(false);
   const nameLength = (userProfile.name || '').length;
   const lastNameLength = (userProfile.last_name || '').length;
   const currentRole = String(role || user?.role || 'USER').toUpperCase();
@@ -104,6 +105,7 @@ const UserProfile = () => {
   }, []);
   useEffect(() => {
     const refreshCurrentProfile = () => {
+      if (profileDirtyRef.current) return;
       refreshProfile?.();
       refreshUser();
     };
@@ -119,18 +121,22 @@ const UserProfile = () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, []);
+  const updateProfileField = (key, value) => {
+    profileDirtyRef.current = true;
+    updateUserProfile(key, value);
+  };
   const handleNameChange = (e) => {
     const rawVal = e.target.value;
     const cleanVal = rawVal.replace(/[^a-zA-Zа-яА-ЯіІїЇєЄґҐ\s-]/g, '');
     if (cleanVal.length <= 30) {
-      updateUserProfile('name', cleanVal);
+      updateProfileField('name', cleanVal);
     }
   };
   const handleLastNameChange = (e) => {
     const rawVal = e.target.value;
     const cleanVal = rawVal.replace(/[^a-zA-Zа-яА-ЯіІїЇєЄґҐ\s-]/g, '');
     if (cleanVal.length <= 30) {
-      updateUserProfile('last_name', cleanVal);
+      updateProfileField('last_name', cleanVal);
     }
   };
   const formatPhone = (value) => {
@@ -157,10 +163,10 @@ const UserProfile = () => {
       val === '+38' ||
       val === '+380'
     ) {
-      updateUserProfile('phone', '');
+      updateProfileField('phone', '');
       return;
     }
-    updateUserProfile('phone', formatPhone(val));
+    updateProfileField('phone', formatPhone(val));
   };
   const handlePhoneKeyDown = (e) => {
     const input = e.target;
@@ -168,7 +174,7 @@ const UserProfile = () => {
     if (e.key === 'Backspace' && selectionStart === selectionEnd) {
       if (selectionStart <= 6) {
         e.preventDefault();
-        updateUserProfile('phone', '');
+        updateProfileField('phone', '');
         return;
       }
       const charToDelete = currentValue[selectionStart - 1];
@@ -180,7 +186,7 @@ const UserProfile = () => {
           currentValue.substring(0, selectionStart - charsToRemove - 1) +
           currentValue.substring(selectionStart);
         const formatted = formatPhone(newValue);
-        updateUserProfile('phone', formatted);
+        updateProfileField('phone', formatted);
         const diff = currentValue.length - formatted.length;
         const newCursorPos = Math.max(0, selectionStart - charsToRemove - diff);
         setTimeout(() => input.setSelectionRange(newCursorPos, newCursorPos), 0);
@@ -197,6 +203,7 @@ const UserProfile = () => {
         setLocalError(result.error);
         return;
       }
+      profileDirtyRef.current = false;
       await refreshUser();
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 4000);
@@ -566,7 +573,7 @@ const UserProfile = () => {
                     style={inputStyle}
                     onFocus={() => {
                       if (!userProfile.phone || userProfile.phone.trim() === '') {
-                        updateUserProfile('phone', '+380 ');
+                        updateProfileField('phone', '+380 ');
                       }
                     }}
                     onBlur={() => {
@@ -575,7 +582,7 @@ const UserProfile = () => {
                         userProfile.phone === '+380 (' ||
                         userProfile.phone === '+380'
                       ) {
-                        updateUserProfile('phone', '');
+                        updateProfileField('phone', '');
                       }
                     }}
                   />
@@ -781,7 +788,7 @@ const UserProfile = () => {
                       <input
                         type="checkbox"
                         checked={userProfile[field.id] || false}
-                        onChange={(e) => updateUserProfile(field.id, e.target.checked)}
+                        onChange={(e) => updateProfileField(field.id, e.target.checked)}
                         style={{
                           display: 'none',
                         }}
@@ -855,7 +862,7 @@ const UserProfile = () => {
                       <input
                         type="checkbox"
                         checked={userProfile[field.id] || false}
-                        onChange={(e) => updateUserProfile(field.id, e.target.checked)}
+                        onChange={(e) => updateProfileField(field.id, e.target.checked)}
                         style={{
                           display: 'none',
                         }}
@@ -927,7 +934,7 @@ const UserProfile = () => {
                       <button
                         key={opt.value}
                         type="button"
-                        onClick={() => updateUserProfile('available_walk_hours', opt.value)}
+                        onClick={() => updateProfileField('available_walk_hours', opt.value)}
                         style={{
                           ...getCheckboxStyle(userProfile.available_walk_hours === opt.value),
                           flex: 1,
@@ -978,7 +985,7 @@ const UserProfile = () => {
                   >
                     <button
                       type="button"
-                      onClick={() => updateUserProfile('has_pet_experience', true)}
+                      onClick={() => updateProfileField('has_pet_experience', true)}
                       style={{
                         ...getCheckboxStyle(userProfile.has_pet_experience === true),
                         flex: 1,
@@ -996,7 +1003,7 @@ const UserProfile = () => {
                     </button>
                     <button
                       type="button"
-                      onClick={() => updateUserProfile('has_pet_experience', false)}
+                      onClick={() => updateProfileField('has_pet_experience', false)}
                       style={{
                         ...getCheckboxStyle(userProfile.has_pet_experience === false),
                         flex: 1,
@@ -1048,11 +1055,11 @@ const UserProfile = () => {
                     onChange={(e) => {
                       const val = e.target.value;
                       if (val === '') {
-                        updateUserProfile('floor', '');
+                        updateProfileField('floor', '');
                         return;
                       }
                       const num = Number(val);
-                      if (num >= 1 && num <= 50) updateUserProfile('floor', num);
+                      if (num >= 1 && num <= 50) updateProfileField('floor', num);
                     }}
                     style={{
                       width: '70px',
@@ -1131,7 +1138,7 @@ const UserProfile = () => {
                         <input
                           type="radio"
                           checked={userProfile.preferred_species === species.id}
-                          onChange={() => updateUserProfile('preferred_species', species.id)}
+                          onChange={() => updateProfileField('preferred_species', species.id)}
                           style={{
                             display: 'none',
                           }}
@@ -1208,7 +1215,7 @@ const UserProfile = () => {
                       <input
                         type="radio"
                         checked={userProfile.preferred_age === age.id}
-                        onChange={() => updateUserProfile('preferred_age', age.id)}
+                        onChange={() => updateProfileField('preferred_age', age.id)}
                         style={{
                           display: 'none',
                         }}

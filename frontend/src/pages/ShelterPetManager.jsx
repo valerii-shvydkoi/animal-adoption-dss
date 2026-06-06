@@ -870,6 +870,7 @@ export default function ShelterPetManager() {
               { value: '', label: 'Усі види' },
               { value: 'DOG', label: 'Собаки' },
               { value: 'CAT', label: 'Коти' },
+              { value: 'OTHER', label: 'Інші' },
             ]}
           />
           <CustomSelect
@@ -1026,7 +1027,7 @@ export default function ShelterPetManager() {
                     }}
                   >
                     <span className="status-badge badge-gray">
-                      {pet.species === 'DOG' ? 'Собака' : 'Кішка'}
+                      {pet.species === 'DOG' ? 'Собака' : pet.species === 'CAT' ? 'Кішка' : 'Інше'}
                       {pet.breed && ` • ${pet.breed}`}
                     </span>
 
@@ -1316,6 +1317,10 @@ export default function ShelterPetManager() {
                     {
                       value: 'CAT',
                       label: 'Кішка',
+                    },
+                    {
+                      value: 'OTHER',
+                      label: 'Інше',
                     },
                   ]}
                 />
