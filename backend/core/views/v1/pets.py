@@ -3,7 +3,12 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.exceptions import PermissionDenied
-from drf_spectacular.utils import extend_schema_view, extend_schema, OpenApiParameter
+from drf_spectacular.utils import (
+    OpenApiResponse,
+    extend_schema_view,
+    extend_schema,
+    OpenApiParameter,
+)
 from core.models import Pet, QuestionnaireResult
 from core.serializers.pet_serializers import PetSerializer
 from core.services.dss_matching_service import DSSMatchingService
@@ -24,10 +29,23 @@ class PetPagination(PageNumberPagination):
 
 @extend_schema_view(
     list=extend_schema(
+        tags=["Тварини"],
         summary="Отримати список тварин",
         description="Повертає список доступних тварин з пагінацією та фільтрами.",
         auth=[],
         parameters=[
+            OpenApiParameter(
+                name="page",
+                description="Номер сторінки каталогу.",
+                required=False,
+                type=int,
+            ),
+            OpenApiParameter(
+                name="page_size",
+                description="Кількість карток на сторінці.",
+                required=False,
+                type=int,
+            ),
             OpenApiParameter(
                 name="species",
                 description="Вид тварини (DOG/CAT)",
@@ -118,13 +136,63 @@ class PetPagination(PageNumberPagination):
         ],
     ),
     locations=extend_schema(
-        summary="Отримати дерево доступних областей та міст", auth=[]
+        tags=["Тварини"],
+        summary="Отримати дерево доступних областей та міст",
+        auth=[],
     ),
-    retrieve=extend_schema(summary="Отримати деталі тварини", auth=[]),
-    create=extend_schema(summary="Додати нову тварину"),
-    update=extend_schema(summary="Повністю оновити дані тварини"),
-    partial_update=extend_schema(summary="Частково оновити дані тварини"),
-    destroy=extend_schema(summary="Видалити тварину (Soft delete)"),
+    retrieve=extend_schema(
+        tags=["Тварини"],
+        summary="Отримати деталі тварини",
+        auth=[],
+        parameters=[
+            OpenApiParameter(
+                "id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="Ідентифікатор тварини.",
+            )
+        ],
+    ),
+    create=extend_schema(tags=["Тварини"], summary="Додати нову тварину"),
+    update=extend_schema(
+        tags=["Тварини"],
+        summary="Повністю оновити дані тварини",
+        parameters=[
+            OpenApiParameter(
+                "id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="Ідентифікатор тварини.",
+            )
+        ],
+    ),
+    partial_update=extend_schema(
+        tags=["Тварини"],
+        summary="Частково оновити дані тварини",
+        parameters=[
+            OpenApiParameter(
+                "id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="Ідентифікатор тварини.",
+            )
+        ],
+    ),
+    destroy=extend_schema(
+        tags=["Тварини"],
+        summary="Видалити тварину (логічне видалення)",
+        parameters=[
+            OpenApiParameter(
+                "id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="Ідентифікатор тварини.",
+            )
+        ],
+        responses={
+            204: OpenApiResponse(description="Тварину прибрано з публічного каталогу.")
+        },
+    ),
 )
 class PetViewSet(viewsets.ModelViewSet):
     queryset = (
@@ -399,6 +467,12 @@ class PetViewSet(viewsets.ModelViewSet):
                 )
         return obj
 
+    @extend_schema(
+        tags=["Тварини"],
+        summary="Отримати кілька тварин за ID",
+        description="Використовується для обраного та коротких добірок.",
+        auth=[],
+    )
     @action(detail=False, methods=["get"])
     def batch(self, request):
         ids_param = request.query_params.get("ids", "")
@@ -417,6 +491,11 @@ class PetViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(pets, many=True)
         return Response(serializer.data)
 
+    @extend_schema(
+        tags=["Тварини"],
+        summary="Отримати доступні локації тварин",
+        auth=[],
+    )
     @action(detail=False, methods=["get"])
     def locations(self, request):
         active_pets = Pet.objects.filter(is_available=True)
@@ -434,6 +513,18 @@ class PetViewSet(viewsets.ModelViewSet):
         }
         return Response(clean_tree)
 
+    @extend_schema(
+        tags=["Обране"],
+        summary="Додати або прибрати тварину з обраного",
+        parameters=[
+            OpenApiParameter(
+                "id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="Ідентифікатор тварини.",
+            )
+        ],
+    )
     @action(detail=True, methods=["post"])
     def favorite(self, request, pk=None):
         pet = self.get_object()

@@ -8,10 +8,14 @@ from rest_framework import status
 from drf_spectacular.utils import extend_schema
 
 
-@extend_schema(tags=["Admin Logs"])
+@extend_schema(tags=["Журнал адміністратора"])
 class AdminLogView(APIView):
     permission_classes = [IsAdminUser]
 
+    @extend_schema(
+        summary="Переглянути журнал backend",
+        description="Повертає останні записи локального файлу app.log.",
+    )
     def get(self, request):
 
         log_path = getattr(
@@ -73,10 +77,14 @@ class AdminLogView(APIView):
             )
 
 
-@extend_schema(tags=["Admin Logs"])
+@extend_schema(tags=["Журнал адміністратора"])
 class AdminLogClearView(APIView):
     permission_classes = [IsAdminUser]
 
+    @extend_schema(
+        summary="Очистити журнал backend",
+        description="Очищає локальний файл app.log після перегляду адміністратором.",
+    )
     def delete(self, request):
         log_path = getattr(
             settings, "LOG_FILE_PATH", os.path.join(settings.BASE_DIR.parent, "app.log")

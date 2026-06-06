@@ -7,6 +7,7 @@ from drf_spectacular.types import OpenApiTypes
 
 
 @extend_schema(
+    tags=["Службові endpoint"],
     summary="Перевірка стану API",
     description="Повертає статус підключення до бази даних та версію системи.",
     auth=[],

@@ -2,6 +2,12 @@ import React from 'react';
 import PetCard from '../UI/PetCard';
 import ExplainabilityCard from './ExplainabilityCard';
 import { Info } from '@phosphor-icons/react';
+
+const normalizeRecommendationText = (text = '') =>
+  String(text)
+    .replace(/^(Найсильніший|Сильний|Перспективний)\s+збіг:\s*/i, '')
+    .trim();
+
 const ResultsList = ({ results, onRequestClick, startRank = 1 }) => (
   <div
     className="results-container"
@@ -85,6 +91,9 @@ const ResultsList = ({ results, onRequestClick, startRank = 1 }) => (
         weight:
           petData.weight !== undefined && petData.weight !== null ? petData.weight : res.weight,
       };
+      const recommendationText = normalizeRecommendationText(
+        res.recommendation || petData.recommendation || ''
+      );
       return (
         <div
           key={res.id || petData.id || Math.random()}
@@ -175,7 +184,7 @@ const ResultsList = ({ results, onRequestClick, startRank = 1 }) => (
                 />
               </div>
 
-              {(res.recommendation || petData.recommendation) && (
+              {recommendationText && (
                 <div
                   style={{
                     marginTop: 'auto',
@@ -215,7 +224,7 @@ const ResultsList = ({ results, onRequestClick, startRank = 1 }) => (
                     >
                       {matchLabel}:{' '}
                     </strong>
-                    {res.recommendation || petData.recommendation}
+                    {recommendationText}
                   </span>
                 </div>
               )}

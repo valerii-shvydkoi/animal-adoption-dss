@@ -84,11 +84,15 @@ def safe_read_logs(limit=10):
         return []
 
 
-@extend_schema(tags=["Shelter Analytics"])
+@extend_schema(tags=["Аналітика притулку"])
 class ShelterAnalyticsView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(responses=OpenApiTypes.OBJECT)
+    @extend_schema(
+        summary="Отримати аналітику мого притулку",
+        description="Повертає основні показники притулку для менеджера або волонтера.",
+        responses=OpenApiTypes.OBJECT,
+    )
     def get(self, request):
 
         shelter = Shelter.objects.filter(owner=request.user).first()
@@ -184,7 +188,12 @@ class ShelterAnalyticsView(APIView):
             status=status.HTTP_200_OK,
         )
 
-    @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
+    @extend_schema(
+        summary="Оновити профіль притулку",
+        description="Дає менеджеру змогу змінити назву, адресу, телефон і опис притулку.",
+        request=OpenApiTypes.OBJECT,
+        responses=OpenApiTypes.OBJECT,
+    )
     def patch(self, request):
         shelter = Shelter.objects.filter(owner=request.user).first()
         if not shelter:
@@ -230,11 +239,15 @@ class ShelterAnalyticsView(APIView):
         )
 
 
-@extend_schema(tags=["Shelter Management"])
+@extend_schema(tags=["Керування притулком"])
 class ShelterDeleteView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(responses=OpenApiTypes.OBJECT)
+    @extend_schema(
+        summary="Видалити мій притулок",
+        description="Видаляє притулок, який належить поточному менеджеру.",
+        responses={200: OpenApiTypes.OBJECT},
+    )
     def delete(self, request):
         shelter = Shelter.objects.filter(owner=request.user).first()
         if not shelter:
@@ -258,11 +271,16 @@ class ShelterDeleteView(APIView):
         )
 
 
-@extend_schema(tags=["Admin Analytics"])
+@extend_schema(tags=["Аналітика адміністратора"])
 class GlobalAnalyticsView(APIView):
     permission_classes = [IsPlatformAdmin]
 
     @extend_schema(
+        summary="Отримати аналітику платформи",
+        description=(
+            "Повертає глобальні показники Adoptify або окрему аналітику притулку "
+            "за параметром shelter_id."
+        ),
         parameters=[
             OpenApiParameter(
                 name="shelter_id",
@@ -381,21 +399,33 @@ class GlobalAnalyticsView(APIView):
         )
 
 
-@extend_schema(tags=["Admin Logs"])
+@extend_schema(tags=["Журнал адміністратора"])
 class AdminLogView(APIView):
     permission_classes = [IsPlatformAdmin]
 
-    @extend_schema(responses=OpenApiTypes.OBJECT)
+    @extend_schema(
+        summary="Переглянути системний журнал",
+        description="Повертає останні записи журналу backend для адміністратора.",
+        responses=OpenApiTypes.OBJECT,
+    )
     def get(self, request):
         logs = safe_read_logs(limit=100)
         return Response(logs, status=status.HTTP_200_OK)
 
 
-@extend_schema(tags=["Admin Logs"])
+@extend_schema(tags=["Журнал адміністратора"])
 class AdminLogClearView(APIView):
     permission_classes = [IsPlatformAdmin]
 
-    @extend_schema(responses=OpenApiTypes.OBJECT)
+    @extend_schema(
+        summary="Очистити системний журнал",
+        description="Очищає локальний файл журналу backend.",
+        responses={
+            200: OpenApiTypes.OBJECT,
+            404: OpenApiTypes.OBJECT,
+            500: OpenApiTypes.OBJECT,
+        },
+    )
     def delete(self, request):
         log_path = getattr(
             settings, "LOG_FILE_PATH", os.path.join(settings.BASE_DIR.parent, "app.log")

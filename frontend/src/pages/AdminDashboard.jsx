@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Users,
   PawPrint,
@@ -11,6 +11,7 @@ import {
   ClockCounterClockwise,
   UserPlus,
   HouseLine,
+  CaretDown,
 } from '@phosphor-icons/react';
 import adminService from '../services/adminService';
 const LIGHT_THEME_CSS = `
@@ -59,6 +60,8 @@ export default function AdminDashboard() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [shelters, setShelters] = useState([]);
   const [selectedShelterId, setSelectedShelterId] = useState('');
+  const [isScopeOpen, setIsScopeOpen] = useState(false);
+  const scopeRef = useRef(null);
   const [infrastructure, setInfrastructure] = useState({
     gateway: 'LOADING',
     postgres: 'LOADING',
@@ -121,6 +124,15 @@ export default function AdminDashboard() {
       fetchAnalytics(true, selectedShelterId);
     }
   }, [selectedShelterId]);
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (scopeRef.current && !scopeRef.current.contains(event.target)) {
+        setIsScopeOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
   if (loading) {
     return (
       <>
@@ -170,64 +182,120 @@ export default function AdminDashboard() {
   const pendingVolunteerRequests = data?.pending_volunteer_requests ?? 0;
   const pendingShelterRequests = data?.pending_shelter_requests ?? 0;
   const recentLogs = Array.isArray(data?.recent_logs) ? data.recent_logs : [];
-  const stats = [
-    {
-      label: 'Тварин у системі',
-      value: totalPets.toLocaleString(),
-      icon: <PawPrint size={28} />,
-      color: '#EA580C',
-      bg: '#FFEDD5',
-    },
-    {
-      label: 'Активних користувачів',
-      value: activeUsers.toLocaleString(),
-      icon: <Users size={28} />,
-      color: '#0284C7',
-      bg: '#E0F2FE',
-    },
-    {
-      label: 'Успішних адаптацій',
-      value: successfulAdoptions.toLocaleString(),
-      icon: <Heart size={28} />,
-      color: '#16A34A',
-      bg: '#DCFCE7',
-    },
-    {
-      label: 'Зареєстровано притулків',
-      value: totalShelters.toLocaleString(),
-      icon: <ShieldCheck size={28} />,
-      color: '#9333EA',
-      bg: '#F3E8FF',
-    },
-    {
-      label: 'Анкет СППР',
-      value: totalQuestionnaires.toLocaleString(),
-      icon: <ClipboardText size={28} />,
-      color: '#0F766E',
-      bg: '#CCFBF1',
-    },
-    {
-      label: 'Активних заявок',
-      value: pendingAdoptions.toLocaleString(),
-      icon: <ClockCounterClockwise size={28} />,
-      color: '#D97706',
-      bg: '#FEF3C7',
-    },
-    {
-      label: 'Заявок волонтерів',
-      value: pendingVolunteerRequests.toLocaleString(),
-      icon: <UserPlus size={28} />,
-      color: '#7C3AED',
-      bg: '#EDE9FE',
-    },
-    {
-      label: 'Заявок притулків',
-      value: pendingShelterRequests.toLocaleString(),
-      icon: <HouseLine size={28} />,
-      color: '#0284C7',
-      bg: '#E0F2FE',
-    },
-  ];
+  const isShelterScope = Boolean(selectedShelterId);
+  const selectedShelter = shelters.find(
+    (shelter) => String(shelter.id) === String(selectedShelterId)
+  );
+  const scopeLabel = selectedShelterId
+    ? selectedShelter?.name || data?.selected_shelter?.name || 'Обраний притулок'
+    : 'Уся платформа';
+  const selectScope = (shelterId) => {
+    setSelectedShelterId(shelterId);
+    setIsScopeOpen(false);
+  };
+  const stats = isShelterScope
+    ? [
+        {
+          label: 'Тварин у притулку',
+          value: totalPets.toLocaleString(),
+          icon: <PawPrint size={28} />,
+          color: '#EA580C',
+          bg: '#FFEDD5',
+        },
+        {
+          label: 'Учасників команди',
+          value: activeUsers.toLocaleString(),
+          icon: <Users size={28} />,
+          color: '#0284C7',
+          bg: '#E0F2FE',
+        },
+        {
+          label: 'Успішних адаптацій',
+          value: successfulAdoptions.toLocaleString(),
+          icon: <Heart size={28} />,
+          color: '#16A34A',
+          bg: '#DCFCE7',
+        },
+        {
+          label: 'Анкет із заявками',
+          value: totalQuestionnaires.toLocaleString(),
+          icon: <ClipboardText size={28} />,
+          color: '#0F766E',
+          bg: '#CCFBF1',
+        },
+        {
+          label: 'Активних заявок',
+          value: pendingAdoptions.toLocaleString(),
+          icon: <ClockCounterClockwise size={28} />,
+          color: '#D97706',
+          bg: '#FEF3C7',
+        },
+        {
+          label: 'Заявок волонтерів',
+          value: pendingVolunteerRequests.toLocaleString(),
+          icon: <UserPlus size={28} />,
+          color: '#7C3AED',
+          bg: '#EDE9FE',
+        },
+      ]
+    : [
+        {
+          label: 'Тварин у системі',
+          value: totalPets.toLocaleString(),
+          icon: <PawPrint size={28} />,
+          color: '#EA580C',
+          bg: '#FFEDD5',
+        },
+        {
+          label: 'Активних користувачів',
+          value: activeUsers.toLocaleString(),
+          icon: <Users size={28} />,
+          color: '#0284C7',
+          bg: '#E0F2FE',
+        },
+        {
+          label: 'Успішних адаптацій',
+          value: successfulAdoptions.toLocaleString(),
+          icon: <Heart size={28} />,
+          color: '#16A34A',
+          bg: '#DCFCE7',
+        },
+        {
+          label: 'Зареєстровано притулків',
+          value: totalShelters.toLocaleString(),
+          icon: <ShieldCheck size={28} />,
+          color: '#9333EA',
+          bg: '#F3E8FF',
+        },
+        {
+          label: 'Анкет СППР',
+          value: totalQuestionnaires.toLocaleString(),
+          icon: <ClipboardText size={28} />,
+          color: '#0F766E',
+          bg: '#CCFBF1',
+        },
+        {
+          label: 'Активних заявок',
+          value: pendingAdoptions.toLocaleString(),
+          icon: <ClockCounterClockwise size={28} />,
+          color: '#D97706',
+          bg: '#FEF3C7',
+        },
+        {
+          label: 'Заявок волонтерів',
+          value: pendingVolunteerRequests.toLocaleString(),
+          icon: <UserPlus size={28} />,
+          color: '#7C3AED',
+          bg: '#EDE9FE',
+        },
+        {
+          label: 'Заявок притулків',
+          value: pendingShelterRequests.toLocaleString(),
+          icon: <HouseLine size={28} />,
+          color: '#0284C7',
+          bg: '#E0F2FE',
+        },
+      ];
   const getStatusColor = (status) => {
     if (['ONLINE', 'STABLE', 'LOCAL'].includes(status)) return '#16A34A';
     if (['LOADING'].includes(status)) return '#94A3B8';
@@ -267,20 +335,62 @@ export default function AdminDashboard() {
             </p>
           </div>
           <div className="admin-dashboard-actions" style={styles.headerActions}>
-            <select
-              className="admin-shelter-select"
-              value={selectedShelterId}
-              onChange={(e) => setSelectedShelterId(e.target.value)}
-              style={styles.shelterSelect}
-              aria-label="Обрати область аналітики"
-            >
-              <option value="">Уся платформа</option>
-              {shelters.map((shelter) => (
-                <option key={shelter.id} value={shelter.id}>
-                  {shelter.name}
-                </option>
-              ))}
-            </select>
+            <div ref={scopeRef} className="admin-shelter-select" style={styles.scopeSelect}>
+              <button
+                type="button"
+                onClick={() => setIsScopeOpen((value) => !value)}
+                style={styles.scopeButton}
+                aria-haspopup="listbox"
+                aria-expanded={isScopeOpen}
+                aria-label="Обрати область аналітики"
+              >
+                <span style={styles.scopeButtonText}>{scopeLabel}</span>
+                <CaretDown
+                  size={16}
+                  weight="bold"
+                  style={{
+                    color: '#64748B',
+                    transform: isScopeOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                    transition: 'transform 0.2s ease',
+                    flexShrink: 0,
+                  }}
+                />
+              </button>
+              {isScopeOpen && (
+                <div style={styles.scopeMenu} role="listbox">
+                  <button
+                    type="button"
+                    onClick={() => selectScope('')}
+                    style={{
+                      ...styles.scopeOption,
+                      ...(selectedShelterId === '' ? styles.scopeOptionActive : {}),
+                    }}
+                    role="option"
+                    aria-selected={selectedShelterId === ''}
+                  >
+                    Загальні показники платформи
+                  </button>
+                  {shelters.map((shelter) => {
+                    const isActive = String(selectedShelterId) === String(shelter.id);
+                    return (
+                      <button
+                        key={shelter.id}
+                        type="button"
+                        onClick={() => selectScope(String(shelter.id))}
+                        style={{
+                          ...styles.scopeOption,
+                          ...(isActive ? styles.scopeOptionActive : {}),
+                        }}
+                        role="option"
+                        aria-selected={isActive}
+                      >
+                        {shelter.name}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
             <button
               onClick={() => fetchAnalytics(true)}
               disabled={isRefreshing}
@@ -481,7 +591,7 @@ export default function AdminDashboard() {
             .admin-dashboard-root .details-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
             .admin-dashboard-root .admin-dashboard-header { flex-direction: column !important; align-items: flex-start !important; gap: 20px !important; }
             .admin-dashboard-root .admin-dashboard-actions { width: 100% !important; }
-            .admin-dashboard-root .admin-shelter-select { width: 100% !important; }
+            .admin-dashboard-root .admin-shelter-select { width: 100% !important; max-width: 100% !important; }
             .admin-dashboard-root .refresh-btn { width: 100% !important; justify-content: center !important; }
           }
           @media (max-width: 520px) {
@@ -515,17 +625,64 @@ const styles = {
     gap: '12px',
     flexWrap: 'wrap',
   },
-  shelterSelect: {
+  scopeSelect: {
+    position: 'relative',
+    minWidth: '260px',
+    maxWidth: '360px',
+  },
+  scopeButton: {
+    width: '100%',
     minHeight: '46px',
-    minWidth: '240px',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '12px',
     backgroundColor: '#FFFFFF',
     border: '1px solid #E2E8F0',
     borderRadius: '14px',
     color: '#0F172A',
     fontWeight: '700',
     fontSize: '14px',
-    padding: '0 14px',
+    padding: '0 14px 0 16px',
     outline: 'none',
+    cursor: 'pointer',
+  },
+  scopeButtonText: {
+    minWidth: 0,
+    overflow: 'hidden',
+    textOverflow: 'ellipsis',
+    whiteSpace: 'nowrap',
+  },
+  scopeMenu: {
+    position: 'absolute',
+    top: 'calc(100% + 8px)',
+    left: 0,
+    right: 0,
+    zIndex: 40,
+    backgroundColor: '#FFFFFF',
+    border: '1px solid #E2E8F0',
+    borderRadius: '14px',
+    boxShadow: '0 18px 36px -18px rgba(15, 23, 42, 0.35)',
+    padding: '6px',
+    maxHeight: '260px',
+    overflowY: 'auto',
+  },
+  scopeOption: {
+    width: '100%',
+    border: 'none',
+    backgroundColor: 'transparent',
+    color: '#334155',
+    borderRadius: '10px',
+    padding: '10px 12px',
+    textAlign: 'left',
+    fontSize: '14px',
+    fontWeight: '700',
+    cursor: 'pointer',
+    overflowWrap: 'anywhere',
+  },
+  scopeOptionActive: {
+    backgroundColor: '#FFF7ED',
+    color: '#EA580C',
   },
   title: {
     fontSize: '32px',

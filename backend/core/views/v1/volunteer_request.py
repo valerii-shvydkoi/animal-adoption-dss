@@ -2,7 +2,12 @@ import logging
 from rest_framework import viewsets, permissions, filters, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from drf_spectacular.utils import extend_schema_view, extend_schema
+from drf_spectacular.utils import (
+    OpenApiParameter,
+    OpenApiTypes,
+    extend_schema_view,
+    extend_schema,
+)
 from django.db import transaction
 from django.core.exceptions import ValidationError
 
@@ -17,9 +22,56 @@ logger = logging.getLogger(__name__)
 
 @extend_schema_view(
     list=extend_schema(
-        summary="Список заявок на верифікацію (для admin/shelter_manager)"
+        tags=["Заявки на роль"],
+        summary="Переглянути мої заявки на роль",
+        description="Повертає заявки поточного користувача або заявки притулку для менеджера.",
+        parameters=[
+            OpenApiParameter(
+                name="page",
+                description="Номер сторінки результатів.",
+                required=False,
+                type=int,
+            ),
+            OpenApiParameter(
+                name="search",
+                description="Пошук за email, містом або назвою притулку.",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                name="status",
+                description="Фільтр за статусом заявки.",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                name="is_new_shelter",
+                description="Показати заявки на новий притулок або на волонтерство.",
+                required=False,
+                type=bool,
+            ),
+        ],
     ),
-    create=extend_schema(summary="Подати заявку на волонтерство/новий притулок"),
+    retrieve=extend_schema(
+        tags=["Заявки на роль"],
+        summary="Отримати деталі заявки на роль",
+        parameters=[
+            OpenApiParameter(
+                "id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="Ідентифікатор заявки на роль.",
+            )
+        ],
+    ),
+    create=extend_schema(
+        tags=["Заявки на роль"],
+        summary="Подати заявку на волонтерство або новий притулок",
+        description="Створює заявку на приєднання до притулку або реєстрацію нового притулку.",
+    ),
+    update=extend_schema(exclude=True),
+    partial_update=extend_schema(exclude=True),
+    destroy=extend_schema(exclude=True),
 )
 class VolunteerRequestViewSet(viewsets.ModelViewSet):
     queryset = VolunteerRequest.objects.all().select_related("user", "shelter")
@@ -83,6 +135,19 @@ class VolunteerRequestViewSet(viewsets.ModelViewSet):
 
         return queryset
 
+    @extend_schema(
+        tags=["Заявки на роль"],
+        summary="Схвалити заявку на роль",
+        parameters=[
+            OpenApiParameter(
+                "id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="Ідентифікатор заявки на роль.",
+            )
+        ],
+        responses=OpenApiTypes.OBJECT,
+    )
     @action(detail=True, methods=["post"], url_path="approve")
     def approve(self, request, pk=None):
         volunteer_request = self.get_object()
@@ -213,6 +278,19 @@ class VolunteerRequestViewSet(viewsets.ModelViewSet):
             status=status.HTTP_200_OK,
         )
 
+    @extend_schema(
+        tags=["Заявки на роль"],
+        summary="Відхилити заявку на роль",
+        parameters=[
+            OpenApiParameter(
+                "id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="Ідентифікатор заявки на роль.",
+            )
+        ],
+        responses=OpenApiTypes.OBJECT,
+    )
     @action(detail=True, methods=["post"], url_path="reject")
     def reject(self, request, pk=None):
         volunteer_request = self.get_object()
@@ -245,3 +323,97 @@ class VolunteerRequestViewSet(viewsets.ModelViewSet):
         return Response(
             {"detail": "Заявку успішно відхилено."}, status=status.HTTP_200_OK
         )
+
+
+@extend_schema_view(
+    list=extend_schema(
+        tags=["Адміністрування заявок"],
+        summary="Переглянути заявки на верифікацію",
+        description=(
+            "Повертає заявки на волонтерство та реєстрацію притулків для "
+            "адміністратора або менеджера відповідного притулку."
+        ),
+        parameters=[
+            OpenApiParameter(
+                name="page",
+                description="Номер сторінки результатів.",
+                required=False,
+                type=int,
+            ),
+            OpenApiParameter(
+                name="search",
+                description="Пошук за email, містом або назвою притулку.",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                name="status",
+                description="Фільтр за статусом заявки.",
+                required=False,
+                type=str,
+            ),
+            OpenApiParameter(
+                name="is_new_shelter",
+                description="Показати заявки на новий притулок або на волонтерство.",
+                required=False,
+                type=bool,
+            ),
+        ],
+    ),
+    retrieve=extend_schema(
+        tags=["Адміністрування заявок"],
+        summary="Отримати деталі заявки на верифікацію",
+        parameters=[
+            OpenApiParameter(
+                "id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="Ідентифікатор заявки на верифікацію.",
+            )
+        ],
+    ),
+    create=extend_schema(exclude=True),
+    update=extend_schema(exclude=True),
+    partial_update=extend_schema(exclude=True),
+    destroy=extend_schema(exclude=True),
+)
+class AdminVolunteerRequestViewSet(VolunteerRequestViewSet):
+    def create(self, request, *args, **kwargs):
+        return Response(
+            {"detail": "Створення заявок доступне через публічний маршрут."},
+            status=status.HTTP_405_METHOD_NOT_ALLOWED,
+        )
+
+    @extend_schema(
+        tags=["Адміністрування заявок"],
+        summary="Схвалити заявку на верифікацію",
+        parameters=[
+            OpenApiParameter(
+                "id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="Ідентифікатор заявки на верифікацію.",
+            )
+        ],
+        responses=OpenApiTypes.OBJECT,
+    )
+    @action(detail=True, methods=["post"], url_path="approve")
+    def approve(self, request, pk=None):
+        return super().approve(request, pk=pk)
+
+    @extend_schema(
+        tags=["Адміністрування заявок"],
+        summary="Відхилити заявку на верифікацію",
+        parameters=[
+            OpenApiParameter(
+                "id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="Ідентифікатор заявки на верифікацію.",
+            )
+        ],
+        responses=OpenApiTypes.OBJECT,
+    )
+    @action(detail=True, methods=["post"], url_path="reject")
+    def reject(self, request, pk=None):
+        return super().reject(request, pk=pk)

@@ -6,19 +6,54 @@ from core.permissions import IsVolunteer
 
 
 @extend_schema_view(
-    list=extend_schema(summary="Заявки на тварин мого притулку"),
+    list=extend_schema(
+        tags=["Кабінет волонтера"],
+        summary="Заявки на тварин мого притулку",
+        parameters=[
+            OpenApiParameter(
+                "page",
+                type=int,
+                location=OpenApiParameter.QUERY,
+                description="Номер сторінки результатів.",
+            )
+        ],
+    ),
     retrieve=extend_schema(
+        tags=["Кабінет волонтера"],
         summary="Деталі заявки (для волонтера)",
-        parameters=[OpenApiParameter("id", type=int, location=OpenApiParameter.PATH)],
+        parameters=[
+            OpenApiParameter(
+                "id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="Ідентифікатор заявки на адаптацію.",
+            )
+        ],
     ),
     create=extend_schema(exclude=True),
     update=extend_schema(
+        tags=["Кабінет волонтера"],
         summary="Оновити статус заявки",
-        parameters=[OpenApiParameter("id", type=int, location=OpenApiParameter.PATH)],
+        parameters=[
+            OpenApiParameter(
+                "id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="Ідентифікатор заявки на адаптацію.",
+            )
+        ],
     ),
     partial_update=extend_schema(
+        tags=["Кабінет волонтера"],
         summary="Частково оновити статус заявки",
-        parameters=[OpenApiParameter("id", type=int, location=OpenApiParameter.PATH)],
+        parameters=[
+            OpenApiParameter(
+                "id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="Ідентифікатор заявки на адаптацію.",
+            )
+        ],
     ),
     destroy=extend_schema(exclude=True),
 )

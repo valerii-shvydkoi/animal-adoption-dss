@@ -1352,7 +1352,12 @@ const PetDetails = () => {
                             overflowWrap: 'anywhere',
                           }}
                         >
-                          <Info size={17} weight="bold" color={tokens.brandPrimary} />
+                          <Info
+                            size={17}
+                            weight="bold"
+                            color={tokens.brandPrimary}
+                            style={{ flexShrink: 0, marginTop: '3px' }}
+                          />
                           <span>
                             <strong style={{ color: tokens.textPrimary }}>Про притулок:</strong>{' '}
                             {shelterDetails.description}

@@ -82,6 +82,7 @@ class QuestionnaireViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
     @extend_schema(
+        tags=["Анкета підбору"],
         summary="Отримання результатів останньої анкети користувача",
         responses={200: OpenApiTypes.OBJECT},
     )
@@ -100,7 +101,9 @@ class QuestionnaireViewSet(viewsets.ViewSet):
         return Response(result.snapshot_data, status=status.HTTP_200_OK)
 
     @extend_schema(
+        tags=["Анкета підбору"],
         summary="Відправка анкети AHP",
+        description="Зберігає профіль користувача та формує узгоджені AHP-ваги для підбору.",
         request=SmartQuestionnaireInputSerializer,
         responses={201: OpenApiTypes.OBJECT},
     )

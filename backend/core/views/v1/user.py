@@ -11,7 +11,7 @@ from rest_framework.response import Response
 from rest_framework.throttling import ScopedRateThrottle
 from rest_framework.views import APIView
 from drf_spectacular.utils import OpenApiTypes, extend_schema
-from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from django.contrib.auth import get_user_model
 
 from core.models import Pet
@@ -26,6 +26,11 @@ from core.serializers.user_serializers import (
 User = get_user_model()
 
 
+@extend_schema(
+    tags=["Автентифікація"],
+    summary="Зареєструвати користувача",
+    description="Створює обліковий запис користувача та готує підтвердження email.",
+)
 class RegisterView(generics.CreateAPIView):
     serializer_class = UserRegistrationSerializer
     permission_classes = [AllowAny]
@@ -44,6 +49,11 @@ class RegisterView(generics.CreateAPIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@extend_schema(
+    tags=["Профіль користувача"],
+    summary="Отримати або оновити профіль",
+    description="Повертає дані поточного користувача або частково оновлює контактну інформацію.",
+)
 class ProfileView(generics.RetrieveUpdateAPIView):
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated]
@@ -52,16 +62,34 @@ class ProfileView(generics.RetrieveUpdateAPIView):
         return self.request.user
 
 
+@extend_schema(
+    tags=["Автентифікація"],
+    summary="Увійти в систему",
+    description="Повертає JWT access/refresh токени для підтвердженого користувача.",
+)
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
     throttle_classes = [ScopedRateThrottle]
     throttle_scope = "login"
 
 
+@extend_schema(
+    tags=["Автентифікація"],
+    summary="Оновити access токен",
+    description="Приймає refresh токен і повертає новий JWT access токен.",
+)
+class CustomTokenRefreshView(TokenRefreshView):
+    pass
+
+
 class VerifyEmailView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(responses=OpenApiTypes.OBJECT)
+    @extend_schema(
+        tags=["Автентифікація"],
+        summary="Перевірити посилання підтвердження email",
+        responses=OpenApiTypes.OBJECT,
+    )
     def get(self, request, uidb64, token, *args, **kwargs):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
@@ -79,7 +107,12 @@ class VerifyEmailView(APIView):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    @extend_schema(request=None, responses=OpenApiTypes.OBJECT)
+    @extend_schema(
+        tags=["Автентифікація"],
+        summary="Підтвердити email користувача",
+        request=None,
+        responses=OpenApiTypes.OBJECT,
+    )
     def post(self, request, uidb64, token, *args, **kwargs):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
@@ -114,6 +147,8 @@ class PasswordResetRequestView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(
+        tags=["Автентифікація"],
+        summary="Надіслати лист для відновлення пароля",
         request=PasswordResetRequestSerializer,
         responses=OpenApiTypes.OBJECT,
     )
@@ -176,7 +211,11 @@ class PasswordResetRequestView(APIView):
 class PasswordResetConfirmView(APIView):
     permission_classes = [AllowAny]
 
-    @extend_schema(responses=OpenApiTypes.OBJECT)
+    @extend_schema(
+        tags=["Автентифікація"],
+        summary="Перевірити посилання скидання пароля",
+        responses=OpenApiTypes.OBJECT,
+    )
     def get(self, request, uidb64, token):
         try:
             uid = force_str(urlsafe_base64_decode(uidb64))
@@ -189,6 +228,8 @@ class PasswordResetConfirmView(APIView):
         return Response({"status": "invalid"}, status=status.HTTP_400_BAD_REQUEST)
 
     @extend_schema(
+        tags=["Автентифікація"],
+        summary="Змінити пароль за токеном",
         request=PasswordResetConfirmSerializer,
         responses=OpenApiTypes.OBJECT,
     )
@@ -222,12 +263,22 @@ class PasswordResetConfirmView(APIView):
 class SyncFavoritesView(APIView):
     permission_classes = [IsAuthenticated]
 
-    @extend_schema(responses=OpenApiTypes.OBJECT)
+    @extend_schema(
+        tags=["Обране"],
+        summary="Отримати обрані картки користувача",
+        responses=OpenApiTypes.OBJECT,
+    )
     def get(self, request):
         fav_ids = list(request.user.favorites.values_list("id", flat=True))
         return Response({"favorites": fav_ids}, status=status.HTTP_200_OK)
 
-    @extend_schema(request=OpenApiTypes.OBJECT, responses=OpenApiTypes.OBJECT)
+    @extend_schema(
+        tags=["Обране"],
+        summary="Синхронізувати обране після входу",
+        description="Переносить гостьові обрані картки в профіль авторизованого користувача.",
+        request=OpenApiTypes.OBJECT,
+        responses=OpenApiTypes.OBJECT,
+    )
     def post(self, request):
         pet_ids = request.data.get("pet_ids", [])
         if isinstance(pet_ids, list):
@@ -312,6 +363,9 @@ class AdminUserListView(AdminUserManagementView):
     http_method_names = ["get"]
 
     @extend_schema(
+        tags=["Адміністрування користувачів"],
+        summary="Отримати список користувачів",
+        description="Повертає всі облікові записи для кабінету адміністратора.",
         operation_id="admin_users_list",
         responses=UserSerializer(many=True),
     )
@@ -323,6 +377,9 @@ class AdminUserDetailView(AdminUserManagementView):
     http_method_names = ["patch"]
 
     @extend_schema(
+        tags=["Адміністрування користувачів"],
+        summary="Оновити користувача",
+        description="Дозволяє адміністратору змінити роль або статус облікового запису.",
         operation_id="admin_user_partial_update",
         request=UserSerializer,
         responses=UserSerializer,

@@ -16,12 +16,25 @@ from django.apps import apps
 
 
 @extend_schema_view(
-    list=extend_schema(summary="Список моїх заявок на адаптацію"),
+    list=extend_schema(
+        tags=["Заявки на адаптацію"],
+        summary="Список моїх заявок на адаптацію",
+        parameters=[
+            OpenApiParameter(
+                "page",
+                type=int,
+                location=OpenApiParameter.QUERY,
+                description="Номер сторінки результатів.",
+            )
+        ],
+    ),
     retrieve=extend_schema(
+        tags=["Заявки на адаптацію"],
         summary="Деталі заявки",
         parameters=[OpenApiParameter("id", type=int, location=OpenApiParameter.PATH)],
     ),
     create=extend_schema(
+        tags=["Заявки на адаптацію"],
         summary="Створити нову заявку",
         description="Бронює тварину через атомарну транзакцію.",
     ),
@@ -50,6 +63,7 @@ class AdoptionRequestViewSet(viewsets.ModelViewSet):
         serializer.instance = instance
 
     @extend_schema(
+        tags=["Заявки на адаптацію"],
         summary="Скасувати заявку",
         description="Змінює статус на CANCELLED.",
         parameters=[OpenApiParameter("id", type=int, location=OpenApiParameter.PATH)],
@@ -67,6 +81,32 @@ class AdoptionRequestViewSet(viewsets.ModelViewSet):
         return Response({"status": "заявку скасовано"})
 
 
+@extend_schema_view(
+    list=extend_schema(
+        tags=["Кабінет волонтера"],
+        summary="Переглянути заявки притулку",
+        parameters=[
+            OpenApiParameter(
+                "page",
+                type=int,
+                location=OpenApiParameter.QUERY,
+                description="Номер сторінки результатів.",
+            )
+        ],
+    ),
+    retrieve=extend_schema(
+        tags=["Кабінет волонтера"],
+        summary="Отримати деталі заявки притулку",
+        parameters=[
+            OpenApiParameter(
+                "id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="Ідентифікатор заявки на адаптацію.",
+            )
+        ],
+    ),
+)
 class VolunteerAdoptionViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated, IsVolunteer]
     serializer_class = VolunteerAdoptionSerializer
@@ -183,6 +223,18 @@ class VolunteerAdoptionViewSet(viewsets.ReadOnlyModelViewSet):
                 }
         return serialized_data
 
+    @extend_schema(
+        tags=["Кабінет волонтера"],
+        summary="Позначити заявку як переглянуту",
+        parameters=[
+            OpenApiParameter(
+                "id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="Ідентифікатор заявки на адаптацію.",
+            )
+        ],
+    )
     @action(detail=True, methods=["post"])
     def review(self, request, pk=None):
         instance = self.get_object()
@@ -195,6 +247,18 @@ class VolunteerAdoptionViewSet(viewsets.ReadOnlyModelViewSet):
         instance.save(update_fields=["status", "updated_at"])
         return Response({"status": "Заявку позначено як переглянуту"})
 
+    @extend_schema(
+        tags=["Кабінет волонтера"],
+        summary="Схвалити заявку на адаптацію",
+        parameters=[
+            OpenApiParameter(
+                "id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="Ідентифікатор заявки на адаптацію.",
+            )
+        ],
+    )
     @action(detail=True, methods=["post"])
     def approve(self, request, pk=None):
         with transaction.atomic():
@@ -225,6 +289,18 @@ class VolunteerAdoptionViewSet(viewsets.ReadOnlyModelViewSet):
 
         return Response({"status": "Заявку схвалено, тварину знято з публікації"})
 
+    @extend_schema(
+        tags=["Кабінет волонтера"],
+        summary="Відхилити заявку на адаптацію",
+        parameters=[
+            OpenApiParameter(
+                "id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="Ідентифікатор заявки на адаптацію.",
+            )
+        ],
+    )
     @action(detail=True, methods=["post"])
     def reject(self, request, pk=None):
         instance = self.get_object()

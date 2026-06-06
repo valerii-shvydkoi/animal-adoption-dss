@@ -22,7 +22,7 @@ class ShelterAnalyticsView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["Shelter Analytics"],
+        tags=["Аналітика притулку"],
         summary="Отримати розширену аналітику для кабінету притулку",
         responses={200: ShelterAnalyticsSerializer, 403: dict},
     )
@@ -196,7 +196,7 @@ class ShelterAnalyticsView(APIView):
             return Response(self.get_empty_structure(), status=status.HTTP_200_OK)
 
     @extend_schema(
-        tags=["Shelter Analytics"],
+        tags=["Аналітика притулку"],
         summary="Повне або часткове оновлення інформації профілю притулку",
         request={
             "application/json": {
@@ -288,7 +288,7 @@ class ShelterAnalyticsView(APIView):
             )
 
     @extend_schema(
-        tags=["Shelter Analytics"],
+        tags=["Аналітика притулку"],
         summary="Видалити поточний притулок користувача",
         responses={204: None, 403: dict, 404: dict, 500: dict},
     )

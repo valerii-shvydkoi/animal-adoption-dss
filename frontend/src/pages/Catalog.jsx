@@ -372,12 +372,6 @@ const Catalog = () => {
     }, 300);
   };
   useEffect(() => {
-    if (hasQuestionnaireResult && filters.ordering === '-created_at') {
-      setFilters((prev) => ({
-        ...prev,
-        ordering: '-compatibility_score',
-      }));
-    }
     if (!hasQuestionnaireResult && filters.ordering === '-compatibility_score') {
       setFilters((prev) => ({
         ...prev,

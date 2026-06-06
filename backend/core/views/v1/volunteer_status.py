@@ -17,7 +17,7 @@ class MyVolunteerStatusView(APIView):
     permission_classes = [IsAuthenticated]
 
     @extend_schema(
-        tags=["Volunteer Status"],
+        tags=["Заявки на роль"],
         summary="Отримати статус моєї заявки на волонтерство",
         responses={200: VolunteerRequestSerializer, 404: dict},
     )

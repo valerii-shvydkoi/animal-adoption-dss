@@ -1,7 +1,7 @@
 from rest_framework import viewsets, permissions, status
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from drf_spectacular.utils import extend_schema
+from drf_spectacular.utils import OpenApiParameter, extend_schema, extend_schema_view
 from core.models import QuestionnaireResult, Pet
 from core.serializers.result_serializers import PetMatchSerializer, ResultSerializer
 from core.services.dss_matching_service import DSSMatchingService
@@ -16,6 +16,33 @@ URGENCY_ORDER = {
 }
 
 
+@extend_schema_view(
+    list=extend_schema(
+        tags=["Результати підбору"],
+        summary="Переглянути результати анкет",
+        description="Повертає збережені результати AHP-анкети поточного користувача.",
+        parameters=[
+            OpenApiParameter(
+                "page",
+                type=int,
+                location=OpenApiParameter.QUERY,
+                description="Номер сторінки результатів.",
+            )
+        ],
+    ),
+    retrieve=extend_schema(
+        tags=["Результати підбору"],
+        summary="Отримати результат анкети",
+        parameters=[
+            OpenApiParameter(
+                "id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="Ідентифікатор результату анкети.",
+            )
+        ],
+    ),
+)
 class ResultsViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ResultSerializer
@@ -30,8 +57,21 @@ class ResultsViewSet(viewsets.ReadOnlyModelViewSet):
             .order_by("-created_at")
         )
 
+    @extend_schema(
+        tags=["Результати підбору"],
+        summary="Отримати персональні рекомендації",
+        description="Формує топ тварин за AHP-вагами, кризовими обмеженнями та доступністю.",
+        parameters=[
+            OpenApiParameter(
+                "page",
+                type=int,
+                location=OpenApiParameter.QUERY,
+                description="Номер сторінки результатів.",
+            )
+        ],
+        responses=PetMatchSerializer(many=True),
+    )
     @action(detail=False, methods=["get"])
-    @extend_schema(responses=PetMatchSerializer(many=True))
     def matches(self, request):
         latest_result = self.get_queryset().first()
 

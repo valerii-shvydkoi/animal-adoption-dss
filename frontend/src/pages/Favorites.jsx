@@ -27,11 +27,20 @@ const tokens = {
 const Favorites = () => {
   const [favoritePets, setFavoritePets] = useState([]);
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth();
+  const { user, role } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
+  const currentRole = String(role || user?.role || 'USER').toUpperCase();
+  const hasQuestionnaireResult = currentRole === 'USER' && !!user?.has_questionnaire_result;
+  const shouldGateFavorites =
+    user?.isAuthenticated && (currentRole !== 'USER' || !hasQuestionnaireResult);
   const fetchFavorites = async (showSpinner = false) => {
     if (showSpinner) setLoading(true);
+    if (shouldGateFavorites) {
+      setFavoritePets([]);
+      setLoading(false);
+      return;
+    }
     const savedIds = getStoredFavoriteIds(user);
     if (savedIds.length === 0) {
       setFavoritePets([]);
@@ -39,16 +48,19 @@ const Favorites = () => {
       return;
     }
     try {
+      const ordering = hasQuestionnaireResult ? '-compatibility_score' : '-created_at';
       const response = await api.get(
-        `/pets/batch/?ids=${savedIds.join(',')}&ordering=-compatibility_score`
+        `/pets/batch/?ids=${savedIds.join(',')}&ordering=${ordering}`
       );
       const data = response.data;
       let petsData = data.results ? data.results : data;
-      petsData.sort((a, b) => {
-        const scoreA = a.compatibility_score || 0;
-        const scoreB = b.compatibility_score || 0;
-        return scoreB - scoreA;
-      });
+      if (hasQuestionnaireResult) {
+        petsData.sort((a, b) => {
+          const scoreA = a.compatibility_score || 0;
+          const scoreB = b.compatibility_score || 0;
+          return scoreB - scoreA;
+        });
+      }
       setFavoritePets(petsData);
     } catch (err) {
       console.error('Не вдалося завантажити обраних тварин:', err);
@@ -63,7 +75,7 @@ const Favorites = () => {
     };
     window.addEventListener('favoritesUpdated', handleUpdate);
     return () => window.removeEventListener('favoritesUpdated', handleUpdate);
-  }, [user]);
+  }, [user, hasQuestionnaireResult, shouldGateFavorites]);
   const handleCheckCompatibility = () => {
     if (user?.isAuthenticated) {
       navigate('/questionnaire', {
@@ -237,7 +249,96 @@ const Favorites = () => {
         </p>
       </div>
 
-      {loading ? (
+      {shouldGateFavorites ? (
+        <div
+          style={{
+            textAlign: 'center',
+            padding: '50px 20px',
+            background: tokens.bgWhite,
+            borderRadius: '24px',
+            border: `1px solid ${tokens.borderDefault}`,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            maxWidth: '640px',
+            margin: '20px auto 0 auto',
+            boxSizing: 'border-box',
+          }}
+        >
+          <div style={{ marginBottom: '18px', color: tokens.brandPrimary }}>
+            <MagicWand size={46} weight="bold" />
+          </div>
+          <h3
+            style={{
+              margin: '0 0 8px 0',
+              color: tokens.textPrimary,
+              fontSize: '22px',
+              fontWeight: '800',
+            }}
+          >
+            {currentRole === 'USER'
+              ? 'Обране відкриється після анкети'
+              : 'Обране доступне користувачам каталогу'}
+          </h3>
+          <p
+            style={{
+              margin: '0 0 24px 0',
+              fontSize: '15px',
+              color: tokens.textSecondary,
+              fontWeight: '400',
+              lineHeight: '1.5',
+              maxWidth: '520px',
+            }}
+          >
+            {currentRole === 'USER'
+              ? 'Заповніть анкету підбору, щоб система могла безпечно показати персональний шорт-лист і пояснення сумісності.'
+              : 'Кабінети волонтера, менеджера та адміністратора працюють із заявками, тваринами й аналітикою. Персональне обране використовується тільки для ролі користувача.'}
+          </p>
+          <div
+            style={{
+              display: 'flex',
+              gap: '12px',
+              justifyContent: 'center',
+              flexWrap: 'wrap',
+            }}
+          >
+            {currentRole === 'USER' && (
+              <Link
+                to="/questionnaire"
+                state={{ from: '/favorites' }}
+                style={{
+                  padding: '12px 24px',
+                  background: tokens.brandPrimary,
+                  color: '#FFFFFF',
+                  borderRadius: '12px',
+                  fontWeight: '700',
+                  textDecoration: 'none',
+                  fontSize: '15px',
+                  boxShadow: '0 8px 20px -5px rgba(234, 88, 12, 0.4)',
+                }}
+              >
+                Пройти анкету
+              </Link>
+            )}
+            <Link
+              to="/"
+              style={{
+                padding: '12px 24px',
+                background: tokens.brandPrimaryLight,
+                color: tokens.brandPrimary,
+                borderRadius: '12px',
+                fontWeight: '700',
+                textDecoration: 'none',
+                fontSize: '15px',
+                border: `1px solid ${tokens.brandPrimaryBorder}`,
+              }}
+            >
+              До каталогу
+            </Link>
+          </div>
+        </div>
+      ) : loading ? (
         <div
           style={{
             textAlign: 'center',

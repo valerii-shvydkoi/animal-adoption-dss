@@ -2,13 +2,15 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from django.contrib import admin
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from rest_framework_simplejwt.views import TokenRefreshView
 
 from core.views.v1.pets import PetViewSet
 from core.views.v1.questionnaire import QuestionnaireViewSet
 from core.views.v1.results import ResultsViewSet
 from core.views.v1.adoption import AdoptionRequestViewSet, VolunteerAdoptionViewSet
-from core.views.v1.volunteer_request import VolunteerRequestViewSet
+from core.views.v1.volunteer_request import (
+    VolunteerRequestViewSet,
+    AdminVolunteerRequestViewSet,
+)
 from core.views.v1.volunteer_cabinet import VolunteerCabinetViewSet
 from core.views.v1.health import health_check
 from core.views.v1.shelter import ShelterViewSet
@@ -33,6 +35,7 @@ from core.views.v1.user import (
     AdminUserDetailView,
     AdminUserListView,
     CustomTokenObtainPairView,
+    CustomTokenRefreshView,
 )
 
 from django.conf import settings
@@ -58,7 +61,9 @@ volunteer_router.register(
 
 admin_router = DefaultRouter(trailing_slash=True)
 admin_router.register(
-    r"volunteer-requests", VolunteerRequestViewSet, basename="admin-volunteer-request"
+    r"volunteer-requests",
+    AdminVolunteerRequestViewSet,
+    basename="admin-volunteer-request",
 )
 
 urlpatterns = [
@@ -113,7 +118,9 @@ urlpatterns = [
         name="token_obtain_pair",
     ),
     path(
-        "api/v1/auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"
+        "api/v1/auth/token/refresh/",
+        CustomTokenRefreshView.as_view(),
+        name="token_refresh",
     ),
     path(
         "api/v1/auth/password-reset/",
