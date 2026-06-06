@@ -257,7 +257,7 @@ class AdminUserManagementView(APIView):
         user_role = getattr(request.user, "role", None)
         if user_role and str(user_role).upper() == "ADMIN":
             return True
-        if request.user.is_superuser or request.user.is_staff:
+        if request.user.is_superuser:
             return True
         return False
 

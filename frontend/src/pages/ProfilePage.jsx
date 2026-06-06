@@ -522,7 +522,7 @@ const UserProfile = () => {
                     className="name-input"
                     value={userProfile.last_name || ''}
                     onChange={handleLastNameChange}
-                    placeholder="Необов'язково"
+                    placeholder="Введіть прізвище"
                     style={inputStyle}
                   />
                   <span
@@ -593,17 +593,18 @@ const UserProfile = () => {
               </div>
             </div>
 
-            <div
-              style={{
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '10px',
-                background: '#F8FAFC',
-                padding: '16px 20px',
-                borderRadius: '16px',
-                border: '1px solid #E2E8F0',
-              }}
-            >
+            {isRegularUser && (
+              <div
+                style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '10px',
+                  background: '#F8FAFC',
+                  padding: '16px 20px',
+                  borderRadius: '16px',
+                  border: '1px solid #E2E8F0',
+                }}
+              >
               <span
                 style={{
                   fontSize: '14px',
@@ -671,7 +672,8 @@ const UserProfile = () => {
                   </span>
                 </div>
               )}
-            </div>
+              </div>
+            )}
           </div>
 
           <hr
@@ -1225,7 +1227,7 @@ const UserProfile = () => {
                   ))}
                 </div>
               </div>
-            </div>
+              </div>
           </div>
           ) : (
           <div
@@ -1285,7 +1287,7 @@ const UserProfile = () => {
                 ' Профіль менеджера використовується для керування притулком, командою, картками тварин і заявками.'}
               {currentRole === 'ADMIN' &&
                 ' Адміністративний профіль використовується для реєстру користувачів, притулків, журналів і системної аналітики.'}
-            </div>
+              </div>
           </div>
           )}
 

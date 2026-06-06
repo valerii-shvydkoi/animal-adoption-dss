@@ -5,7 +5,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import BasePermission, IsAuthenticated
 from rest_framework import status
-from drf_spectacular.utils import OpenApiTypes, extend_schema
+from drf_spectacular.utils import OpenApiParameter, OpenApiTypes, extend_schema
 
 from core.models import (
     AdoptionRequest,
@@ -26,11 +26,10 @@ class IsPlatformAdmin(BasePermission):
             return False
 
         user_role = str(getattr(request.user, "role", "")).upper().strip()
-        return (
-            getattr(request.user, "is_staff", False)
-            or getattr(request.user, "is_superuser", False)
-            or user_role in ["ADMIN", "SUPERUSER"]
-        )
+        return getattr(request.user, "is_superuser", False) or user_role in [
+            "ADMIN",
+            "SUPERUSER",
+        ]
 
 
 def safe_read_logs(limit=10):
@@ -263,35 +262,94 @@ class ShelterDeleteView(APIView):
 class GlobalAnalyticsView(APIView):
     permission_classes = [IsPlatformAdmin]
 
-    @extend_schema(responses=OpenApiTypes.OBJECT)
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="shelter_id",
+                description="ID притулку для перегляду його окремої аналітики",
+                required=False,
+                type=int,
+            )
+        ],
+        responses=OpenApiTypes.OBJECT,
+    )
     def get(self, request):
         try:
-            total_pets = Pet.objects.count()
-            active_users = User.objects.filter(is_active=True).count()
-            total_shelters = Shelter.objects.count()
-            successful_adoptions = AdoptionRequest.objects.filter(
-                status="APPROVED"
-            ).count()
-            total_adoption_requests = AdoptionRequest.objects.count()
-            total_questionnaires = QuestionnaireResult.objects.count()
-            pending_adoptions = AdoptionRequest.objects.filter(
-                status__in=[AdoptionStatus.PENDING, AdoptionStatus.REVIEWED]
-            ).count()
-            pending_volunteer_requests = VolunteerRequest.objects.filter(
-                status=RequestStatus.PENDING,
-                is_new_shelter=False,
-            ).count()
-            pending_shelter_requests = VolunteerRequest.objects.filter(
-                status=RequestStatus.PENDING,
-                is_new_shelter=True,
-            ).count()
+            selected_shelter = None
+            selected_shelter_id = request.query_params.get("shelter_id")
+            if selected_shelter_id:
+                selected_shelter = Shelter.objects.filter(
+                    id=selected_shelter_id
+                ).first()
+
+            if selected_shelter:
+                pet_queryset = Pet.objects.filter(
+                    shelter=selected_shelter, deleted_at__isnull=True
+                )
+                adoption_queryset = AdoptionRequest.objects.filter(
+                    pet__shelter=selected_shelter
+                )
+                volunteer_queryset = VolunteerRequest.objects.filter(
+                    shelter=selected_shelter
+                )
+                total_pets = pet_queryset.count()
+                active_users = Volunteer.objects.filter(
+                    shelter=selected_shelter
+                ).count() + 1
+                total_shelters = 1
+                successful_adoptions = adoption_queryset.filter(
+                    status="APPROVED"
+                ).count()
+                total_adoption_requests = adoption_queryset.count()
+                total_questionnaires = (
+                    QuestionnaireResult.objects.filter(
+                        questionnaire__user__adoption_requests__pet__shelter=(
+                            selected_shelter
+                        )
+                    )
+                    .distinct()
+                    .count()
+                )
+                pending_adoptions = adoption_queryset.filter(
+                    status__in=[AdoptionStatus.PENDING, AdoptionStatus.REVIEWED]
+                ).count()
+                pending_volunteer_requests = volunteer_queryset.filter(
+                    status=RequestStatus.PENDING,
+                    is_new_shelter=False,
+                ).count()
+                pending_shelter_requests = 0
+            else:
+                total_pets = Pet.objects.count()
+                active_users = User.objects.filter(is_active=True).count()
+                total_shelters = Shelter.objects.count()
+                successful_adoptions = AdoptionRequest.objects.filter(
+                    status="APPROVED"
+                ).count()
+                total_adoption_requests = AdoptionRequest.objects.count()
+                total_questionnaires = QuestionnaireResult.objects.count()
+                pending_adoptions = AdoptionRequest.objects.filter(
+                    status__in=[AdoptionStatus.PENDING, AdoptionStatus.REVIEWED]
+                ).count()
+                pending_volunteer_requests = VolunteerRequest.objects.filter(
+                    status=RequestStatus.PENDING,
+                    is_new_shelter=False,
+                ).count()
+                pending_shelter_requests = VolunteerRequest.objects.filter(
+                    status=RequestStatus.PENDING,
+                    is_new_shelter=True,
+                ).count()
+
             adoption_conversion_rate = (
                 int((successful_adoptions / total_adoption_requests) * 100)
                 if total_adoption_requests > 0
                 else 0
             )
         except Exception:
-            total_pets, active_users, total_shelters, successful_adoptions = 0, 0, 0, 0
+            selected_shelter = None
+            total_pets = 0
+            active_users = 0
+            total_shelters = 0
+            successful_adoptions = 0
             total_questionnaires = 0
             pending_adoptions = 0
             pending_volunteer_requests = 0
@@ -312,6 +370,12 @@ class GlobalAnalyticsView(APIView):
                 "pending_shelter_requests": pending_shelter_requests,
                 "adoption_conversion_rate": adoption_conversion_rate,
                 "recent_logs": recent_events,
+                "scope": "shelter" if selected_shelter else "global",
+                "selected_shelter": (
+                    {"id": selected_shelter.id, "name": selected_shelter.name}
+                    if selected_shelter
+                    else None
+                ),
             },
             status=status.HTTP_200_OK,
         )

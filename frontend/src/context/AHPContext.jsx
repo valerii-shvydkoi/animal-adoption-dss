@@ -1,6 +1,24 @@
 import React, { createContext, useState, useEffect } from 'react';
 import api from '../services/api';
 export const AHPContext = createContext(null);
+const createDefaultUserProfile = () => ({
+  name: '',
+  last_name: '',
+  phone: '',
+  has_car: false,
+  has_shelter: false,
+  has_elevator: false,
+  has_children: false,
+  has_cats: false,
+  has_dogs: false,
+  available_walk_hours: 1,
+  has_pet_experience: false,
+  floor: 1,
+  preferred_species: 'ANY',
+  preferred_age: 'ANY',
+  has_pending_volunteer: false,
+  has_pending_shelter: false,
+});
 export const AHPProvider = ({ children }) => {
   const [categories, setCategories] = useState({
     safety: [
@@ -56,24 +74,7 @@ export const AHPProvider = ({ children }) => {
     physical: null,
     psychological: null,
   });
-  const [userProfile, setUserProfile] = useState({
-    name: '',
-    last_name: '',
-    phone: '',
-    has_car: false,
-    has_shelter: false,
-    has_elevator: false,
-    has_children: false,
-    has_cats: false,
-    has_dogs: false,
-    available_walk_hours: 1,
-    has_pet_experience: false,
-    floor: 1,
-    preferred_species: 'ANY',
-    preferred_age: 'ANY',
-    has_pending_volunteer: false,
-    has_pending_shelter: false,
-  });
+  const [userProfile, setUserProfile] = useState(createDefaultUserProfile);
   const [globalData, setGlobalData] = useState({
     globalOrder: ['safety', 'physical', 'psychological'],
     globalIntensities: null,
@@ -100,6 +101,7 @@ export const AHPProvider = ({ children }) => {
     const fetchProfile = async () => {
       const token = localStorage.getItem('accessToken');
       if (!token) {
+        setUserProfile(createDefaultUserProfile());
         setIsProfileLoading(false);
         return;
       }
@@ -211,6 +213,19 @@ export const AHPProvider = ({ children }) => {
       isMounted = false;
     };
   }, [profileReloadKey]);
+  useEffect(() => {
+    const resetProfileState = () => {
+      // Профіль анкети не має переходити між акаунтами після зміни ролі або виходу.
+      setUserProfile(createDefaultUserProfile());
+      setProfileReloadKey((key) => key + 1);
+    };
+    window.addEventListener('authChanged', resetProfileState);
+    window.addEventListener('authExpired', resetProfileState);
+    return () => {
+      window.removeEventListener('authChanged', resetProfileState);
+      window.removeEventListener('authExpired', resetProfileState);
+    };
+  }, []);
   const reorderItems = (category, startIndex, endIndex) => {
     setCategories((prev) => {
       const currentItems = prev[category];
@@ -369,22 +384,6 @@ export const AHPProvider = ({ children }) => {
   };
   const syncAuthAndState = (profileToSend) => {
     setUserProfile(profileToSend);
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-      try {
-        const parsed = JSON.parse(storedUser);
-        parsed.name = profileToSend.name;
-        parsed.first_name = profileToSend.name;
-        parsed.last_name = profileToSend.last_name || '';
-        if (parsed.profile) {
-          parsed.profile.first_name = profileToSend.name;
-          parsed.profile.last_name = profileToSend.last_name || '';
-        }
-        localStorage.setItem('user', JSON.stringify(parsed));
-      } catch (e) {
-        console.warn("Неможливо оновити об'єкт користувача у сховищі.");
-      }
-    }
     window.dispatchEvent(
       new CustomEvent('userUpdated', {
         detail: {

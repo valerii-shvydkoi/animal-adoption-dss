@@ -1,6 +1,12 @@
 import React, { useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { ArrowLeft, Coins, HandHeart, ShieldCheck, Spinner } from '@phosphor-icons/react';
+import {
+  ArrowLeft,
+  Coins,
+  CreditCard,
+  HandHeart,
+  Spinner,
+} from '@phosphor-icons/react';
 import { useFeedback } from '../context/FeedbackContext';
 const tokens = {
   brandPrimary: '#EA580C',
@@ -22,6 +28,11 @@ const VirtualAdopt = () => {
   const [customAmount, setCustomAmount] = useState('');
   const [isMonthly, setIsMonthly] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [payerName, setPayerName] = useState('');
+  const [payerEmail, setPayerEmail] = useState('');
+  const [cardNumber, setCardNumber] = useState('');
+  const [expiry, setExpiry] = useState('');
+  const [cvv, setCvv] = useState('');
   const handleCustomChange = (e) => {
     const val = e.target.value.replace(/\D/g, '');
     setCustomAmount(val);
@@ -31,6 +42,20 @@ const VirtualAdopt = () => {
     setSelectedAmount(amount);
     setCustomAmount('');
   };
+  const handleCardNumberChange = (e) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 16);
+    setCardNumber(digits.replace(/(\d{4})(?=\d)/g, '$1 '));
+  };
+  const handleExpiryChange = (e) => {
+    const digits = e.target.value.replace(/\D/g, '').slice(0, 4);
+    setExpiry(digits.length > 2 ? `${digits.slice(0, 2)}/${digits.slice(2)}` : digits);
+  };
+  const isValidExpiry = (value) => {
+    const match = /^(\d{2})\/(\d{2})$/.exec(value);
+    if (!match) return false;
+    const month = Number(match[1]);
+    return month >= 1 && month <= 12;
+  };
   const handleSubmit = (e) => {
     e.preventDefault();
     const finalAmount = selectedAmount === 'custom' ? Number(customAmount) : selectedAmount;
@@ -39,6 +64,32 @@ const VirtualAdopt = () => {
         type: 'warning',
         title: 'Перевірте суму',
         message: 'Введіть суму підтримки від 10 грн.',
+      });
+      return;
+    }
+    const cleanCardNumber = cardNumber.replace(/\D/g, '');
+    const emailIsValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payerEmail.trim());
+    if (payerName.trim().length < 2) {
+      notify({
+        type: 'warning',
+        title: 'Перевірте ім’я',
+        message: 'Введіть ім’я платника.',
+      });
+      return;
+    }
+    if (!emailIsValid) {
+      notify({
+        type: 'warning',
+        title: 'Перевірте email',
+        message: 'Введіть коректну електронну пошту для квитанції.',
+      });
+      return;
+    }
+    if (cleanCardNumber.length !== 16 || !isValidExpiry(expiry) || cvv.length !== 3) {
+      notify({
+        type: 'warning',
+        title: 'Перевірте реквізити',
+        message: 'Заповніть номер картки, строк дії та CVV.',
       });
       return;
     }
@@ -177,6 +228,24 @@ const VirtualAdopt = () => {
       transition: 'all 0.2s',
       boxSizing: 'border-box',
     },
+    fieldInput: {
+      width: '100%',
+      padding: '14px 16px',
+      fontSize: '15px',
+      fontWeight: '600',
+      color: tokens.textPrimary,
+      background: tokens.bgSurface,
+      border: `1px solid ${tokens.borderDefault}`,
+      borderRadius: tokens.radiusMd,
+      outline: 'none',
+      boxSizing: 'border-box',
+    },
+    paymentGrid: {
+      display: 'grid',
+      gridTemplateColumns: '1.2fr 1fr',
+      gap: '14px',
+      marginBottom: '24px',
+    },
     infoBlock: {
       background: tokens.bgSurface,
       padding: '16px',
@@ -227,6 +296,7 @@ const VirtualAdopt = () => {
           .adoptify-adopt-card { padding: 24px 16px !important; }
           .adoptify-adopt-title { font-size: 26px !important; }
           .adoptify-amount-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .adoptify-payment-grid { grid-template-columns: 1fr !important; }
         }
       `}</style>
 
@@ -297,8 +367,55 @@ const VirtualAdopt = () => {
             />
           </div>
 
+          <div style={styles.formSection}>
+            <label style={styles.label}>Дані платника</label>
+            <div className="adoptify-payment-grid" style={styles.paymentGrid}>
+              <input
+                type="text"
+                placeholder="Введіть ім'я платника"
+                value={payerName}
+                onChange={(e) => setPayerName(e.target.value.slice(0, 80))}
+                style={styles.fieldInput}
+              />
+              <input
+                type="email"
+                placeholder="Введіть email для квитанції"
+                value={payerEmail}
+                onChange={(e) => setPayerEmail(e.target.value.slice(0, 120))}
+                style={styles.fieldInput}
+              />
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="Номер картки"
+                value={cardNumber}
+                onChange={handleCardNumberChange}
+                style={{
+                  ...styles.fieldInput,
+                  gridColumn: '1 / -1',
+                }}
+              />
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="Строк дії"
+                value={expiry}
+                onChange={handleExpiryChange}
+                style={styles.fieldInput}
+              />
+              <input
+                type="password"
+                inputMode="numeric"
+                placeholder="CVV"
+                value={cvv}
+                onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').slice(0, 3))}
+                style={styles.fieldInput}
+              />
+            </div>
+          </div>
+
           <div style={styles.infoBlock}>
-            <ShieldCheck
+            <CreditCard
               size={24}
               weight="fill"
               color="#16A34A"

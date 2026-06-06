@@ -34,6 +34,17 @@ class VolunteerRequestViewSet(viewsets.ModelViewSet):
         initial_status = RequestStatus.PENDING
         serializer.save(user=self.request.user, status=initial_status)
 
+    @staticmethod
+    def _is_platform_admin(user):
+        user_role = str(getattr(user, "role", "") or "").upper().strip()
+        return bool(
+            user
+            and (
+                getattr(user, "is_superuser", False)
+                or user_role in ["ADMIN", "SUPERUSER"]
+            )
+        )
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         if not serializer.is_valid():
@@ -54,10 +65,10 @@ class VolunteerRequestViewSet(viewsets.ModelViewSet):
         user = self.request.user
         queryset = self.queryset
 
-        if user.is_superuser or user.is_staff:
-            pass
-        elif getattr(user, "role", None) == UserRole.SHELTER_MANAGER:
+        if getattr(user, "role", None) == UserRole.SHELTER_MANAGER:
             queryset = queryset.filter(shelter__owner=user, is_new_shelter=False)
+        elif self._is_platform_admin(user):
+            pass
         else:
             queryset = queryset.filter(user=user)
 
@@ -77,7 +88,7 @@ class VolunteerRequestViewSet(viewsets.ModelViewSet):
         volunteer_request = self.get_object()
         user = request.user
 
-        is_admin = user.is_superuser or user.is_staff
+        is_admin = self._is_platform_admin(user)
         is_shelter_owner = (
             getattr(user, "role", None) == UserRole.SHELTER_MANAGER
             and volunteer_request.shelter
@@ -207,7 +218,7 @@ class VolunteerRequestViewSet(viewsets.ModelViewSet):
         volunteer_request = self.get_object()
         user = request.user
 
-        is_admin = user.is_superuser or user.is_staff
+        is_admin = self._is_platform_admin(user)
         is_shelter_owner = (
             getattr(user, "role", None) == UserRole.SHELTER_MANAGER
             and volunteer_request.shelter

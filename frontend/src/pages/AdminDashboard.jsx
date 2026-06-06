@@ -57,12 +57,14 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [shelters, setShelters] = useState([]);
+  const [selectedShelterId, setSelectedShelterId] = useState('');
   const [infrastructure, setInfrastructure] = useState({
     gateway: 'LOADING',
     postgres: 'LOADING',
     media: 'LOCAL',
   });
-  const fetchAnalytics = async (silent = false) => {
+  const fetchAnalytics = async (silent = false, shelterId = selectedShelterId) => {
     if (!silent) setLoading(true);
     else setIsRefreshing(true);
     setError(null);
@@ -83,7 +85,7 @@ export default function AdminDashboard() {
       });
     }
     try {
-      const analyticsResult = await adminService.getGlobalAnalytics();
+      const analyticsResult = await adminService.getGlobalAnalytics(shelterId);
       if (analyticsResult && typeof analyticsResult === 'object') {
         setData(analyticsResult);
       } else {
@@ -106,10 +108,19 @@ export default function AdminDashboard() {
   useEffect(() => {
     document.body.classList.add('admin-dashboard-active');
     fetchAnalytics();
+    adminService
+      .getShelters()
+      .then((result) => setShelters(Array.isArray(result) ? result : result?.results || []))
+      .catch((err) => console.error('Не вдалося завантажити список притулків:', err));
     return () => {
       document.body.classList.remove('admin-dashboard-active');
     };
   }, []);
+  useEffect(() => {
+    if (!loading) {
+      fetchAnalytics(true, selectedShelterId);
+    }
+  }, [selectedShelterId]);
   if (loading) {
     return (
       <>
@@ -246,36 +257,56 @@ export default function AdminDashboard() {
       <div style={styles.container}>
         <header className="admin-dashboard-header" style={styles.header}>
           <div style={styles.headerTitleGroup}>
-            <h1 style={styles.title}>Глобальна аналітика</h1>
+            <h1 style={styles.title}>
+              {selectedShelterId ? 'Аналітика притулку' : 'Глобальна аналітика'}
+            </h1>
             <p style={styles.subtitle}>
-              Оперативний контроль та моніторинг інфраструктури Adoptify.
+              {data?.selected_shelter?.name
+                ? `Окремі показники для "${data.selected_shelter.name}" і стан інфраструктури.`
+                : 'Оперативний контроль та моніторинг інфраструктури Adoptify.'}
             </p>
           </div>
-          <button
-            onClick={() => fetchAnalytics(true)}
-            disabled={isRefreshing}
-            className="refresh-btn"
-            style={{
-              ...styles.refreshBtn,
-              cursor: isRefreshing ? 'not-allowed' : 'pointer',
-              opacity: isRefreshing ? 0.6 : 1,
-            }}
-          >
-            <ArrowClockwise
-              size={18}
-              className={isRefreshing ? 'admin-spinner' : ''}
+          <div className="admin-dashboard-actions" style={styles.headerActions}>
+            <select
+              className="admin-shelter-select"
+              value={selectedShelterId}
+              onChange={(e) => setSelectedShelterId(e.target.value)}
+              style={styles.shelterSelect}
+              aria-label="Обрати область аналітики"
+            >
+              <option value="">Уся платформа</option>
+              {shelters.map((shelter) => (
+                <option key={shelter.id} value={shelter.id}>
+                  {shelter.name}
+                </option>
+              ))}
+            </select>
+            <button
+              onClick={() => fetchAnalytics(true)}
+              disabled={isRefreshing}
+              className="refresh-btn"
               style={{
-                color: '#0F172A',
-              }}
-            />
-            <span
-              style={{
-                color: '#0F172A',
+                ...styles.refreshBtn,
+                cursor: isRefreshing ? 'not-allowed' : 'pointer',
+                opacity: isRefreshing ? 0.6 : 1,
               }}
             >
-              {isRefreshing ? 'Оновлення...' : 'Оновити дані'}
-            </span>
-          </button>
+              <ArrowClockwise
+                size={18}
+                className={isRefreshing ? 'admin-spinner' : ''}
+                style={{
+                  color: '#0F172A',
+                }}
+              />
+              <span
+                style={{
+                  color: '#0F172A',
+                }}
+              >
+                {isRefreshing ? 'Оновлення...' : 'Оновити дані'}
+              </span>
+            </button>
+          </div>
         </header>
 
         {error && (
@@ -449,6 +480,8 @@ export default function AdminDashboard() {
           @media (max-width: 768px) {
             .admin-dashboard-root .details-grid { grid-template-columns: 1fr !important; gap: 20px !important; }
             .admin-dashboard-root .admin-dashboard-header { flex-direction: column !important; align-items: flex-start !important; gap: 20px !important; }
+            .admin-dashboard-root .admin-dashboard-actions { width: 100% !important; }
+            .admin-dashboard-root .admin-shelter-select { width: 100% !important; }
             .admin-dashboard-root .refresh-btn { width: 100% !important; justify-content: center !important; }
           }
           @media (max-width: 520px) {
@@ -475,6 +508,24 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '6px',
+  },
+  headerActions: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: '12px',
+    flexWrap: 'wrap',
+  },
+  shelterSelect: {
+    minHeight: '46px',
+    minWidth: '240px',
+    backgroundColor: '#FFFFFF',
+    border: '1px solid #E2E8F0',
+    borderRadius: '14px',
+    color: '#0F172A',
+    fontWeight: '700',
+    fontSize: '14px',
+    padding: '0 14px',
+    outline: 'none',
   },
   title: {
     fontSize: '32px',

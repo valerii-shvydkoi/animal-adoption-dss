@@ -51,9 +51,8 @@ const PetForm = ({ pet, onSuccess }) => {
     });
     return {
       ...editableValues,
-      care_type: isVolunteerRole
-        ? 'VOLUNTEER_FOSTER'
-        : petData?.care_type || DEFAULT_FORM_VALUES.care_type,
+      care_type:
+        petData?.care_type || (isVolunteerRole ? 'VOLUNTEER_FOSTER' : DEFAULT_FORM_VALUES.care_type),
       urgency_status:
         petData?.urgency_status || petData?.urgencyStatus || DEFAULT_FORM_VALUES.urgency_status,
       behavior_tags:
@@ -438,17 +437,16 @@ const PetForm = ({ pet, onSuccess }) => {
           <div>
             <label className="adoptify-input-label">Тип опіки</label>
             <select
-              value={isVolunteerRole ? 'VOLUNTEER_FOSTER' : formData.care_type}
+              value={formData.care_type}
               onChange={(e) =>
                 setFormData({
                   ...formData,
                   care_type: e.target.value,
                 })
               }
-              disabled={isVolunteerRole}
               className="adoptify-pet-input"
             >
-              {!isVolunteerRole && <option value="SHELTER">У притулку</option>}
+              <option value="SHELTER">У притулку</option>
               <option value="VOLUNTEER_FOSTER">На перетримці</option>
             </select>
             {isVolunteerRole && (
@@ -461,7 +459,8 @@ const PetForm = ({ pet, onSuccess }) => {
                   fontWeight: 600,
                 }}
               >
-                Волонтер додає тварин як власних підопічних на перетримці.
+                Оберіть «У притулку», якщо тварина фізично перебуває в організації, або
+                «На перетримці», якщо вона під вашою особистою опікою.
               </p>
             )}
           </div>

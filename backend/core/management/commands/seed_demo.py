@@ -1,8 +1,6 @@
 from decimal import Decimal
 from io import BytesIO
 from pathlib import Path
-from urllib.parse import quote
-from urllib.request import Request, urlopen
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -29,6 +27,7 @@ from core.services.ahp_service import AHPService
 
 User = get_user_model()
 DEMO_PASSWORD = "AdoptifyDemo2026!"
+DEMO_MEDIA_DIR = Path(__file__).resolve().parents[2] / "demo_media"
 
 
 DEMO_ACCOUNTS = [
@@ -36,7 +35,7 @@ DEMO_ACCOUNTS = [
         "email": "admin@adoptify.demo",
         "role": UserRole.ADMIN,
         "name": "Адміністратор",
-        "last_name": "Демо",
+        "last_name": "",
         "is_staff": True,
         "is_superuser": True,
     },
@@ -44,20 +43,20 @@ DEMO_ACCOUNTS = [
         "email": "user@adoptify.demo",
         "role": UserRole.USER,
         "name": "Користувач",
-        "last_name": "Демо",
+        "last_name": "",
     },
     {
         "email": "volunteer@adoptify.demo",
         "role": UserRole.VOLUNTEER,
         "name": "Ірина",
-        "last_name": "Демо",
+        "last_name": "Дорошенко",
         "is_staff": True,
     },
     {
         "email": "manager@adoptify.demo",
         "role": UserRole.SHELTER_MANAGER,
-        "name": "Марко",
-        "last_name": "Демо",
+        "name": "Олена",
+        "last_name": "Кравчук",
         "is_staff": True,
     },
 ]
@@ -68,30 +67,6 @@ PRIMARY_DEMO_EMAILS = [
     "volunteer@adoptify.demo",
     "admin@adoptify.demo",
 ]
-
-PET_PHOTO_QUERIES = {
-    1: "small corgi mix dog",
-    2: "domestic shorthair calico cat",
-    3: "labrador retriever dog",
-    4: "tabby cat",
-    5: "husky dog",
-    6: "black cat",
-    7: "dachshund dog",
-    8: "british shorthair cat",
-    9: "german shepherd dog",
-    10: "ginger cat",
-    11: "spaniel dog",
-    12: "siamese cat",
-    13: "small puppy dog",
-    14: "maine coon cat",
-    15: "pitbull mix dog",
-    16: "gray domestic cat",
-    17: "small senior pug dog",
-    18: "orange kitten cat",
-    19: "large shepherd rescue dog",
-    20: "black white domestic cat",
-}
-
 
 PET_BLUEPRINTS = [
     (
@@ -620,7 +595,11 @@ class Command(BaseCommand):
             author = (
                 accounts["volunteer@adoptify.demo"] if index % 3 == 0 else shelter.owner
             )
-            care_type = "VOLUNTEER_FOSTER" if author.role == UserRole.VOLUNTEER else "SHELTER"
+            care_type = (
+                "VOLUNTEER_FOSTER"
+                if author.role == UserRole.VOLUNTEER and index % 6 == 0
+                else "SHELTER"
+            )
             pet, _ = Pet.objects.update_or_create(
                 name=name,
                 shelter=shelter,
@@ -670,23 +649,9 @@ class Command(BaseCommand):
             file_path.unlink(missing_ok=True)
 
     def build_demo_photo(self, index, species, urgency):
-        query = PET_PHOTO_QUERIES.get(index)
-        if not query:
-            query = "dog" if species == PetSpecies.DOG else "cat"
-
-        try:
-            encoded_query = quote(query.replace(" ", ","))
-            url = (
-                f"https://loremflickr.com/900/650/{encoded_query}?lock={202600 + index}"
-            )
-            request = Request(url, headers={"User-Agent": "Adoptify demo seed/1.0"})
-            with urlopen(request, timeout=12) as response:
-                content_type = response.headers.get("Content-Type", "")
-                content = response.read(4 * 1024 * 1024)
-                if content_type.startswith("image/") and len(content) > 5000:
-                    return ContentFile(content)
-        except Exception:
-            pass
+        local_photo = DEMO_MEDIA_DIR / f"demo_pet_{index:02d}.jpg"
+        if local_photo.exists():
+            return ContentFile(local_photo.read_bytes())
 
         return self.build_demo_image(index, species, urgency)
 
@@ -727,7 +692,7 @@ class Command(BaseCommand):
         }[urgency]
         return (
             f"{name} — {species_text}, який {urgency_text}. "
-            f"Ключові риси: {', '.join(tags)}. Дані підібрані для демонстрації роботи AHP-алгоритму."
+            f"Ключові риси: {', '.join(tags)}. Картка містить параметри для AHP-підбору."
         )
 
     def create_questionnaire(self, user):

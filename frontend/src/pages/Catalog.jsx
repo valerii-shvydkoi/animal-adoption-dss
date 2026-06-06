@@ -288,11 +288,15 @@ const Catalog = () => {
   const { isInstallable, isDismissed, promptInstall, dismissPrompt } = usePWA();
   const [isPwaCardClosing, setIsPwaCardClosing] = useState(false);
   const [isHidingProcess, setIsHidingProcess] = useState(false);
+  const authScope = user?.isAuthenticated ? `user:${user.id || user.email}` : 'guest';
   const shouldRestoreCatalog =
     !isBrowserReload() &&
     (location.state?.restoreCatalog === true ||
       sessionStorage.getItem(CATALOG_RESTORE_PENDING_KEY) === 'true');
-  const savedCatalogStateRef = useRef(shouldRestoreCatalog ? readCatalogState() : null);
+  const savedCatalogState = shouldRestoreCatalog ? readCatalogState() : null;
+  const savedCatalogStateRef = useRef(
+    savedCatalogState?.authScope === authScope ? savedCatalogState : null
+  );
   const [page, setPage] = useState(() => Number(savedCatalogStateRef.current?.page) || 1);
   const [pageSize, setPageSize] = useState(
     () => Number(savedCatalogStateRef.current?.pageSize) || 12
@@ -306,7 +310,6 @@ const Catalog = () => {
   const currentRole = (role || user?.role || 'USER').toUpperCase();
   const hasQuestionnaireResult = currentRole === 'USER' && !!user?.has_questionnaire_result;
   const defaultOrdering = hasQuestionnaireResult ? '-compatibility_score' : '-created_at';
-  const authScope = user?.isAuthenticated ? `user:${user.id || user.email}` : 'guest';
   const previousAuthScopeRef = useRef(authScope);
   const [filters, setFilters] = useState(() => ({
     ...getDefaultCatalogFilters(defaultOrdering),
@@ -322,7 +325,7 @@ const Catalog = () => {
   });
   const { locations } = useAvailableLocations();
   useEffect(() => {
-    if (shouldRestoreCatalog) {
+    if (shouldRestoreCatalog && savedCatalogStateRef.current) {
       sessionStorage.removeItem(CATALOG_RESTORE_PENDING_KEY);
       return;
     }
@@ -349,10 +352,11 @@ const Catalog = () => {
         pageSize,
         searchTerm,
         filters,
+        authScope,
       })
     );
     sessionStorage.setItem(CATALOG_RETURN_KEY, `${location.pathname}${location.search}`);
-  }, [page, pageSize, searchTerm, filters, location.pathname, location.search]);
+  }, [page, pageSize, searchTerm, filters, authScope, location.pathname, location.search]);
   const handleInstallAppClick = async () => {
     await promptInstall();
   };

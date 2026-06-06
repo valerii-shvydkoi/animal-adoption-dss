@@ -301,11 +301,7 @@ class PetViewSet(viewsets.ModelViewSet):
             raise PermissionDenied(
                 "Ви повинні бути власником або волонтером притулку, щоб додавати тварин."
             )
-        extra_data = {}
-        role = str(getattr(self.request.user, "role", "USER") or "USER").upper()
-        if role == "VOLUNTEER":
-            extra_data["care_type"] = Pet.CareType.VOLUNTEER_FOSTER
-        serializer.save(shelter=shelter, created_by=self.request.user, **extra_data)
+        serializer.save(shelter=shelter, created_by=self.request.user)
 
     def filter_queryset(self, queryset):
         if self.action not in ["list", "batch"]:
@@ -353,6 +349,7 @@ class PetViewSet(viewsets.ModelViewSet):
                     p.compatibility_score = score
 
                 if ordering == "-compatibility_score":
+                    # Якщо відсоток однаковий, вище показуємо терміновіші та новіші картки.
                     pets_list.sort(
                         key=lambda pet: (
                             -pet.temp_score,

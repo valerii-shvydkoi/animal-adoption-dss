@@ -194,7 +194,7 @@ export default function AdminShelters() {
           ? 'Притулок успішно верифіковано! Організацію створено, а заявнику надано роль керівника.'
           : 'Волонтерську заявку схвалено. Користувача додано до команди притулку.'
       );
-      setRequests(requests.filter((req) => req.id !== id));
+      await fetchRequests();
       window.scrollTo({
         top: 0,
         behavior: 'smooth',
@@ -233,7 +233,7 @@ export default function AdminShelters() {
     try {
       await adminService.rejectRequest(id);
       showTemporaryAlert('success', 'Заявку успішно відхилено.');
-      setRequests(requests.filter((req) => req.id !== id));
+      await fetchRequests();
       window.scrollTo({
         top: 0,
         behavior: 'smooth',
@@ -284,7 +284,7 @@ export default function AdminShelters() {
               ...(isShelterMode ? styles.tabButtonActive : {}),
             }}
           >
-            Верифікація притулків
+            Реєстр і заявки
           </button>
           <button
             type="button"
@@ -296,6 +296,34 @@ export default function AdminShelters() {
           >
             Волонтери
           </button>
+        </div>
+
+        <div className="search-wrapper-shelters" style={styles.searchWrapper}>
+          <MagnifyingGlass size={20} style={styles.searchIcon} />
+          <input
+            type="text"
+            className="search-input-shelters"
+            placeholder={
+              isShelterMode
+                ? 'Пошук за назвою нового притулку або email заявника...'
+                : 'Пошук за email кандидата, притулком або повідомленням...'
+            }
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              ...styles.searchInput,
+              paddingRight: searchTerm ? '42px' : '16px',
+            }}
+          />
+          {searchTerm && (
+            <button
+              className="clear-search-btn-shelters"
+              onClick={() => setSearchTerm('')}
+              title="Очистити пошук"
+            >
+              <X size={16} weight="bold" />
+            </button>
+          )}
         </div>
 
         {isShelterMode && (
@@ -362,34 +390,6 @@ export default function AdminShelters() {
             </span>
           </div>
         )}
-
-        <div className="search-wrapper-shelters" style={styles.searchWrapper}>
-          <MagnifyingGlass size={20} style={styles.searchIcon} />
-          <input
-            type="text"
-            className="search-input-shelters"
-            placeholder={
-              isShelterMode
-                ? 'Пошук за назвою нового притулку або email заявника...'
-                : 'Пошук за email кандидата, притулком або повідомленням...'
-            }
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={{
-              ...styles.searchInput,
-              paddingRight: searchTerm ? '42px' : '16px',
-            }}
-          />
-          {searchTerm && (
-            <button
-              className="clear-search-btn-shelters"
-              onClick={() => setSearchTerm('')}
-              title="Очистити пошук"
-            >
-              <X size={16} weight="bold" />
-            </button>
-          )}
-        </div>
 
         {loading ? (
           <div style={styles.centerState}>

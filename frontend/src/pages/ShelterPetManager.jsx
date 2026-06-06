@@ -479,67 +479,142 @@ export default function ShelterPetManager() {
     options,
     required = false,
     disabled = false,
-  }) => (
-    <div
-      style={{
-        display: 'flex',
-        flexDirection: 'column',
-      }}
-    >
-      <label
+  }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const selectRef = useRef(null);
+    const selectedOption = options.find((option) => option.value === value) || options[0];
+
+    useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (selectRef.current && !selectRef.current.contains(event.target)) {
+          setIsOpen(false);
+        }
+      };
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handlePick = (nextValue) => {
+      onChange({ target: { value: nextValue } });
+      setIsOpen(false);
+    };
+
+    return (
+      <div
+        ref={selectRef}
         style={{
-          fontSize: '12px',
-          fontWeight: '700',
-          color: textMuted,
-          textTransform: 'uppercase',
-          marginBottom: '8px',
-          letterSpacing: '0.5px',
+          display: 'flex',
+          flexDirection: 'column',
+          minWidth: 0,
         }}
       >
-        {label}{' '}
-        {required && (
-          <span
+        <label
+          style={{
+            fontSize: '12px',
+            fontWeight: '700',
+            color: textMuted,
+            textTransform: 'uppercase',
+            marginBottom: '8px',
+            letterSpacing: '0.5px',
+          }}
+        >
+          {label}{' '}
+          {required && (
+            <span
+              style={{
+                color: brandPrimary,
+              }}
+            >
+              *
+            </span>
+          )}
+        </label>
+        <div
+          style={{
+            position: 'relative',
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => !disabled && setIsOpen((open) => !open)}
+            className="form-select-custom"
+            disabled={disabled}
             style={{
-              color: brandPrimary,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              textAlign: 'left',
             }}
           >
-            *
-          </span>
-        )}
-      </label>
-      <div
-        style={{
-          position: 'relative',
-        }}
-      >
-        <select
-          className="form-select-custom"
-          value={value}
-          onChange={onChange}
-          required={required}
-          disabled={disabled}
-        >
-          {options.map((opt, idx) => (
-            <option key={idx} value={opt.value}>
-              {opt.label}
-            </option>
-          ))}
-        </select>
-        <CaretDown
-          size={16}
-          weight="bold"
-          style={{
-            position: 'absolute',
-            right: '14px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            pointerEvents: 'none',
-            color: textMuted,
-          }}
-        />
+            <span
+              style={{
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+                paddingRight: '10px',
+              }}
+            >
+              {selectedOption?.label || 'Оберіть значення'}
+            </span>
+            <CaretDown
+              size={16}
+              weight="bold"
+              style={{
+                flexShrink: 0,
+                transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 0.2s',
+                color: textMuted,
+              }}
+            />
+          </button>
+
+          {isOpen && !disabled && (
+            <div
+              style={{
+                position: 'absolute',
+                top: 'calc(100% + 8px)',
+                left: 0,
+                right: 0,
+                zIndex: 120,
+                padding: '6px',
+                borderRadius: '14px',
+                border: `1px solid ${borderColor}`,
+                background: bgCard,
+                boxShadow: '0 18px 28px rgba(15, 23, 42, 0.14)',
+                maxHeight: '240px',
+                overflowY: 'auto',
+              }}
+            >
+              {options.map((option) => {
+                const active = option.value === value;
+                return (
+                  <button
+                    type="button"
+                    key={option.value || option.label}
+                    onClick={() => handlePick(option.value)}
+                    style={{
+                      width: '100%',
+                      border: 'none',
+                      background: active ? '#FFF7ED' : 'transparent',
+                      color: active ? brandPrimary : textMain,
+                      borderRadius: '10px',
+                      padding: '10px 12px',
+                      cursor: 'pointer',
+                      textAlign: 'left',
+                      fontWeight: active ? '800' : '600',
+                      lineHeight: 1.35,
+                    }}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
   return (
     <div
       className="pet-manager-container"

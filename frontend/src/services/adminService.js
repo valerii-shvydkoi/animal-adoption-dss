@@ -1,8 +1,10 @@
 import api from './api';
 const ADMIN_PREFIX = 'admin';
 const adminService = {
-  getGlobalAnalytics: async () => {
-    const response = await api.get(`${ADMIN_PREFIX}/analytics/`);
+  getGlobalAnalytics: async (shelterId = '') => {
+    const response = await api.get(`${ADMIN_PREFIX}/analytics/`, {
+      params: shelterId ? { shelter_id: shelterId } : {},
+    });
     return response.data;
   },
   getSystemHealth: async () => {

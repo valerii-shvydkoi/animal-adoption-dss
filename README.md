@@ -40,7 +40,7 @@ docker compose up --build
 docker compose exec backend python manage.py seed_demo --reset
 ```
 
-Сценарій показу на одному ноутбуці та демо-акаунти описані в `docs/demo-scenario.md`.
+Контрольний сценарій ролей і демо-акаунти описані в `docs/demo-scenario.md`.
 
 ## Локальний запуск без Docker
 
@@ -95,9 +95,8 @@ npm run build
 
 - `docs/requirements-matrix.md` — відповідність UC1-UC17 реалізації.
 - `docs/wireframes.md` — структура WF1-WF12 у термінах сторінок застосунку.
-- `docs/project-audit.md` — технічний аудит, ризики та правила підтримки.
 - `docs/git-workflow.md` — рекомендований remote, гілки та правила комітів.
-- `docs/demo-scenario.md` — ролі, демо-акаунти та порядок демонстрації.
+- `docs/demo-scenario.md` — ролі, демо-акаунти та контрольний сценарій перевірки.
 
 ## Безпека й production-режим
 

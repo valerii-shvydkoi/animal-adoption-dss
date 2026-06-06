@@ -15,6 +15,9 @@ const clearCatalogSession = () => {
   sessionStorage.removeItem('adoptifyCatalogReturnPath');
   sessionStorage.removeItem('adoptifyCatalogRestorePending');
 };
+const notifyAuthChanged = () => {
+  window.dispatchEvent(new Event('authChanged'));
+};
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [role, setRole] = useState(null);
@@ -59,6 +62,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('userRole');
+    localStorage.removeItem('user');
     localStorage.removeItem('login-event');
     clearActiveFavoriteIds();
     localStorage.removeItem('userMenuOpen');
@@ -70,6 +74,7 @@ export const AuthProvider = ({ children }) => {
     setRole(null);
     localStorage.setItem('logout-event', Date.now());
     emitFavoritesUpdated();
+    notifyAuthChanged();
   };
   const login = async (email, password) => {
     try {
@@ -89,6 +94,7 @@ export const AuthProvider = ({ children }) => {
       setRole(userRole);
       setUser(formattedUser);
       localStorage.setItem('login-event', Date.now());
+      notifyAuthChanged();
       localStorage.removeItem('userMenuOpen');
       localStorage.removeItem('sidebarOpen');
       localStorage.removeItem('menuOpen');
@@ -161,8 +167,10 @@ export const AuthProvider = ({ children }) => {
     const handleAuthExpired = () => {
       clearCatalogSession();
       localStorage.removeItem('userRole');
+      localStorage.removeItem('user');
       setUser(null);
       setRole(null);
+      notifyAuthChanged();
     };
     const handleUserUpdated = (event) => {
       applyUserProfilePatch(event.detail || {});

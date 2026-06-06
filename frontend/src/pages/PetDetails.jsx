@@ -1227,7 +1227,7 @@ const PetDetails = () => {
                 {
                   icon: PawPrint,
                   label: 'Тип опіки',
-                  value: isShelter ? 'Притулок' : 'Перетримка',
+                  value: isShelter ? 'Організація притулку' : 'Індивідуальна перетримка',
                 },
                 {
                   icon: ShieldCheck,
@@ -1252,6 +1252,11 @@ const PetDetails = () => {
                     flexDirection: 'column',
                     gap: '10px',
                     width: '100%',
+                    padding: isMobile ? '16px' : '18px',
+                    borderRadius: '16px',
+                    background: '#FFFFFF',
+                    border: `1px solid ${tokens.borderDefault}`,
+                    boxShadow: '0 1px 3px rgba(15, 23, 42, 0.04)',
                     boxSizing: 'border-box',
                   }}
                 >
@@ -1262,8 +1267,9 @@ const PetDetails = () => {
                         key={row.label}
                         style={{
                           display: 'flex',
-                          alignItems: 'center',
+                          alignItems: 'flex-start',
                           gap: '10px',
+                          minWidth: 0,
                         }}
                       >
                         <RowIcon
@@ -1274,7 +1280,13 @@ const PetDetails = () => {
                             flexShrink: 0,
                           }}
                         />
-                        <span>
+                        <span
+                          style={{
+                            minWidth: 0,
+                            overflowWrap: 'anywhere',
+                            lineHeight: 1.45,
+                          }}
+                        >
                           {row.label}:{' '}
                           <strong
                             style={{
@@ -1303,14 +1315,28 @@ const PetDetails = () => {
                       }}
                     >
                       {shelterDetails.address && (
-                        <span style={{ display: 'flex', gap: '8px', lineHeight: 1.5 }}>
+                        <span
+                          style={{
+                            display: 'flex',
+                            gap: '8px',
+                            lineHeight: 1.5,
+                            overflowWrap: 'anywhere',
+                          }}
+                        >
                           <MapPin size={17} weight="bold" color={tokens.brandPrimary} />
                           <strong style={{ color: tokens.textPrimary }}>Адреса:</strong>{' '}
                           {shelterDetails.address}
                         </span>
                       )}
                       {shelterDetails.phone && (
-                        <span style={{ display: 'flex', gap: '8px', lineHeight: 1.5 }}>
+                        <span
+                          style={{
+                            display: 'flex',
+                            gap: '8px',
+                            lineHeight: 1.5,
+                            overflowWrap: 'anywhere',
+                          }}
+                        >
                           <Phone size={17} weight="bold" color={tokens.brandPrimary} />
                           <strong style={{ color: tokens.textPrimary }}>Телефон:</strong>{' '}
                           {shelterDetails.phone}
@@ -1323,6 +1349,7 @@ const PetDetails = () => {
                             gap: '8px',
                             lineHeight: 1.5,
                             gridColumn: '1 / -1',
+                            overflowWrap: 'anywhere',
                           }}
                         >
                           <Info size={17} weight="bold" color={tokens.brandPrimary} />
@@ -1346,7 +1373,7 @@ const PetDetails = () => {
               gap: '12px',
               boxSizing: 'border-box',
               width: isMobile ? '100%' : 'auto',
-              minWidth: isMobile ? 'auto' : '380px',
+              minWidth: isMobile ? 'auto' : '320px',
             }}
           >
             {pet.allow_virtual_adoption && (
