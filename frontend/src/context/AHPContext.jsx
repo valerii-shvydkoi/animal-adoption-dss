@@ -1,6 +1,63 @@
 import React, { createContext, useState, useEffect, useRef } from 'react';
 import api from '../services/api';
 export const AHPContext = createContext(null);
+const createDefaultCategories = () => ({
+  safety: [
+    {
+      id: 'shelter',
+      label: 'Близькість укриття',
+    },
+    {
+      id: 'evacuation',
+      label: 'Швидкість евакуації',
+    },
+    {
+      id: 'floor',
+      label: 'Поверх проживання',
+    },
+  ],
+  physical: [
+    {
+      id: 'weight',
+      label: 'Розмір/Вага',
+    },
+    {
+      id: 'activity',
+      label: 'Рівень активності',
+    },
+    {
+      id: 'age',
+      label: 'Вік тварини',
+    },
+  ],
+  psychological: [
+    {
+      id: 'stress',
+      label: 'Стресостійкість',
+    },
+    {
+      id: 'social',
+      label: 'Соціалізація',
+    },
+    {
+      id: 'character',
+      label: 'Легкий характер',
+    },
+  ],
+});
+
+const createDefaultIntensities = () => ({
+  safety: null,
+  physical: null,
+  psychological: null,
+});
+
+const createDefaultGlobalData = () => ({
+  globalOrder: ['safety', 'physical', 'psychological'],
+  globalIntensities: null,
+  globalIntensities2: null,
+});
+
 const createDefaultUserProfile = () => ({
   name: '',
   last_name: '',
@@ -20,66 +77,11 @@ const createDefaultUserProfile = () => ({
   has_pending_shelter: false,
 });
 export const AHPProvider = ({ children }) => {
-  const [categories, setCategories] = useState({
-    safety: [
-      {
-        id: 'shelter',
-        label: 'Близькість укриття',
-      },
-      {
-        id: 'evacuation',
-        label: 'Швидкість евакуації',
-      },
-      {
-        id: 'floor',
-        label: 'Поверх проживання',
-      },
-    ],
-    physical: [
-      {
-        id: 'weight',
-        label: 'Розмір/Вага',
-      },
-      {
-        id: 'activity',
-        label: 'Рівень активності',
-      },
-      {
-        id: 'age',
-        label: 'Вік тварини',
-      },
-    ],
-    psychological: [
-      {
-        id: 'stress',
-        label: 'Стресостійкість',
-      },
-      {
-        id: 'social',
-        label: 'Соціалізація',
-      },
-      {
-        id: 'character',
-        label: 'Легкий характер',
-      },
-    ],
-  });
-  const [intensities, setIntensities] = useState({
-    safety: null,
-    physical: null,
-    psychological: null,
-  });
-  const [intensities2, setIntensities2] = useState({
-    safety: null,
-    physical: null,
-    psychological: null,
-  });
+  const [categories, setCategories] = useState(createDefaultCategories);
+  const [intensities, setIntensities] = useState(createDefaultIntensities);
+  const [intensities2, setIntensities2] = useState(createDefaultIntensities);
   const [userProfile, setUserProfile] = useState(createDefaultUserProfile);
-  const [globalData, setGlobalData] = useState({
-    globalOrder: ['safety', 'physical', 'psychological'],
-    globalIntensities: null,
-    globalIntensities2: null,
-  });
+  const [globalData, setGlobalData] = useState(createDefaultGlobalData);
   const [loading, setLoading] = useState(false);
   const [isProfileLoading, setIsProfileLoading] = useState(true);
   const [profileReloadKey, setProfileReloadKey] = useState(0);
@@ -223,7 +225,12 @@ export const AHPProvider = ({ children }) => {
   }, [profileReloadKey]);
   useEffect(() => {
     const resetProfileState = () => {
-      // Профіль анкети не має переходити між акаунтами після зміни ролі або виходу.
+      // Анкета не повинна переносити відповіді між різними акаунтами.
+      profileRequestRef.current += 1;
+      setCategories(createDefaultCategories());
+      setIntensities(createDefaultIntensities());
+      setIntensities2(createDefaultIntensities());
+      setGlobalData(createDefaultGlobalData());
       setUserProfile(createDefaultUserProfile());
       setProfileReloadKey((key) => key + 1);
     };

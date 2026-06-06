@@ -1,6 +1,10 @@
 import pytest
 from rest_framework import status
-from core.models.enums import AdoptionStatus
+from django.contrib.auth import get_user_model
+from core.models import Shelter
+from core.models.enums import AdoptionStatus, UserRole
+
+User = get_user_model()
 
 
 def questionnaire_payload(profile_overrides=None, ahp_overrides=None):
@@ -164,3 +168,37 @@ class TestIntegrationEndpoints:
             "/api/v1/adoptions/", {"pet": pet.id}, format="json"
         )
         assert response.status_code == status.HTTP_201_CREATED
+
+    def test_admin_can_update_shelter_registry_card(self, api_client, shelter):
+        admin = User.objects.create_superuser(
+            email="admin@test.com",
+            password="password123",
+            role=UserRole.ADMIN,
+        )
+        api_client.force_authenticate(user=admin)
+
+        response = api_client.patch(
+            f"/api/v1/shelters/{shelter.id}/",
+            {
+                "name": "Центр адаптації Adoptify",
+                "region": "Київська",
+                "city": "Бровари",
+                "address": "вул. Волонтерська, 12",
+                "phone": "+380671112233",
+                "description": "Міський притулок для адаптації тварин.",
+                "is_verified": True,
+            },
+            format="json",
+        )
+
+        shelter.refresh_from_db()
+        assert response.status_code == status.HTTP_200_OK
+        assert shelter.name == "Центр адаптації Adoptify"
+        assert shelter.city == "Бровари"
+        assert response.data["shelter"]["owner_email"] == shelter.owner.email
+
+    def test_regular_user_cannot_delete_shelter(self, auth_client, shelter):
+        response = auth_client.delete(f"/api/v1/shelters/{shelter.id}/")
+
+        assert response.status_code == status.HTTP_403_FORBIDDEN
+        assert Shelter.objects.filter(id=shelter.id).exists()

@@ -383,6 +383,59 @@ function BecomeVolunteer() {
       </h3>
     </div>
   );
+  const CustomSelect = ({ value, onChange, options, placeholder, disabled, icon }) => {
+    const [isOpen, setIsOpen] = useState(false);
+    const selectRef = React.useRef(null);
+    const selectedOption = options.find((option) => option.value === value);
+
+    useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (selectRef.current && !selectRef.current.contains(event.target)) {
+          setIsOpen(false);
+        }
+      };
+      document.addEventListener('mousedown', handleClickOutside);
+      return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    return (
+      <div className="form-custom-select" ref={selectRef}>
+        <button
+          type="button"
+          className="form-custom-select-button"
+          disabled={disabled}
+          onClick={() => !disabled && setIsOpen((prev) => !prev)}
+        >
+          <span className="form-custom-select-icon">{icon}</span>
+          <span className={selectedOption ? 'form-custom-select-value' : 'form-custom-select-placeholder'}>
+            {selectedOption?.label || placeholder}
+          </span>
+          <CaretDown
+            size={14}
+            weight="bold"
+            className={`form-custom-select-caret ${isOpen ? 'is-open' : ''}`}
+          />
+        </button>
+        {isOpen && !disabled && (
+          <div className="form-custom-select-menu">
+            {options.map((option) => (
+              <button
+                type="button"
+                key={option.value || option.label}
+                className={`form-custom-select-option ${option.value === value ? 'is-selected' : ''}`}
+                onClick={() => {
+                  onChange(option.value);
+                  setIsOpen(false);
+                }}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
   if (success) {
     return (
       <div
@@ -641,6 +694,46 @@ function BecomeVolunteer() {
         .form-input-icon { position: absolute; left: 14px; color: ${tokens.textDisabled}; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 2; }
         .form-select-arrow { position: absolute; right: 14px; color: ${tokens.textSecondary}; display: flex; align-items: center; justify-content: center; pointer-events: none; z-index: 2; }
 
+        .form-custom-select { position: relative; width: 100%; }
+        .form-custom-select-button {
+          width: 100%; min-height: 44px; display: flex; align-items: center; gap: 10px;
+          padding: 12px 38px 12px 42px; border-radius: ${tokens.radiusSm};
+          border: 1px solid ${tokens.borderDefault}; background: ${tokens.bgWhite};
+          color: ${tokens.textPrimary}; font-size: 14px; font-weight: 700; text-align: left;
+          outline: none; cursor: pointer; box-sizing: border-box; transition: all 0.2s ease;
+        }
+        .form-custom-select-button:hover:not(:disabled),
+        .form-custom-select-button:focus {
+          border-color: ${tokens.brandPrimary}; box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.08);
+        }
+        .form-custom-select-button:disabled { background: #F1F5F9; color: ${tokens.textDisabled}; cursor: not-allowed; }
+        .form-custom-select-icon {
+          position: absolute; left: 14px; display: inline-flex; align-items: center; justify-content: center;
+          color: ${tokens.textDisabled}; pointer-events: none;
+        }
+        .form-custom-select-value,
+        .form-custom-select-placeholder {
+          min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block;
+        }
+        .form-custom-select-placeholder { color: ${tokens.textDisabled}; font-weight: 600; }
+        .form-custom-select-caret {
+          position: absolute; right: 14px; color: ${tokens.textSecondary}; transition: transform 0.18s ease;
+        }
+        .form-custom-select-caret.is-open { transform: rotate(180deg); }
+        .form-custom-select-menu {
+          position: absolute; z-index: 60; top: calc(100% + 6px); left: 0; right: 0;
+          max-height: 240px; overflow-y: auto; padding: 6px; border-radius: 14px;
+          border: 1px solid ${tokens.borderDefault}; background: ${tokens.bgWhite};
+          box-shadow: 0 18px 45px rgba(15, 23, 42, 0.16);
+        }
+        .form-custom-select-option {
+          width: 100%; border: 0; background: transparent; color: ${tokens.textPrimary};
+          padding: 10px 12px; border-radius: 10px; text-align: left; cursor: pointer;
+          font-size: 14px; font-weight: 700; line-height: 1.35;
+        }
+        .form-custom-select-option:hover { background: #FFF7ED; color: ${tokens.brandPrimary}; }
+        .form-custom-select-option.is-selected { background: #FFEDD5; color: ${tokens.brandPrimary}; }
+
         .form-error-block {
           display: flex; align-items: flex-start; gap: 12px; background: #FEF2F2; border: 1px solid #FEE2E2;
           color: #991B1B; padding: 14px; border-radius: ${tokens.radiusSm}; margin-bottom: 20px;
@@ -800,38 +893,21 @@ function BecomeVolunteer() {
               <label className="form-label-tag">
                 Область<span className="required-star">*</span>
               </label>
-              <div className="form-input-wrapper">
-                <select
-                  name="new_shelter_region"
-                  value={formData.new_shelter_region}
-                  onChange={handleChange}
-                  required
-                  className="form-native-select"
-                >
-                  <option value="">-- Оберіть область --</option>
-                  {UKRAINIAN_REGIONS.map((region) => (
-                    <option key={region} value={region}>
-                      {region} область
-                    </option>
-                  ))}
-                </select>
-                <div
-                  className="form-input-icon"
-                  style={{
-                    height: '44px',
-                  }}
-                >
-                  <MapPin size={16} weight="bold" />
-                </div>
-                <div
-                  className="form-select-arrow"
-                  style={{
-                    height: '44px',
-                  }}
-                >
-                  <CaretDown size={14} weight="bold" />
-                </div>
-              </div>
+              <CustomSelect
+                value={formData.new_shelter_region}
+                onChange={(value) =>
+                  setFormData((prev) => ({
+                    ...prev,
+                    new_shelter_region: value,
+                  }))
+                }
+                placeholder="Оберіть область"
+                icon={<MapPin size={16} weight="bold" />}
+                options={UKRAINIAN_REGIONS.map((region) => ({
+                  value: region,
+                  label: `${region} область`,
+                }))}
+              />
             </div>
             <div>
               <label className="form-label-tag">
@@ -968,41 +1044,17 @@ function BecomeVolunteer() {
               <label className="form-label-tag">
                 Оберіть притулок для співпраці<span className="required-star">*</span>
               </label>
-              <div className="form-input-wrapper">
-                <select
-                  value={selectedShelterId}
-                  onChange={(e) => setSelectedShelterId(e.target.value)}
-                  required
-                  disabled={loadingShelters}
-                  className="form-native-select"
-                >
-                  <option value="">
-                    {loadingShelters ? 'Завантаження притулків...' : '-- Оберіть організацію --'}
-                  </option>
-                  {Array.isArray(sheltersList) &&
-                    sheltersList.map((shelter) => (
-                      <option key={shelter.id} value={shelter.id}>
-                        {shelter.name} ({shelter.city || 'Місто не вказано'})
-                      </option>
-                    ))}
-                </select>
-                <div
-                  className="form-input-icon"
-                  style={{
-                    height: '44px',
-                  }}
-                >
-                  <HouseLine size={16} weight="bold" />
-                </div>
-                <div
-                  className="form-select-arrow"
-                  style={{
-                    height: '44px',
-                  }}
-                >
-                  <CaretDown size={14} weight="bold" />
-                </div>
-              </div>
+              <CustomSelect
+                value={selectedShelterId}
+                onChange={setSelectedShelterId}
+                disabled={loadingShelters}
+                placeholder={loadingShelters ? 'Завантаження притулків...' : 'Оберіть організацію'}
+                icon={<HouseLine size={16} weight="bold" />}
+                options={(Array.isArray(sheltersList) ? sheltersList : []).map((shelter) => ({
+                  value: String(shelter.id),
+                  label: `${shelter.name} (${shelter.city || 'Місто не вказано'})`,
+                }))}
+              />
             </div>
           )}
 

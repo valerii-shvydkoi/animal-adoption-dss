@@ -22,6 +22,14 @@ const adminService = {
     const response = await api.get('shelters/');
     return response.data;
   },
+  updateShelter: async (id, payload) => {
+    const response = await api.patch(`shelters/${id}/`, payload);
+    return response.data;
+  },
+  deleteShelter: async (id) => {
+    const response = await api.delete(`shelters/${id}/`);
+    return response.data;
+  },
   approveRequest: async (id) => {
     const response = await api.post(`${ADMIN_PREFIX}/volunteer-requests/${id}/approve/`, {});
     return response.data;

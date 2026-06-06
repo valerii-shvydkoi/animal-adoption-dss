@@ -87,6 +87,26 @@ const rankStyles = [
     shadow: '0 1px 2px rgba(0,0,0,0.02)',
   },
 ];
+const createDefaultGlobalOrder = () => [
+  {
+    id: 'safety',
+    label: 'Безпека',
+  },
+  {
+    id: 'physical',
+    label: 'Фізичні потреби',
+  },
+  {
+    id: 'psychological',
+    label: 'Характер тварини',
+  },
+];
+const createDefaultBooleanMap = () => ({
+  global: false,
+  safety: false,
+  physical: false,
+  psychological: false,
+});
 const LabelBadge = ({ text, isHighlighted }) => (
   <span
     className="label-badge"
@@ -218,20 +238,7 @@ const Questionnaire = () => {
   const location = useLocation();
   const [currentStep, setCurrentStep] = useState(0);
   const [announcement, setAnnouncement] = useState('');
-  const [localGlobalOrder, setLocalGlobalOrder] = useState([
-    {
-      id: 'safety',
-      label: 'Безпека',
-    },
-    {
-      id: 'physical',
-      label: 'Фізичні потреби',
-    },
-    {
-      id: 'psychological',
-      label: 'Характер тварини',
-    },
-  ]);
+  const [localGlobalOrder, setLocalGlobalOrder] = useState(createDefaultGlobalOrder);
   const [localIntensities, setLocalIntensities] = useState({
     global: null,
   });
@@ -266,24 +273,27 @@ const Questionnaire = () => {
   }, [intensities, intensities2, userProfile]);
   const dynamicCategoryKeys = ['global', ...localGlobalOrder.map((item) => item.id)];
   const totalSteps = 1 + dynamicCategoryKeys.length;
-  const [revealed, setRevealed] = useState({
-    global: false,
-    safety: false,
-    physical: false,
-    psychological: false,
-  });
-  const [isReordered, setIsReordered] = useState({
-    global: false,
-    safety: false,
-    physical: false,
-    psychological: false,
-  });
-  const [answered2, setAnswered2] = useState({
-    global: false,
-    safety: false,
-    physical: false,
-    psychological: false,
-  });
+  const [revealed, setRevealed] = useState(createDefaultBooleanMap);
+  const [isReordered, setIsReordered] = useState(createDefaultBooleanMap);
+  const [answered2, setAnswered2] = useState(createDefaultBooleanMap);
+  useEffect(() => {
+    const resetLocalQuestionnaire = () => {
+      setCurrentStep(0);
+      setLocalGlobalOrder(createDefaultGlobalOrder());
+      setLocalIntensities({ global: null });
+      setLocalIntensities2({ global: null });
+      setRevealed(createDefaultBooleanMap());
+      setIsReordered(createDefaultBooleanMap());
+      setAnswered2(createDefaultBooleanMap());
+      setAnnouncement('');
+    };
+    window.addEventListener('authChanged', resetLocalQuestionnaire);
+    window.addEventListener('authExpired', resetLocalQuestionnaire);
+    return () => {
+      window.removeEventListener('authChanged', resetLocalQuestionnaire);
+      window.removeEventListener('authExpired', resetLocalQuestionnaire);
+    };
+  }, []);
   useEffect(() => {
     const updatedRevealed = {
       ...revealed,
@@ -326,8 +336,17 @@ const Questionnaire = () => {
         globalIntensities2: localIntensities2.global,
       });
       if (result && result.success) {
-        if (location.state?.from && location.state.from.includes('/catalog')) {
-          navigate(location.state.from);
+        const from = location.state?.from;
+        const shouldReturnToCatalog =
+          from === '/' || from?.startsWith('/catalog') || from?.startsWith('/?');
+        if (from?.startsWith('/favorites') || from?.startsWith('/pet/')) {
+          navigate(from);
+        } else if (shouldReturnToCatalog) {
+          navigate(from, {
+            state: {
+              restoreCatalog: true,
+            },
+          });
         } else {
           navigate('/my-results');
         }

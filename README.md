@@ -69,7 +69,7 @@ npm run dev
 docker compose up -d db backend
 ```
 
-Після цього перевірте `http://localhost:8000/api/v1/health/` і відкривайте адресу, яку показав Vite. Якщо backend слухає інший порт або адресу, задайте проксі явно:
+Після цього перевірте `http://localhost:8000/api/v1/health/` і відкривайте адресу, яку показав Vite. Якщо backend слухає інший порт або адресу, задайте проксі явно у PowerShell:
 
 ```powershell
 $env:VITE_DEV_API_PROXY_TARGET = "http://127.0.0.1:8000"

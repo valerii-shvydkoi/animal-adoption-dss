@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { usePets, useAvailableLocations } from '../hooks/usePets';
+import { usePets, useAvailableLocations, clearPetsCache } from '../hooks/usePets';
 import { useAuth } from '../context/AuthContext';
 import { usePWA } from '../hooks/usePWA';
 import PetCard from '../components/UI/PetCard';
@@ -311,6 +311,8 @@ const Catalog = () => {
   const hasQuestionnaireResult = currentRole === 'USER' && !!user?.has_questionnaire_result;
   const defaultOrdering = hasQuestionnaireResult ? '-compatibility_score' : '-created_at';
   const previousAuthScopeRef = useRef(authScope);
+  const previousQuestionnaireStateRef = useRef(hasQuestionnaireResult);
+  const catalogCacheScope = `${authScope}:${hasQuestionnaireResult ? 'with-questionnaire' : 'plain'}:${user?.latest_questionnaire_result_id || ''}`;
   const [filters, setFilters] = useState(() => ({
     ...getDefaultCatalogFilters(defaultOrdering),
     ...(savedCatalogStateRef.current?.filters || {}),
@@ -322,6 +324,7 @@ const Catalog = () => {
   const computedPageSize = isPwaCardActive ? pageSize - 1 : pageSize;
   const { pets, loading, error, hasNext, hasPrev } = usePets(page, filters, computedPageSize, {
     skipAuth: !user?.isAuthenticated,
+    cacheScope: catalogCacheScope,
   });
   const { locations } = useAvailableLocations();
   useEffect(() => {
@@ -379,6 +382,17 @@ const Catalog = () => {
       }));
     }
   }, [hasQuestionnaireResult, filters.ordering]);
+  useEffect(() => {
+    if (!previousQuestionnaireStateRef.current && hasQuestionnaireResult) {
+      clearPetsCache();
+      setPage(1);
+      setFilters((prev) => ({
+        ...prev,
+        ordering: '-compatibility_score',
+      }));
+    }
+    previousQuestionnaireStateRef.current = hasQuestionnaireResult;
+  }, [hasQuestionnaireResult]);
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 992);
     window.addEventListener('resize', handleResize);

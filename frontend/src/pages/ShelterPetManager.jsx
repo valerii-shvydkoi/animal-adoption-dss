@@ -640,6 +640,7 @@ export default function ShelterPetManager() {
         .badge-shelter { background-color: rgba(168, 85, 247, 0.1); color: #9333EA; }
 
         .form-input-custom { width: 100%; min-height: 48px; padding: 14px 16px; border-radius: 12px; border: 1px solid ${borderColor}; background-color: ${bgCard}; color: ${textMain}; outline: none; box-sizing: border-box; font-family: inherit; font-size: 15px; transition: all 0.2s ease; }
+        .form-input-custom::placeholder { color: ${textMuted}; opacity: 1; }
         .form-input-custom:focus { border-color: ${brandPrimary}; box-shadow: 0 0 0 4px rgba(234, 88, 12, 0.1); }
         .form-input-custom:disabled { background-color: ${bgInput}; cursor: not-allowed; }
 
@@ -837,6 +838,7 @@ export default function ShelterPetManager() {
             <div
               style={{
                 position: 'relative',
+                minWidth: 0,
               }}
             >
               <MagnifyingGlass
@@ -854,9 +856,10 @@ export default function ShelterPetManager() {
                 className="form-input-custom"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Введіть кличку, породу, місто або опікуна"
+                placeholder="Пошук за кличкою, породою або містом"
                 style={{
                   paddingLeft: '42px',
+                  minWidth: 0,
                 }}
               />
             </div>

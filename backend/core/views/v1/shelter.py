@@ -32,8 +32,15 @@ class ShelterTeamSerializer(serializers.ModelSerializer):
 class ShelterListSerializer(serializers.Serializer):
     id = serializers.IntegerField()
     name = serializers.CharField()
+    region = serializers.CharField(required=False, allow_blank=True)
     city = serializers.CharField()
+    address = serializers.CharField(required=False, allow_blank=True)
+    phone = serializers.CharField(required=False, allow_blank=True)
+    description = serializers.CharField(required=False, allow_blank=True)
     is_verified = serializers.BooleanField()
+    owner_email = serializers.EmailField(required=False, allow_blank=True)
+    active_pets_count = serializers.IntegerField(required=False)
+    total_volunteers_count = serializers.IntegerField(required=False)
 
 
 logger = logging.getLogger(__name__)
@@ -50,6 +57,35 @@ class ShelterViewSet(viewsets.ViewSet):
             return [AllowAny()]
         return super().get_permissions()
 
+    def _is_platform_admin(self, request):
+        user_role = str(getattr(request.user, "role", "") or "").upper().strip()
+        return bool(
+            request.user
+            and request.user.is_authenticated
+            and (getattr(request.user, "is_superuser", False) or user_role == "ADMIN")
+        )
+
+    def _serialize_shelter(self, shelter, include_admin_fields=False):
+        data = {
+            "id": shelter.id,
+            "name": shelter.name,
+            "region": shelter.region or "",
+            "city": shelter.city or "Місто не вказано",
+            "is_verified": shelter.is_verified,
+        }
+        if include_admin_fields:
+            data.update(
+                {
+                    "address": shelter.address or "",
+                    "phone": shelter.phone or "",
+                    "description": shelter.description or "",
+                    "owner_email": getattr(shelter.owner, "email", ""),
+                    "active_pets_count": shelter.active_pets_count,
+                    "total_volunteers_count": shelter.total_volunteers_count,
+                }
+            )
+        return data
+
     @extend_schema(
         tags=["Притулки"],
         summary="Отримати список притулків",
@@ -58,17 +94,96 @@ class ShelterViewSet(viewsets.ViewSet):
     )
     def list(self, request):
         """Отримати загальний список притулків для випадаючого меню"""
-        shelters = Shelter.objects.all()
-        data = [
-            {
-                "id": shelter.id,
-                "name": shelter.name,
-                "city": shelter.city or "Місто не вказано",
-                "is_verified": shelter.is_verified,
-            }
-            for shelter in shelters
-        ]
+        is_admin = self._is_platform_admin(request)
+        shelters = Shelter.objects.select_related("owner").all()
+        data = [self._serialize_shelter(shelter, is_admin) for shelter in shelters]
         return Response(data, status=status.HTTP_200_OK)
+
+    @extend_schema(
+        tags=["Притулки"],
+        summary="Отримати дані притулку",
+        description="Адміністратор отримує повну картку притулку для редагування.",
+        responses=ShelterListSerializer,
+    )
+    def retrieve(self, request, pk=None):
+        if not self._is_platform_admin(request):
+            return Response(
+                {"detail": "Доступ дозволено тільки адміністратору платформи."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        shelter = get_object_or_404(Shelter.objects.select_related("owner"), pk=pk)
+        return Response(
+            self._serialize_shelter(shelter, include_admin_fields=True),
+            status=status.HTTP_200_OK,
+        )
+
+    @extend_schema(
+        tags=["Притулки"],
+        summary="Оновити дані притулку адміністратором",
+        description="Дає адміністратору змогу редагувати профіль притулку так само, як це робить менеджер.",
+        request=OpenApiTypes.OBJECT,
+        responses=OpenApiTypes.OBJECT,
+    )
+    def partial_update(self, request, pk=None):
+        if not self._is_platform_admin(request):
+            return Response(
+                {"detail": "Доступ дозволено тільки адміністратору платформи."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
+        shelter = get_object_or_404(Shelter, pk=pk)
+        editable_fields = ["name", "region", "city", "address", "phone", "description"]
+
+        for field in editable_fields:
+            if field not in request.data:
+                continue
+            value = str(request.data.get(field, "")).strip()
+            if field in ["name", "region", "city", "address", "phone"] and not value:
+                return Response(
+                    {"detail": "Назва, область, місто, адреса і телефон є обов'язковими."},
+                    status=status.HTTP_400_BAD_REQUEST,
+                )
+            setattr(shelter, field, value)
+
+        if "is_verified" in request.data:
+            raw_verified = request.data.get("is_verified")
+            if isinstance(raw_verified, str):
+                shelter.is_verified = raw_verified.strip().lower() in [
+                    "true",
+                    "1",
+                    "yes",
+                    "так",
+                ]
+            else:
+                shelter.is_verified = bool(raw_verified)
+
+        shelter.save()
+        return Response(
+            {
+                "detail": "Дані притулку оновлено.",
+                "shelter": self._serialize_shelter(shelter, include_admin_fields=True),
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @extend_schema(
+        tags=["Притулки"],
+        summary="Видалити притулок адміністратором",
+        description="Видаляє притулок з реєстру платформи разом із пов'язаними записами.",
+        responses=OpenApiTypes.OBJECT,
+    )
+    def destroy(self, request, pk=None):
+        if not self._is_platform_admin(request):
+            return Response(
+                {"detail": "Доступ дозволено тільки адміністратору платформи."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+        shelter = get_object_or_404(Shelter, pk=pk)
+        shelter.delete()
+        return Response(
+            {"detail": "Притулок видалено з реєстру."},
+            status=status.HTTP_200_OK,
+        )
 
     def get_current_shelter(self, request):
         """Допоміжний метод для визначення притулку поточного користувача"""

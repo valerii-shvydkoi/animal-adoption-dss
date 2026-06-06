@@ -16,6 +16,9 @@ import {
   Briefcase,
   Globe,
   X,
+  PencilSimple,
+  Trash,
+  FloppyDisk,
 } from '@phosphor-icons/react';
 import adminService from '../services/adminService';
 import { useFeedback } from '../context/FeedbackContext';
@@ -115,6 +118,17 @@ export default function AdminShelters() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [activeType, setActiveType] = useState('shelters');
   const [actionLoadingId, setActionLoadingId] = useState(null);
+  const [shelterActionId, setShelterActionId] = useState(null);
+  const [editingShelter, setEditingShelter] = useState(null);
+  const [shelterForm, setShelterForm] = useState({
+    name: '',
+    region: '',
+    city: '',
+    address: '',
+    phone: '',
+    description: '',
+    is_verified: true,
+  });
   const [alert, setAlert] = useState({
     type: '',
     message: '',
@@ -260,7 +274,85 @@ export default function AdminShelters() {
     if (!url) return '#';
     return url.startsWith('http://') || url.startsWith('https://') ? url : `https://${url}`;
   };
+  const openShelterEditor = (shelter) => {
+    setEditingShelter(shelter);
+    setShelterForm({
+      name: shelter.name || '',
+      region: shelter.region || '',
+      city: shelter.city || '',
+      address: shelter.address || '',
+      phone: shelter.phone || '',
+      description: shelter.description || '',
+      is_verified: shelter.is_verified !== false,
+    });
+    setAlert({
+      type: '',
+      message: '',
+    });
+  };
+  const handleShelterFormChange = (field, value) => {
+    setShelterForm((prev) => ({
+      ...prev,
+      [field]: value,
+    }));
+  };
+  const handleShelterSave = async (event) => {
+    event.preventDefault();
+    if (!editingShelter) return;
+
+    const requiredFields = ['name', 'region', 'city', 'address', 'phone'];
+    const hasMissingRequired = requiredFields.some((field) => !String(shelterForm[field]).trim());
+    if (hasMissingRequired) {
+      showTemporaryAlert('error', 'Заповніть назву, область, місто, адресу та телефон притулку.');
+      return;
+    }
+
+    setShelterActionId(editingShelter.id);
+    try {
+      await adminService.updateShelter(editingShelter.id, shelterForm);
+      showTemporaryAlert('success', 'Дані притулку оновлено.');
+      setEditingShelter(null);
+      await fetchRequests();
+    } catch (err) {
+      const message =
+        err.response?.data?.detail || err.message || 'Не вдалося оновити дані притулку.';
+      showTemporaryAlert('error', message);
+    } finally {
+      setShelterActionId(null);
+    }
+  };
+  const handleShelterDelete = async (shelter) => {
+    const isConfirmed = await confirm({
+      title: 'Видалити притулок?',
+      message:
+        'Притулок буде прибрано з реєстру разом із пов’язаними даними. Цю дію не можна швидко скасувати.',
+      confirmLabel: 'Видалити',
+      variant: 'danger',
+    });
+    if (!isConfirmed) return;
+
+    setShelterActionId(shelter.id);
+    try {
+      await adminService.deleteShelter(shelter.id);
+      showTemporaryAlert('success', 'Притулок видалено з реєстру.');
+      if (editingShelter?.id === shelter.id) setEditingShelter(null);
+      await fetchRequests();
+    } catch (err) {
+      const message =
+        err.response?.data?.detail || err.message || 'Не вдалося видалити притулок.';
+      showTemporaryAlert('error', message);
+    } finally {
+      setShelterActionId(null);
+    }
+  };
   const isShelterMode = activeType === 'shelters';
+  const normalizedRegistrySearch = debouncedSearch.trim().toLowerCase();
+  const visibleShelters = shelters.filter((shelter) => {
+    if (!normalizedRegistrySearch) return true;
+    return [shelter.name, shelter.region, shelter.city, shelter.address, shelter.owner_email]
+      .filter(Boolean)
+      .some((value) => String(value).toLowerCase().includes(normalizedRegistrySearch));
+  });
   return (
     <div className="admin-dashboard-root">
       <style>{LIGHT_THEME_CSS}</style>
@@ -335,31 +427,63 @@ export default function AdminShelters() {
                   Активний реєстр організацій, які доступні у системі Adoptify.
                 </p>
               </div>
-              <span style={styles.registryCounter}>{shelters.length}</span>
+              <span style={styles.registryCounter}>{visibleShelters.length}</span>
             </div>
-            {shelters.length === 0 ? (
+            {visibleShelters.length === 0 ? (
               <p style={styles.registryEmpty}>У реєстрі поки немає притулків.</p>
             ) : (
               <div style={styles.registryList}>
-                {shelters.map((shelter) => (
+                {visibleShelters.map((shelter) => (
                   <div key={shelter.id} style={styles.registryItem}>
-                    <div>
+                    <div style={styles.registryInfo}>
                       <strong style={styles.registryName}>{shelter.name}</strong>
                       <span style={styles.registryLocation}>
                         {[shelter.city, shelter.region ? `${shelter.region} обл.` : '']
                           .filter(Boolean)
                           .join(', ') || 'Локацію не вказано'}
                       </span>
+                      {shelter.owner_email && (
+                        <span style={styles.registryMeta}>{shelter.owner_email}</span>
+                      )}
                     </div>
-                    <span
-                      style={{
-                        ...styles.registryStatus,
-                        background: shelter.is_verified ? '#DCFCE7' : '#FEF3C7',
-                        color: shelter.is_verified ? '#166534' : '#92400E',
-                      }}
-                    >
-                      {shelter.is_verified ? 'Верифіковано' : 'Очікує'}
-                    </span>
+                    <div style={styles.registryRight}>
+                      <span
+                        style={{
+                          ...styles.registryStatus,
+                          background: shelter.is_verified ? '#DCFCE7' : '#FEF3C7',
+                          color: shelter.is_verified ? '#166534' : '#92400E',
+                        }}
+                      >
+                        {shelter.is_verified ? 'Верифіковано' : 'Очікує'}
+                      </span>
+                      <div style={styles.registryActions}>
+                        <button
+                          type="button"
+                          onClick={() => openShelterEditor(shelter)}
+                          style={styles.iconActionButton}
+                          title="Редагувати притулок"
+                          aria-label="Редагувати притулок"
+                        >
+                          <PencilSimple size={16} weight="bold" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleShelterDelete(shelter)}
+                          disabled={shelterActionId === shelter.id}
+                          style={{
+                            ...styles.iconActionButton,
+                            color: '#DC2626',
+                            borderColor: '#FECACA',
+                            background: '#FEF2F2',
+                            opacity: shelterActionId === shelter.id ? 0.65 : 1,
+                          }}
+                          title="Видалити притулок"
+                          aria-label="Видалити притулок"
+                        >
+                          <Trash size={16} weight="bold" />
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 ))}
               </div>
@@ -388,6 +512,143 @@ export default function AdminShelters() {
             >
               {alert.message}
             </span>
+          </div>
+        )}
+
+        {editingShelter && (
+          <div style={styles.modalOverlay} role="dialog" aria-modal="true">
+            <form style={styles.modalCard} onSubmit={handleShelterSave}>
+              <div style={styles.modalHeader}>
+                <div>
+                  <h2 style={styles.modalTitle}>Редагування притулку</h2>
+                  <p style={styles.modalSubtitle}>
+                    Оновіть контактні дані організації, які бачать користувачі у картках тварин.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setEditingShelter(null)}
+                  style={styles.modalCloseButton}
+                  aria-label="Закрити форму"
+                >
+                  <X size={18} weight="bold" />
+                </button>
+              </div>
+
+              <div
+                style={{
+                  ...styles.modalGrid,
+                  gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, minmax(0, 1fr))',
+                }}
+              >
+                <label style={styles.modalField}>
+                  <span style={styles.modalLabel}>Назва притулку</span>
+                  <input
+                    value={shelterForm.name}
+                    onChange={(e) => handleShelterFormChange('name', e.target.value)}
+                    style={styles.modalInput}
+                    placeholder="Введіть назву притулку"
+                    maxLength={255}
+                    required
+                  />
+                </label>
+                <label style={styles.modalField}>
+                  <span style={styles.modalLabel}>Область</span>
+                  <input
+                    value={shelterForm.region}
+                    onChange={(e) => handleShelterFormChange('region', e.target.value)}
+                    style={styles.modalInput}
+                    placeholder="Введіть область"
+                    maxLength={100}
+                    required
+                  />
+                </label>
+                <label style={styles.modalField}>
+                  <span style={styles.modalLabel}>Місто</span>
+                  <input
+                    value={shelterForm.city}
+                    onChange={(e) => handleShelterFormChange('city', e.target.value)}
+                    style={styles.modalInput}
+                    placeholder="Введіть місто"
+                    maxLength={100}
+                    required
+                  />
+                </label>
+                <label style={styles.modalField}>
+                  <span style={styles.modalLabel}>Телефон</span>
+                  <input
+                    value={shelterForm.phone}
+                    onChange={(e) => handleShelterFormChange('phone', e.target.value)}
+                    style={styles.modalInput}
+                    placeholder="Введіть телефон"
+                    maxLength={20}
+                    required
+                  />
+                </label>
+                <label style={{ ...styles.modalField, gridColumn: '1 / -1' }}>
+                  <span style={styles.modalLabel}>Адреса</span>
+                  <input
+                    value={shelterForm.address}
+                    onChange={(e) => handleShelterFormChange('address', e.target.value)}
+                    style={styles.modalInput}
+                    placeholder="Введіть адресу"
+                    maxLength={255}
+                    required
+                  />
+                </label>
+                <label style={{ ...styles.modalField, gridColumn: '1 / -1' }}>
+                  <span style={styles.modalLabel}>Опис</span>
+                  <textarea
+                    value={shelterForm.description}
+                    onChange={(e) => handleShelterFormChange('description', e.target.value)}
+                    style={styles.modalTextarea}
+                    placeholder="Введіть короткий опис роботи притулку"
+                    rows={4}
+                  />
+                </label>
+                <label style={styles.modalCheckRow}>
+                  <input
+                    type="checkbox"
+                    checked={shelterForm.is_verified}
+                    onChange={(e) => handleShelterFormChange('is_verified', e.target.checked)}
+                  />
+                  <span>Притулок верифіковано платформою</span>
+                </label>
+              </div>
+
+              <div style={styles.modalActions}>
+                <button
+                  type="button"
+                  onClick={() => handleShelterDelete(editingShelter)}
+                  disabled={shelterActionId === editingShelter.id}
+                  style={styles.modalDeleteButton}
+                >
+                  <Trash size={18} weight="bold" />
+                  Видалити
+                </button>
+                <div style={styles.modalActionRight}>
+                  <button
+                    type="button"
+                    onClick={() => setEditingShelter(null)}
+                    style={styles.modalCancelButton}
+                  >
+                    Скасувати
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={shelterActionId === editingShelter.id}
+                    style={styles.modalSaveButton}
+                  >
+                    {shelterActionId === editingShelter.id ? (
+                      <CircleNotch size={18} className="admin-spinner" color="#FFF" />
+                    ) : (
+                      <FloppyDisk size={18} weight="bold" />
+                    )}
+                    Зберегти
+                  </button>
+                </div>
+              </div>
+            </form>
           </div>
         )}
 
@@ -641,6 +902,13 @@ export default function AdminShelters() {
         .btn-approve:active:not(:disabled) { transform: translateY(0); }
         .btn-reject:hover:not(:disabled) { background-color: #FEF2F2 !important; color: #B91C1C !important; border-color: #FCA5A5 !important; }
         .registry-card:hover { border-color: #CBD5E1 !important; box-shadow: 0 10px 25px -5px rgba(148, 163, 184, 0.12) !important; }
+        .admin-dashboard-root button:hover:not(:disabled) { filter: brightness(0.98); }
+        @media (max-width: 640px) {
+          .admin-dashboard-root form[role="dialog"],
+          .admin-dashboard-root [role="dialog"] form {
+            width: 100% !important;
+          }
+        }
       `}</style>
     </div>
   );
@@ -759,12 +1027,17 @@ const styles = {
   registryItem: {
     display: 'flex',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    alignItems: 'flex-start',
     gap: '12px',
     padding: '14px 16px',
     borderRadius: '14px',
     background: '#F8FAFC',
     border: '1px solid #E2E8F0',
+    minWidth: 0,
+  },
+  registryInfo: {
+    minWidth: 0,
+    flex: '1 1 auto',
   },
   registryName: {
     display: 'block',
@@ -780,6 +1053,22 @@ const styles = {
     fontSize: '13px',
     fontWeight: '700',
     marginTop: '3px',
+    overflowWrap: 'anywhere',
+  },
+  registryMeta: {
+    display: 'block',
+    color: '#94A3B8',
+    fontSize: '12px',
+    fontWeight: '700',
+    marginTop: '4px',
+    overflowWrap: 'anywhere',
+  },
+  registryRight: {
+    display: 'flex',
+    flexDirection: 'column',
+    alignItems: 'flex-end',
+    gap: '8px',
+    flexShrink: 0,
   },
   registryStatus: {
     flexShrink: 0,
@@ -787,6 +1076,181 @@ const styles = {
     borderRadius: '999px',
     fontSize: '12px',
     fontWeight: '900',
+  },
+  registryActions: {
+    display: 'flex',
+    gap: '6px',
+  },
+  iconActionButton: {
+    width: '34px',
+    height: '34px',
+    borderRadius: '10px',
+    border: '1px solid #E2E8F0',
+    background: '#FFFFFF',
+    color: '#475569',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    transition: 'all 0.15s ease',
+  },
+  modalOverlay: {
+    position: 'fixed',
+    inset: 0,
+    zIndex: 2000,
+    background: 'rgba(15, 23, 42, 0.45)',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: '20px',
+  },
+  modalCard: {
+    width: 'min(760px, 100%)',
+    maxHeight: 'calc(100vh - 40px)',
+    overflowY: 'auto',
+    background: '#FFFFFF',
+    borderRadius: '22px',
+    border: '1px solid #E2E8F0',
+    boxShadow: '0 24px 80px rgba(15, 23, 42, 0.25)',
+    padding: '24px',
+  },
+  modalHeader: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    gap: '16px',
+    alignItems: 'flex-start',
+    marginBottom: '20px',
+  },
+  modalTitle: {
+    margin: 0,
+    color: '#0F172A',
+    fontSize: '22px',
+    fontWeight: '900',
+  },
+  modalSubtitle: {
+    margin: '5px 0 0 0',
+    color: '#64748B',
+    fontSize: '14px',
+    fontWeight: '600',
+    lineHeight: 1.5,
+  },
+  modalCloseButton: {
+    width: '38px',
+    height: '38px',
+    borderRadius: '12px',
+    border: '1px solid #E2E8F0',
+    background: '#F8FAFC',
+    color: '#475569',
+    display: 'inline-flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    cursor: 'pointer',
+    flexShrink: 0,
+  },
+  modalGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+    gap: '14px',
+  },
+  modalField: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: '6px',
+    minWidth: 0,
+  },
+  modalLabel: {
+    color: '#64748B',
+    fontSize: '13px',
+    fontWeight: '800',
+  },
+  modalInput: {
+    width: '100%',
+    minHeight: '44px',
+    borderRadius: '12px',
+    border: '1px solid #E2E8F0',
+    background: '#FFFFFF',
+    color: '#0F172A',
+    outline: 'none',
+    padding: '12px 14px',
+    fontSize: '14px',
+    fontWeight: '600',
+    boxSizing: 'border-box',
+  },
+  modalTextarea: {
+    width: '100%',
+    borderRadius: '12px',
+    border: '1px solid #E2E8F0',
+    background: '#FFFFFF',
+    color: '#0F172A',
+    outline: 'none',
+    padding: '12px 14px',
+    fontSize: '14px',
+    fontWeight: '600',
+    fontFamily: 'inherit',
+    lineHeight: 1.5,
+    resize: 'vertical',
+    boxSizing: 'border-box',
+  },
+  modalCheckRow: {
+    gridColumn: '1 / -1',
+    display: 'flex',
+    alignItems: 'center',
+    gap: '10px',
+    padding: '12px 14px',
+    borderRadius: '12px',
+    background: '#F8FAFC',
+    color: '#334155',
+    fontSize: '14px',
+    fontWeight: '800',
+  },
+  modalActions: {
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: '12px',
+    marginTop: '22px',
+    flexWrap: 'wrap',
+  },
+  modalActionRight: {
+    display: 'flex',
+    gap: '10px',
+    flexWrap: 'wrap',
+  },
+  modalCancelButton: {
+    borderRadius: '12px',
+    border: '1px solid #E2E8F0',
+    background: '#FFFFFF',
+    color: '#475569',
+    padding: '11px 16px',
+    fontSize: '14px',
+    fontWeight: '800',
+    cursor: 'pointer',
+  },
+  modalSaveButton: {
+    borderRadius: '12px',
+    border: '1px solid #EA580C',
+    background: '#EA580C',
+    color: '#FFFFFF',
+    padding: '11px 16px',
+    fontSize: '14px',
+    fontWeight: '900',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
+  },
+  modalDeleteButton: {
+    borderRadius: '12px',
+    border: '1px solid #FECACA',
+    background: '#FEF2F2',
+    color: '#DC2626',
+    padding: '11px 16px',
+    fontSize: '14px',
+    fontWeight: '900',
+    cursor: 'pointer',
+    display: 'inline-flex',
+    alignItems: 'center',
+    gap: '8px',
   },
   searchWrapper: {
     position: 'relative',

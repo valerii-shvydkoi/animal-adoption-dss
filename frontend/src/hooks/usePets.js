@@ -8,6 +8,11 @@ const petsRequests = new Map();
 let locationsCache = null;
 let locationsRequest = null;
 
+export const clearPetsCache = () => {
+  petsCache.clear();
+  petsRequests.clear();
+};
+
 const getCacheKey = (params) =>
   JSON.stringify(
     Object.entries(params)
@@ -40,7 +45,7 @@ const getReadableApiError = (err, fallback) => {
 };
 
 export const usePets = (page = 1, filters = {}, pageSize = 12, options = {}) => {
-  const { skipAuth = false } = options;
+  const { skipAuth = false, cacheScope = '' } = options;
   const [pets, setPets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -73,7 +78,7 @@ export const usePets = (page = 1, filters = {}, pageSize = 12, options = {}) => 
       };
       const cacheKey = getCacheKey({
         ...params,
-        __auth: skipAuth ? 'guest' : 'auth',
+        __auth: skipAuth ? 'guest' : cacheScope || 'auth',
       });
       const cached = readFreshCache(petsCache, cacheKey, PETS_CACHE_TTL);
 
@@ -147,7 +152,20 @@ export const usePets = (page = 1, filters = {}, pageSize = 12, options = {}) => 
     filters.urgency_status,
     filters.is_sterilized,
     skipAuth,
+    cacheScope,
   ]);
+
+  useEffect(() => {
+    const handleInvalidate = () => clearPetsCache();
+    window.addEventListener('authChanged', handleInvalidate);
+    window.addEventListener('authExpired', handleInvalidate);
+    window.addEventListener('questionnaireCompleted', handleInvalidate);
+    return () => {
+      window.removeEventListener('authChanged', handleInvalidate);
+      window.removeEventListener('authExpired', handleInvalidate);
+      window.removeEventListener('questionnaireCompleted', handleInvalidate);
+    };
+  }, []);
 
   return {
     pets,
